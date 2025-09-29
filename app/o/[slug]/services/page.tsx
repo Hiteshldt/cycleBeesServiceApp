@@ -63,7 +63,7 @@ export default function ServiceSelectionPage() {
       const data = await response.json()
       setOrderData(data)
 
-      // If already confirmed, redirect to summary page
+      // If already confirmed, redirect to main page
       if (data.request.status === 'confirmed') {
         router.replace(`/o/${slug}`)
         return
@@ -149,9 +149,30 @@ export default function ServiceSelectionPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading your service estimate...</p>
+        <div className="text-center animate-fade-in">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 mx-auto"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-blue-600 border-r-indigo-500 mx-auto absolute top-0 left-1/2 transform -translate-x-1/2"></div>
+          </div>
+          <div className="mt-6 space-y-2">
+            <p className="text-lg font-medium text-gray-800 animate-pulse">Loading Services...</p>
+            <p className="text-sm text-gray-600">🔧 Preparing repair & replacement options</p>
+          </div>
+          {/* Loading skeleton cards */}
+          <div className="mt-8 space-y-3 max-w-md mx-auto">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white rounded-lg p-4 shadow-sm animate-pulse">
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 bg-gray-200 rounded-full"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                  <div className="h-5 bg-gray-200 rounded w-16"></div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     )
@@ -212,8 +233,8 @@ export default function ServiceSelectionPage() {
       <AppHeader
         title="Choose Your Services"
         subtitle={`${request.bike_name} • ${request.customer_name}`}
-        progress={33}
-        step="Step 1 of 3"
+        progress={25}
+        step="Step 1 of 4"
         onHelp={handleNeedHelp}
         rightSlot={
           <Badge className="bg-white/90 text-gray-700 text-xs font-medium border">

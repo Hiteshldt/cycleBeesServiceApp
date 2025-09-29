@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -9,10 +9,11 @@ import { formatCurrency, openWhatsApp, formatDate } from '@/lib/utils'
 import { generateBillHTML, createBillDownload } from '@/lib/bill-generator'
 import { getLaCartePrice } from '@/lib/lacarte'
 import { Check, MessageCircle, AlertCircle, Download } from 'lucide-react'
-import { getLaCarteSettings, type LaCarteSettings } from '@/lib/lacarte'
+import { getLaCarteSettings, formatLaCarteDisplay, type LaCarteSettings } from '@/lib/lacarte'
 import { AppHeader } from '@/components/mobile/AppHeader'
+import { CategorySection } from '@/components/mobile/CategorySection'
+import { SelectionCard } from '@/components/mobile/SelectionCard'
 import { StickyActionBar } from '@/components/mobile/StickyActionBar'
-import { AppBottomNav } from '@/components/mobile/AppBottomNav'
 import { showToast } from '@/components/mobile/Toast'
 
 type OrderData = {
@@ -51,21 +52,6 @@ export default function PublicOrderPage() {
   const [isConfirming, setIsConfirming] = useState(false)
   const [confirmedData, setConfirmedData] = useState<ConfirmedData | null>(null)
   const [laCarte, setLaCarte] = useState<LaCarteSettings | null>(null)
-  // Mobile tabs (scroll-to-section)
-  const [activeTab, setActiveTab] = useState<'services' | 'addons' | 'bundles' | 'summary'>('services')
-  const servicesRef = useRef<HTMLDivElement | null>(null)
-  const addonsRef = useRef<HTMLDivElement | null>(null)
-  const bundlesRef = useRef<HTMLDivElement | null>(null)
-  const summaryRef = useRef<HTMLDivElement | null>(null)
-
-  const scrollToSection = (tab: 'services' | 'addons' | 'bundles' | 'summary') => {
-    setActiveTab(tab)
-    const target = tab === 'services' ? servicesRef.current
-      : tab === 'addons' ? addonsRef.current
-      : tab === 'bundles' ? bundlesRef.current
-      : summaryRef.current
-    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
 
   useEffect(() => {
     if (slug) {
@@ -90,15 +76,6 @@ export default function PublicOrderPage() {
     loadLaCarte()
   }, [])
 
-  // Scroll to services section on initial load
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (servicesRef.current) {
-        servicesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
-    }, 100)
-    return () => clearTimeout(timer)
-  }, [])
 
   const loadSelections = () => {
     // Load selections from session storage
@@ -119,32 +96,6 @@ export default function PublicOrderPage() {
     }
   }
 
-  // Scroll-to-section handler from bottom nav
-  
-
-  // Scroll spy to update the active tab as user scrolls
-  useEffect(() => {
-    const sections: [HTMLElement | null, typeof activeTab][] = [
-      [servicesRef.current, 'services'],
-      [addonsRef.current, 'addons'],
-      [bundlesRef.current, 'bundles'],
-      [summaryRef.current, 'summary']
-    ]
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
-        if (!visible) return
-        const node = visible.target as HTMLElement
-        const match = sections.find(([el]) => el === node)
-        if (match && match[1] !== activeTab) setActiveTab(match[1])
-      },
-      { root: null, rootMargin: '-45% 0px -50% 0px', threshold: [0, 1] }
-    )
-    sections.forEach(([el]) => el && observer.observe(el))
-    return () => observer.disconnect()
-  }, [servicesRef.current, addonsRef.current, bundlesRef.current, summaryRef.current, activeTab])
 
   const fetchOrderData = async () => {
     try {
@@ -468,77 +419,35 @@ export default function PublicOrderPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading your service estimate...</p>
-        </div>
-      </div>
-    )
-  }
-
-  // If order is confirmed, show read-only summary with download option
-  if (orderData?.request.status === 'confirmed') {
-    const totalSubtotal = confirmedData
-      ? orderData.items.filter(i => confirmedData.selectedItems.includes(i.id)).reduce((s, i) => s + i.price_paise, 0)
-      : 0
-    const totalAddons = confirmedData
-      ? addons.filter(a => confirmedData.selectedAddons.includes(a.id)).reduce((s, a) => s + a.price_paise, 0)
-      : 0
-    const totalBundles = confirmedData
-      ? bundles.filter(b => (confirmedData.selectedBundles || []).includes(b.id)).reduce((s, b) => s + b.price_paise, 0)
-      : 0
-
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-3xl mx-auto px-4 py-8">
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Confirmed</h1>
-            <p className="text-gray-700">Thank you! Your service order is confirmed. Our team will contact you shortly.</p>
+        <div className="text-center animate-fade-in">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-green-200 mx-auto"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-green-600 border-r-emerald-500 mx-auto absolute top-0 left-1/2 transform -translate-x-1/2"></div>
           </div>
-
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Summary</h2>
-            <div className="space-y-2">
-              <div className="flex justify-between text-gray-700">
-                <span>Selected Services</span>
-                <span>{formatCurrency(totalSubtotal)}</span>
+          <div className="mt-6 space-y-2">
+            <p className="text-lg font-medium text-gray-800 animate-pulse">Loading Order Summary...</p>
+            <p className="text-sm text-gray-600">📝 Preparing your complete order details</p>
+          </div>
+          {/* Loading skeleton cards */}
+          <div className="mt-8 space-y-3 max-w-md mx-auto">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white rounded-lg p-4 shadow-sm animate-pulse">
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 bg-gray-200 rounded-full"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                  <div className="h-5 bg-gray-200 rounded w-16"></div>
+                </div>
               </div>
-              {totalAddons > 0 && (
-                <div className="flex justify-between text-gray-700">
-                  <span>Add-on Services</span>
-                  <span>{formatCurrency(totalAddons)}</span>
-                </div>
-              )}
-              {totalBundles > 0 && (
-                <div className="flex justify-between text-gray-700">
-                  <span>Service Bundles</span>
-                  <span>{formatCurrency(totalBundles)}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6 space-y-3">
-            <Button onClick={handleDownloadConfirmedPDF} className="w-full">
-              <Download className="h-4 w-4 mr-2" /> Download Confirmed Order PDF
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => {
-                if (!orderData) return
-                const supportNumberIntl = '919597312212'
-                const message = `Hi, I need help with my confirmed service order for ${orderData.request.bike_name} (Order ${orderData.request.order_id}).`
-                openWhatsApp(supportNumberIntl, message)
-              }}
-            >
-              <MessageCircle className="h-4 w-4 mr-2" /> Need Help? Contact Us on WhatsApp
-            </Button>
+            ))}
           </div>
         </div>
       </div>
     )
   }
+
 
   if (error || !orderData) {
     return (
@@ -560,31 +469,280 @@ export default function PublicOrderPage() {
   const replacementItems = items.filter(item => item.section === 'replacement')
   const totals = calculateTotal()
 
-  // Check if order is already confirmed - show download screen
+  // Check if order is already confirmed - show enhanced confirmed status page
   if (request.status === 'confirmed') {
     return (
-      <div className="min-h-screen bg-gray-50 p-0">
-        <AppHeader title="Order Confirmed" subtitle={`${request.bike_name} • #${request.order_id}`} />
-        <div className="flex items-center justify-center p-4">
-          <div className="bg-white p-6 rounded-lg shadow-md text-center w-full max-w-md">
-            <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <Check className="h-6 w-6 text-green-600" />
+      <div className="min-h-screen bg-gray-50 pb-32">
+        {/* Enhanced App Header */}
+        <AppHeader
+          title="Order Confirmed"
+          subtitle={`${request.bike_name} • ${request.customer_name}`}
+          progress={100}
+          step="Complete"
+          onHelp={handleNeedHelp}
+          rightSlot={
+            <Badge className="bg-green-100 text-green-700 text-xs font-medium border border-green-200">
+              #{request.order_id}
+            </Badge>
+          }
+        />
+
+        <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+          {/* Success Card */}
+          <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-center relative overflow-hidden">
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-4 translate-x-4"></div>
+            <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/5 rounded-full translate-y-2 -translate-x-2"></div>
+
+            <div className="relative z-10">
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Check className="h-8 w-8 text-green-600 animate-bounce" />
+              </div>
+              <h1 className="text-xl font-bold text-white mb-2">Order Confirmed!</h1>
+              <p className="text-white/90 text-sm">
+                Thank you! Your service order is confirmed.
+                <br />Our team will contact you shortly.
+              </p>
             </div>
-            <h1 className="text-lg font-bold text-gray-900 mb-2">Order Confirmed!</h1>
-            <p className="text-sm text-gray-600 mb-4">
-              Service request for {request.bike_name} confirmed.
-              We&apos;ll contact you soon!
-            </p>
-            <div className="space-y-3">
-              <Button onClick={handleDownloadConfirmedPDF} className="w-full">
-                <Download className="h-4 w-4 mr-2" />
-                Download Estimate
-              </Button>
-              <Button onClick={handleNeedHelp} variant="outline" className="w-full text-sm">
-                <MessageCircle className="h-4 w-4 mr-2" />
-                Need Help?
-              </Button>
+          </div>
+
+          {/* Detailed Service Breakdown */}
+          {repairItems.filter(item => selectedItems.has(item.id)).length > 0 && (
+            <CategorySection
+              title="Confirmed Repair Services"
+              emoji="🔧"
+              description="Essential fixes for your bike"
+              count={repairItems.filter(item => selectedItems.has(item.id)).length}
+              isCollapsible={true}
+              defaultExpanded={false}
+            >
+              <div className="space-y-3">
+                {repairItems.filter(item => selectedItems.has(item.id)).map((item) => (
+                  <SelectionCard
+                    key={item.id}
+                    id={item.id}
+                    title={item.label}
+                    price={item.price_paise}
+                    isSelected={true}
+                    isRecommended={item.is_suggested}
+                    isRequired={true}
+                    type="repair"
+                    onToggle={() => {}} // No-op for confirmed page
+                  />
+                ))}
+              </div>
+            </CategorySection>
+          )}
+
+          {replacementItems.filter(item => selectedItems.has(item.id)).length > 0 && (
+            <CategorySection
+              title="Confirmed Replacement Parts"
+              emoji="⚙️"
+              description="New parts for better performance"
+              count={replacementItems.filter(item => selectedItems.has(item.id)).length}
+              isCollapsible={true}
+              defaultExpanded={false}
+            >
+              <div className="space-y-3">
+                {replacementItems.filter(item => selectedItems.has(item.id)).map((item) => (
+                  <SelectionCard
+                    key={item.id}
+                    id={item.id}
+                    title={item.label}
+                    price={item.price_paise}
+                    isSelected={true}
+                    isRecommended={item.is_suggested}
+                    isRequired={true}
+                    type="replacement"
+                    onToggle={() => {}} // No-op for confirmed page
+                  />
+                ))}
+              </div>
+            </CategorySection>
+          )}
+
+          {addons.filter(addon => selectedAddons.has(addon.id)).length > 0 && (
+            <CategorySection
+              title="Confirmed Add-on Services"
+              emoji="✨"
+              description="Premium services to enhance your bike care"
+              count={addons.filter(addon => selectedAddons.has(addon.id)).length}
+              isCollapsible={true}
+              defaultExpanded={false}
+            >
+              <div className="space-y-3">
+                {addons.filter(addon => selectedAddons.has(addon.id)).map((addon) => (
+                  <SelectionCard
+                    key={addon.id}
+                    id={addon.id}
+                    title={addon.name}
+                    description={addon.description || undefined}
+                    price={addon.price_paise}
+                    isSelected={true}
+                    isRequired={true}
+                    type="addon"
+                    onToggle={() => {}} // No-op for confirmed page
+                  />
+                ))}
+              </div>
+            </CategorySection>
+          )}
+
+          {bundles.filter(bundle => selectedBundles.has(bundle.id)).length > 0 && (
+            <CategorySection
+              title="Confirmed Service Bundles"
+              emoji="🎁"
+              description="Comprehensive packages with multiple services"
+              count={bundles.filter(bundle => selectedBundles.has(bundle.id)).length}
+              isCollapsible={true}
+              defaultExpanded={false}
+            >
+              <div className="space-y-3">
+                {bundles.filter(bundle => selectedBundles.has(bundle.id)).map((bundle) => (
+                  <SelectionCard
+                    key={bundle.id}
+                    id={bundle.id}
+                    title={bundle.name}
+                    description={bundle.description || undefined}
+                    price={bundle.price_paise}
+                    isSelected={true}
+                    isRequired={true}
+                    type="bundle"
+                    bulletPoints={bundle.bullet_points}
+                    onToggle={() => {}} // No-op for confirmed page
+                  />
+                ))}
+              </div>
+            </CategorySection>
+          )}
+
+          {/* La Carte Services - Always Included */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                  <Check className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-base font-medium text-green-900 mb-1">
+                    La Carte Service (Fixed Charges - Free Services Included)
+                  </h3>
+                </div>
+              </div>
+              <div className="text-right flex-shrink-0">
+                {laCarte && laCarte.real_price_paise > laCarte.current_price_paise ? (
+                  <div className="space-y-1">
+                    <div className="text-lg font-bold text-green-700">
+                      {formatCurrency(laCarte.current_price_paise)}
+                    </div>
+                    <div className="flex items-center justify-end gap-2">
+                      <span className="text-xs text-gray-500 font-medium">MRP</span>
+                      <span className="text-sm text-gray-500 line-through">
+                        {formatCurrency(laCarte.real_price_paise)}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <span className="text-lg font-bold text-green-700">
+                    {formatCurrency(9900)}
+                  </span>
+                )}
+              </div>
             </div>
+
+            <div className="bg-white/60 rounded-lg p-3">
+              <div className="grid grid-cols-1 gap-2">
+                <div className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="text-sm text-green-800">General service & inspection report</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="text-sm text-green-800">Full cleaning & wash</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="text-sm text-green-800">Tyre puncture check & air filling</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="text-sm text-green-800">Pick & drop or doorstep service</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Total Summary */}
+          <CategorySection
+            title="Order Summary"
+            emoji="📊"
+            description="Complete breakdown of confirmed services"
+            isCollapsible={false}
+          >
+            <div className="space-y-2 text-sm">
+              {totals.subtotal > 0 && (
+                <div className="flex justify-between text-gray-700">
+                  <span>Selected Services ({selectedItems.size} items)</span>
+                  <span className="font-medium">{formatCurrency(totals.subtotal)}</span>
+                </div>
+              )}
+              {totals.addonsTotal > 0 && (
+                <div className="flex justify-between text-gray-700">
+                  <span>Add-on Services ({selectedAddons.size} items)</span>
+                  <span className="font-medium">{formatCurrency(totals.addonsTotal)}</span>
+                </div>
+              )}
+              {totals.bundlesTotal > 0 && (
+                <div className="flex justify-between text-gray-700">
+                  <span>Service Bundles ({selectedBundles.size} items)</span>
+                  <span className="font-medium">{formatCurrency(totals.bundlesTotal)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-gray-700">
+                <span>La Carte Services (Fixed)</span>
+                <span className="font-medium">{formatCurrency(laCarte?.current_price_paise || 9900)}</span>
+              </div>
+              <div className="border-t pt-2 mt-3">
+                <div className="flex justify-between text-base font-bold text-gray-900">
+                  <span>Total Amount (GST Inclusive)</span>
+                  <span>{formatCurrency(totals.total)}</span>
+                </div>
+              </div>
+            </div>
+          </CategorySection>
+
+          {/* Additional spacing for bottom action bar and support button */}
+          <div className="h-32" />
+        </div>
+
+        {/* Sticky Action Bar */}
+        <StickyActionBar
+          totalPaise={totals.total}
+          primaryLabel="Download Order PDF"
+          onPrimary={handleDownloadConfirmedPDF}
+          disabled={false}
+          selectedCount={selectedItems.size + selectedAddons.size + selectedBundles.size}
+          summaryText="Your order is confirmed and ready for download"
+          isExpandable={true}
+          servicesBreakdown={{
+            selectedServicesPaise: totals.subtotal + totals.addonsTotal + totals.bundlesTotal,
+            selectedCount: selectedItems.size + selectedAddons.size + selectedBundles.size,
+            laCartePaise: laCarte?.current_price_paise || 9900,
+            laCarteDisplay: laCarte ? formatLaCarteDisplay(laCarte) : undefined
+          }}
+        />
+
+        {/* Support Button Below */}
+        <div className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 p-3">
+          <div className="max-w-md mx-auto">
+            <Button
+              onClick={handleNeedHelp}
+              variant="outline"
+              className="w-full h-10 text-sm border-gray-300 text-gray-600"
+            >
+              <MessageCircle className="h-4 w-4 mr-2" />
+              Need Help? Contact Us on WhatsApp
+            </Button>
           </div>
         </div>
       </div>
@@ -623,306 +781,260 @@ export default function PublicOrderPage() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-40">
+    <div className="min-h-screen bg-gray-50 pb-32">
+      {/* Enhanced App Header */}
       <AppHeader
-        title="Your Service Order"
+        title="Review Your Order"
         subtitle={`${request.bike_name} • ${request.customer_name}`}
-        rightSlot={<Badge className="bg-white/90 text-gray-700 text-xs font-medium border">#{request.order_id}</Badge>}
+        progress={100}
+        step="Step 4 of 4"
+        showBack={true}
+        onBack={() => router.back()}
+        onHelp={handleNeedHelp}
+        rightSlot={
+          <Badge className="bg-white/90 text-gray-700 text-xs font-medium border">
+            #{request.order_id}
+          </Badge>
+        }
       />
 
-      <div className="max-w-md mx-auto px-4 py-3">
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
 
+        {/* Order Summary Card */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+              <Check className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-base font-medium text-blue-900 mb-1">
+                Service Estimate Ready
+              </h2>
+              <p className="text-sm text-blue-700">
+                Review your selections below
+              </p>
+            </div>
+          </div>
 
-        {/* Order Summary - Mobile Optimized */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-          <h2 className="text-base font-semibold text-gray-900 mb-3">
-            Estimate: {request.bike_name}
-          </h2>
-          <p className="text-sm text-gray-600 mb-3">
-            Review selections before confirming
-          </p>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-gray-50 p-3 rounded-lg">
-            <div>
-              <p className="text-xs text-gray-600">Customer</p>
-              <p className="text-sm font-medium">{request.customer_name}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-600">Bike</p>
-              <p className="text-sm font-medium">{request.bike_name}</p>
-            </div>
-            <div className="sm:col-span-2">
-              <p className="text-xs text-gray-600">Created</p>
-              <p className="text-sm font-medium">{formatDate(request.created_at)}</p>
+          <div className="bg-white/60 rounded-lg p-3">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-xs text-blue-600 font-medium">Customer</p>
+                <p className="text-blue-900 font-medium">{request.customer_name}</p>
+              </div>
+              <div>
+                <p className="text-xs text-blue-600 font-medium">Bike</p>
+                <p className="text-blue-900 font-medium">{request.bike_name}</p>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Selected Repair Services */}
         {repairItems.filter(item => selectedItems.has(item.id)).length > 0 && (
-          <div ref={servicesRef} className="bg-white rounded-lg shadow-sm p-4 mb-4">
-            <h3 className="text-base font-semibold text-gray-900 mb-3">Repair Services</h3>
-            <div className="space-y-2">
+          <CategorySection
+            title="Repair Services"
+            emoji="🔧"
+            description="Selected essential fixes for your bike"
+            count={repairItems.filter(item => selectedItems.has(item.id)).length}
+            isCollapsible={false}
+          >
+            <div className="space-y-3">
               {repairItems.filter(item => selectedItems.has(item.id)).map((item) => (
-                <div
+                <SelectionCard
                   key={item.id}
-                  className="flex items-center justify-between p-3 rounded-lg border border-green-200 bg-green-50"
-                >
-                  <div className="flex items-center flex-1 min-w-0">
-                    <div className="w-4 h-4 rounded border-2 border-green-500 bg-green-500 mr-2 flex items-center justify-center flex-shrink-0">
-                      <Check className="h-2 w-2 text-white" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-900 truncate">{item.label}</p>
-                      {item.is_suggested && (
-                        <p className="text-xs text-green-600">Recommended</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-sm font-semibold text-gray-900 ml-2 flex-shrink-0">
-                    {formatCurrency(item.price_paise)}
-                  </div>
-                </div>
+                  id={item.id}
+                  title={item.label}
+                  price={item.price_paise}
+                  isSelected={true}
+                  isRecommended={item.is_suggested}
+                  isRequired={true}
+                  type="repair"
+                  onToggle={() => {}} // No-op for review page
+                />
               ))}
             </div>
-          </div>
+          </CategorySection>
         )}
 
         {/* Selected Replacement Parts */}
         {replacementItems.filter(item => selectedItems.has(item.id)).length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Selected Replacement Parts</h3>
+          <CategorySection
+            title="Replacement Parts"
+            emoji="⚙️"
+            description="Selected new parts for better performance"
+            count={replacementItems.filter(item => selectedItems.has(item.id)).length}
+            isCollapsible={false}
+          >
             <div className="space-y-3">
               {replacementItems.filter(item => selectedItems.has(item.id)).map((item) => (
-                <div
+                <SelectionCard
                   key={item.id}
-                  className="flex items-center justify-between p-4 rounded-lg border border-green-200 bg-green-50"
-                >
-                  <div className="flex items-center">
-                    <div className="w-5 h-5 rounded border-2 border-green-500 bg-green-500 mr-3 flex items-center justify-center">
-                      <Check className="h-3 w-3 text-white" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{item.label}</p>
-                      {item.is_suggested && (
-                        <p className="text-sm text-green-600">Recommended</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-lg font-semibold text-gray-900">
-                    {formatCurrency(item.price_paise)}
-                  </div>
-                </div>
+                  id={item.id}
+                  title={item.label}
+                  price={item.price_paise}
+                  isSelected={true}
+                  isRecommended={item.is_suggested}
+                  isRequired={true}
+                  type="replacement"
+                  onToggle={() => {}} // No-op for review page
+                />
               ))}
             </div>
-          </div>
+          </CategorySection>
         )}
 
         {/* Selected Add-on Services */}
         {addons.filter(addon => selectedAddons.has(addon.id)).length > 0 && (
-          <div ref={addonsRef} className="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Selected Add-on Services</h3>
+          <CategorySection
+            title="Add-on Services"
+            emoji="✨"
+            description="Selected premium services to enhance your bike care"
+            count={addons.filter(addon => selectedAddons.has(addon.id)).length}
+            isCollapsible={false}
+          >
             <div className="space-y-3">
               {addons.filter(addon => selectedAddons.has(addon.id)).map((addon) => (
-                <div
+                <SelectionCard
                   key={addon.id}
-                  className="flex items-center justify-between p-4 rounded-lg border border-green-200 bg-green-50"
-                >
-                  <div className="flex items-center">
-                    <div className="w-5 h-5 rounded border-2 border-green-500 bg-green-500 mr-3 flex items-center justify-center">
-                      <Check className="h-3 w-3 text-white" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{addon.name}</p>
-                      {addon.description && (
-                        <p className="text-sm text-gray-600">{addon.description}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-lg font-semibold text-gray-900">
-                    {formatCurrency(addon.price_paise)}
-                  </div>
-                </div>
+                  id={addon.id}
+                  title={addon.name}
+                  description={addon.description || undefined}
+                  price={addon.price_paise}
+                  isSelected={true}
+                  isRequired={true}
+                  type="addon"
+                  onToggle={() => {}} // No-op for review page
+                />
               ))}
             </div>
-          </div>
+          </CategorySection>
         )}
 
         {/* Selected Service Bundles */}
         {bundles.filter(bundle => selectedBundles.has(bundle.id)).length > 0 && (
-          <div ref={bundlesRef} className="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Selected Service Bundles</h3>
-            <div className="space-y-4">
+          <CategorySection
+            title="Service Bundles"
+            emoji="🎁"
+            description="Selected comprehensive packages with multiple services"
+            count={bundles.filter(bundle => selectedBundles.has(bundle.id)).length}
+            isCollapsible={false}
+          >
+            <div className="space-y-3">
               {bundles.filter(bundle => selectedBundles.has(bundle.id)).map((bundle) => (
-                <div
+                <SelectionCard
                   key={bundle.id}
-                  className="rounded-lg border border-green-200 bg-green-50"
-                >
-                  <div className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-start">
-                        <div className="w-5 h-5 rounded border-2 border-green-500 bg-green-500 mr-3 flex items-center justify-center mt-1">
-                          <Check className="h-3 w-3 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-lg text-gray-900">{bundle.name}</h4>
-                          {bundle.description && (
-                            <p className="text-sm text-gray-600 mt-1">{bundle.description}</p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-xl font-bold text-gray-900">
-                        {formatCurrency(bundle.price_paise)}
-                      </div>
-                    </div>
-                    <div className="ml-8">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {bundle.bullet_points.map((point, index) => (
-                          <div key={index} className="flex items-start gap-2">
-                            <span className="text-green-600 mt-1 text-sm">Ã¢â‚¬Â¢</span>
-                            <span className="text-sm text-gray-700">{point}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  id={bundle.id}
+                  title={bundle.name}
+                  description={bundle.description || undefined}
+                  price={bundle.price_paise}
+                  isSelected={true}
+                  isRequired={true}
+                  type="bundle"
+                  bulletPoints={bundle.bullet_points}
+                  onToggle={() => {}} // No-op for review page
+                />
               ))}
             </div>
-          </div>
+          </CategorySection>
         )}
 
         {/* La Carte Services Section */}
-        <div ref={summaryRef} className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">La Carte Services (Fixed charges - Free Services included below)</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-4 rounded-lg border-2 border-blue-500 bg-blue-50 cursor-not-allowed">
-              <div className="flex items-center">
-                <div className="w-5 h-5 rounded border-2 border-blue-500 bg-blue-500 mr-3 flex items-center justify-center">
-                  <Check className="h-3 w-3 text-white" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">Complete Service Package</p>
-                  <p className="text-sm text-blue-600">Always Included - Fixed Price</p>
-                  <p className="text-xs text-gray-600 mt-1">
-                    General service & inspection report, full cleaning, tyre puncture check, 
-                    air filling, oiling & lubrication, fitting & repair labour, 
-                    tightening of loose parts, and pick & drop or full service at your doorstep
-                  </p>
-                  {laCarte && (
-                    <div className="mt-2 text-xs">
-                      {laCarte.real_price_paise > laCarte.current_price_paise ? (
-                        <div className="flex items-center gap-2">
-                          <span className="line-through text-gray-400">{formatCurrency(laCarte.real_price_paise)}</span>
-                          <span className="text-green-700 font-semibold">{formatCurrency(laCarte.current_price_paise)}</span>
-                          <span className="px-1.5 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded">
-                            -{Math.round(((laCarte.real_price_paise - laCarte.current_price_paise) / Math.max(laCarte.real_price_paise, 1)) * 100)}%
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-gray-500">{formatCurrency(laCarte.current_price_paise)}</span>
-                      )}
-                      {laCarte.real_price_paise > laCarte.current_price_paise && laCarte.discount_note && (
-                        <div className="text-[11px] text-gray-500 mt-0.5">{laCarte.discount_note}</div>
-                      )}
-                    </div>
-                  )}
-                </div>
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                <Check className="w-5 h-5 text-white" />
               </div>
-              <div className="text-right">
-                {laCarte && laCarte.real_price_paise > laCarte.current_price_paise ? (
-                  <div className="flex items-center gap-2 justify-end">
-                    <span className="line-through text-gray-400 text-sm">{formatCurrency(laCarte.real_price_paise)}</span>
-                    <span className="text-lg font-semibold text-green-700">{formatCurrency(laCarte.current_price_paise)}</span>
-                    <span className="px-1.5 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded text-xs">
-                      -{Math.round(((laCarte.real_price_paise - laCarte.current_price_paise) / Math.max(laCarte.real_price_paise, 1)) * 100)}%
+              <div className="flex-1">
+                <h3 className="text-base font-medium text-green-900 mb-1">
+                  La Carte Service (Fixed Charges - Free Services Included below)
+                </h3>
+              </div>
+            </div>
+            <div className="text-right flex-shrink-0">
+              {laCarte && laCarte.real_price_paise > laCarte.current_price_paise ? (
+                <div className="space-y-1">
+                  <div className="text-lg font-bold text-green-700">
+                    {formatCurrency(laCarte.current_price_paise)}
+                  </div>
+                  <div className="flex items-center justify-end gap-2">
+                    <span className="text-xs text-gray-500 font-medium">MRP</span>
+                    <span className="text-sm text-gray-500 line-through">
+                      {formatCurrency(laCarte.real_price_paise)}
                     </span>
                   </div>
-                ) : (
-                  <span className="text-lg font-semibold text-gray-900">{formatCurrency(9900)}</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Total Summary */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
-          <div className="space-y-2">
-            <div className="flex justify-between text-gray-700">
-              <span>Selected Services ({selectedItems.size} items)</span>
-              <span>{formatCurrency(totals.subtotal)}</span>
-            </div>
-            {selectedAddons.size > 0 && (
-              <div className="flex justify-between text-gray-700">
-                <span>Add-on Services ({selectedAddons.size} items)</span>
-                <span>{formatCurrency(totals.addonsTotal)}</span>
-              </div>
-            )}
-            {selectedBundles.size > 0 && (
-              <div className="flex justify-between text-gray-700">
-                <span>Service Bundles ({selectedBundles.size} items)</span>
-                <span>{formatCurrency(totals.bundlesTotal)}</span>
-              </div>
-            )}
-            <div className="flex justify-between text-gray-700">
-              <div className="flex flex-col">
-                <span>La Carte Services (Fixed)</span>
-                {laCarte && (
-                  <div className="text-xs mt-1">
-                    {laCarte.real_price_paise > laCarte.current_price_paise ? (
-                      <div className="flex items-center gap-2">
-                        <span className="line-through text-gray-400">{formatCurrency(laCarte.real_price_paise)}</span>
-                        <span className="text-green-600 font-semibold">{formatCurrency(laCarte.current_price_paise)}</span>
-                        <span className="px-1.5 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded">
-                          -{Math.round(((laCarte.real_price_paise - laCarte.current_price_paise) / Math.max(laCarte.real_price_paise, 1)) * 100)}%
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-gray-500">{formatCurrency(laCarte.current_price_paise)}</span>
-                    )}
-                    {laCarte.real_price_paise > laCarte.current_price_paise && laCarte.discount_note && (
-                      <div className="text-[11px] text-gray-500 mt-0.5">{laCarte.discount_note}</div>
-                    )}
+                  <div className="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold inline-block">
+                    {Math.round(((laCarte.real_price_paise - laCarte.current_price_paise) / Math.max(laCarte.real_price_paise, 1)) * 100)}% off
                   </div>
-                )}
-              </div>
-              <span>{formatCurrency(9900)}</span>
+                </div>
+              ) : (
+                <span className="text-lg font-bold text-green-700">
+                  {formatCurrency(9900)}
+                </span>
+              )}
             </div>
-            <div className="border-t pt-2 mt-2">
-              <div className="flex justify-between text-lg font-bold text-gray-900">
-                <span>Total Amount (GST Inclusive)</span>
-                <span>{formatCurrency(totals.total)}</span>
+          </div>
+
+          <div className="bg-white/60 rounded-lg p-3">
+            <div className="grid grid-cols-1 gap-2">
+              <div className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                <span className="text-sm text-green-800">General service & inspection report</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                <span className="text-sm text-green-800">Full cleaning & wash</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                <span className="text-sm text-green-800">Tyre puncture check & air filling</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                <span className="text-sm text-green-800">Pick & drop or doorstep service</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          <Button
-            onClick={handleConfirmOrder}
-            disabled={false}
-            className="w-full h-12 text-lg bg-green-600 hover:bg-green-700"
-            size="lg"
-          >
-            <Check className="h-5 w-5 mr-2" />
-            Confirm Complete Order - {formatCurrency(totals.total)}
-          </Button>
+        {/* Additional spacing for bottom action bar and support button */}
+        <div className="h-32" />
+      </div>
 
+      {/* Sticky Action Bar */}
+      <StickyActionBar
+        totalPaise={totals.total}
+        primaryLabel="Confirm Order"
+        onPrimary={handleConfirmOrder}
+        disabled={false}
+        selectedCount={selectedItems.size + selectedAddons.size + selectedBundles.size}
+        summaryText="Review and confirm your complete order"
+        isExpandable={true}
+        servicesBreakdown={{
+          selectedServicesPaise: totals.subtotal + totals.addonsTotal + totals.bundlesTotal,
+          selectedCount: selectedItems.size + selectedAddons.size + selectedBundles.size,
+          laCartePaise: laCarte?.current_price_paise || 9900,
+          laCarteDisplay: laCarte ? formatLaCarteDisplay(laCarte) : undefined
+        }}
+      />
+
+      {/* Support Button Below */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 p-3">
+        <div className="max-w-md mx-auto">
           <Button
             onClick={handleNeedHelp}
             variant="outline"
-            className="w-full h-10"
+            className="w-full h-10 text-sm border-gray-300 text-gray-600"
           >
             <MessageCircle className="h-4 w-4 mr-2" />
             Need Help?
           </Button>
         </div>
+      </div>
 
-        {/* Confirmation Modal */}
-        {showConfirmation && (
+      {/* Confirmation Modal */}
+      {showConfirmation && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -1005,26 +1117,9 @@ export default function PublicOrderPage() {
                 </Button>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className="text-center mt-8 text-sm text-gray-500">
-          <p>Step 3 of 3: Review and confirm your complete order</p>
-          <p className="mt-1">Questions? Contact us on WhatsApp</p>
         </div>
-        <div className="h-24" />
-      </div>
-      <StickyActionBar
-        totalPaise={totals.total}
-        onPrimary={handleConfirmOrder}
-        disabled={isConfirming}
-        rightSlot={<button className="hidden sm:inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-[12px] text-gray-700" onClick={handleNeedHelp}><MessageCircle className="h-3.5 w-3.5"/> Help</button>}
-        primaryLabel={isConfirming ? 'Confirming...' : `Confirm ${formatCurrency(totals.total)}`}
-      />
+      )}
 
-      {/* Bottom Tab Bar for quick jumps */}
-      <AppBottomNav active={activeTab} onChange={scrollToSection} />
     </div>
   )
 }

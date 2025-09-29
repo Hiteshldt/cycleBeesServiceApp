@@ -18,7 +18,7 @@ type OrderData = {
   items: RequestItem[]
 }
 
-export default function AddonsSelectionPage() {
+export default function BundlesSelectionPage() {
   const params = useParams()
   const router = useRouter()
   const slug = params.slug as string
@@ -33,14 +33,21 @@ export default function AddonsSelectionPage() {
   const [selectedBundles, setSelectedBundles] = useState<Set<string>>(new Set())
   const [laCarte, setLaCarte] = useState<LaCarteSettings | null>(null)
 
-  const loadSelectedItems = () => {
-    // Load selected items from session storage
+  const loadSelections = () => {
+    // Load selected items and addons from session storage
     const savedItems = sessionStorage.getItem(`selectedItems_${slug}`)
+    const savedAddons = sessionStorage.getItem(`selectedAddons_${slug}`)
+
     if (savedItems) {
       setSelectedItems(new Set(JSON.parse(savedItems)))
     } else {
       // If no saved items, redirect back to services page
       router.replace(`/o/${slug}/services`)
+      return
+    }
+
+    if (savedAddons) {
+      setSelectedAddons(new Set(JSON.parse(savedAddons)))
     }
   }
 
@@ -101,11 +108,11 @@ export default function AddonsSelectionPage() {
       fetchOrderData()
       fetchAddons()
       fetchBundles()
-      loadSelectedItems()
+      loadSelections()
     }
   }, [slug])
 
-  // Load La Carte settings for visual display (no change to totals)
+  // Load La Carte settings for visual display
   useEffect(() => {
     async function loadLaCarte() {
       try {
@@ -117,16 +124,6 @@ export default function AddonsSelectionPage() {
     }
     loadLaCarte()
   }, [])
-
-  const toggleAddonSelection = (addonId: string) => {
-    const newSelected = new Set(selectedAddons)
-    if (newSelected.has(addonId)) {
-      newSelected.delete(addonId)
-    } else {
-      newSelected.add(addonId)
-    }
-    setSelectedAddons(newSelected)
-  }
 
   const toggleBundleSelection = (bundleId: string) => {
     // Allow only one bundle selection at a time
@@ -160,14 +157,8 @@ export default function AddonsSelectionPage() {
     return { servicesTotal, addonsTotal, bundlesTotal, laCarteCharge, grandTotal }
   }
 
-  const handleBackToServices = () => {
+  const handleBackToAddons = () => {
     router.back()
-  }
-
-  const handleContinueToBundles = () => {
-    // Store selected addons for the bundles page
-    sessionStorage.setItem(`selectedAddons_${slug}`, JSON.stringify(Array.from(selectedAddons)))
-    router.push(`/o/${slug}/bundles`)
   }
 
   const handleProceedToConfirm = () => {
@@ -191,12 +182,12 @@ export default function AddonsSelectionPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center animate-fade-in">
           <div className="relative">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-200 mx-auto"></div>
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-purple-600 border-r-pink-500 mx-auto absolute top-0 left-1/2 transform -translate-x-1/2"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200 mx-auto"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-indigo-600 border-r-purple-500 mx-auto absolute top-0 left-1/2 transform -translate-x-1/2"></div>
           </div>
           <div className="mt-6 space-y-2">
-            <p className="text-lg font-medium text-gray-800 animate-pulse">Loading Add-on Services...</p>
-            <p className="text-sm text-gray-600">✨ Preparing premium options for your bike</p>
+            <p className="text-lg font-medium text-gray-800 animate-pulse">Loading Service Bundles...</p>
+            <p className="text-sm text-gray-600">🎁 Preparing premium packages for you</p>
           </div>
           {/* Loading skeleton cards */}
           <div className="mt-8 space-y-3 max-w-md mx-auto">
@@ -259,12 +250,12 @@ export default function AddonsSelectionPage() {
     <div className="min-h-screen bg-gray-50 pb-32">
       {/* Enhanced App Header */}
       <AppHeader
-        title="Choose Add-on Services"
+        title="Choose Service Bundles"
         subtitle={`${request.bike_name} • ${request.customer_name}`}
-        progress={50}
-        step="Step 2 of 4"
+        progress={90}
+        step="Step 3 of 4"
         showBack={true}
-        onBack={handleBackToServices}
+        onBack={handleBackToAddons}
         onHelp={handleNeedHelp}
         rightSlot={
           <Badge className="bg-white/90 text-gray-700 text-xs font-medium border">
@@ -275,52 +266,38 @@ export default function AddonsSelectionPage() {
 
       <div className="max-w-md mx-auto px-4 py-4 space-y-4">
 
-        {/* Add-ons Section */}
-        {addons.length > 0 ? (
-          <div className="animate-fade-in-up">
-            <CategorySection
-              title="Add-on Services"
-              emoji="✨"
-              description="Optional premium services to enhance your bike care"
-              count={addons.length}
-            >
-              <div className="space-y-3">
-                {addons.map((addon, index) => (
-                  <div
-                    key={addon.id}
-                    className="animate-fade-in-up"
-                    style={{
-                      animationDelay: `${index * 100}ms`
-                    }}
-                  >
-                    <SelectionCard
-                      id={addon.id}
-                      title={addon.name}
-                      description={addon.description || undefined}
-                      price={addon.price_paise}
-                      isSelected={selectedAddons.has(addon.id)}
-                      type="addon"
-                      onToggle={toggleAddonSelection}
-                    />
-                  </div>
-                ))}
-              </div>
-            </CategorySection>
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center animate-fade-in">
-            <div className="animate-bounce mb-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full mx-auto flex items-center justify-center">
-                <span className="text-2xl">📦</span>
-              </div>
+        {/* Service Bundles Section */}
+        {bundles.length > 0 ? (
+          <CategorySection
+            title="Service Bundles"
+            emoji="🎁"
+            description="Comprehensive packages with multiple services at discounted rates"
+            count={bundles.length}
+          >
+            <div className="space-y-3">
+              {bundles.map((bundle) => (
+                <SelectionCard
+                  key={bundle.id}
+                  id={bundle.id}
+                  title={bundle.name}
+                  description={bundle.description || undefined}
+                  price={bundle.price_paise}
+                  isSelected={selectedBundles.has(bundle.id)}
+                  type="bundle"
+                  bulletPoints={bundle.bullet_points}
+                  onToggle={toggleBundleSelection}
+                />
+              ))}
             </div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">No Add-on Services Available</h2>
+          </CategorySection>
+        ) : (
+          <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">No Service Bundles Available</h2>
             <p className="text-gray-600 mb-4">
-              All add-on services are currently unavailable. You can proceed with your selected services.
+              All service bundles are currently unavailable. You can proceed with your selected services and add-ons.
             </p>
           </div>
         )}
-
 
         {/* Additional spacing for bottom action bar and support button */}
         <div className="h-32" />
@@ -329,14 +306,14 @@ export default function AddonsSelectionPage() {
       {/* Sticky Action Bar */}
       <StickyActionBar
         totalPaise={totals.grandTotal}
-        primaryLabel="Continue to Bundles"
-        onPrimary={handleContinueToBundles}
-        selectedCount={selectedAddons.size}
-        summaryText="Next: Choose service bundles for extra savings"
+        primaryLabel="Continue to Summary"
+        onPrimary={handleProceedToConfirm}
+        selectedCount={selectedItems.size + selectedAddons.size + selectedBundles.size}
+        summaryText="Next: Review and confirm your complete order"
         isExpandable={true}
         servicesBreakdown={{
-          selectedServicesPaise: totals.servicesTotal + totals.addonsTotal,
-          selectedCount: selectedItems.size + selectedAddons.size,
+          selectedServicesPaise: totals.servicesTotal + totals.addonsTotal + totals.bundlesTotal,
+          selectedCount: selectedItems.size + selectedAddons.size + selectedBundles.size,
           laCartePaise: totals.laCarteCharge,
           laCarteDisplay: laCarte ? formatLaCarteDisplay(laCarte) : undefined
         }}
