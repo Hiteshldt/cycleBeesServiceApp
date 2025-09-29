@@ -1033,88 +1033,154 @@ export default function PublicOrderPage() {
         </div>
       </div>
 
-      {/* Confirmation Modal */}
+      {/* Enhanced Confirmation Modal */}
       {showConfirmation && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Confirm Your Order
-              </h3>
-              
-              <div className="mb-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex justify-between text-sm">
-                    <span>Selected Services ({selectedItems.size} items)</span>
-                    <span>{formatCurrency(totals.subtotal)}</span>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
+              {/* Header with Gradient */}
+              <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 px-6 py-6 relative overflow-hidden">
+                {/* Decorative Elements */}
+                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-6 translate-x-6"></div>
+                <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-3 -translate-x-3"></div>
+
+                <div className="relative z-10 flex items-center gap-3">
+                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                    <span className="text-2xl">🎯</span>
                   </div>
-                  {selectedAddons.size > 0 && (
-                    <div className="flex justify-between text-sm mt-1">
-                      <span>Add-on Services ({selectedAddons.size} items)</span>
-                      <span>{formatCurrency(totals.addonsTotal)}</span>
-                    </div>
-                  )}
-                  {selectedBundles.size > 0 && (
-                    <div className="flex justify-between text-sm mt-1">
-                      <span>Service Bundles ({selectedBundles.size} items)</span>
-                      <span>{formatCurrency(totals.bundlesTotal)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-sm mt-1">
-                    <div className="flex flex-col">
-                      <span>La Carte Services</span>
-                      {laCarte && (
-                        <div className="text-[11px] mt-0.5">
-                          {laCarte.real_price_paise > laCarte.current_price_paise ? (
-                            <div className="flex items-center gap-1.5">
-                              <span className="line-through text-gray-400">{formatCurrency(laCarte.real_price_paise)}</span>
-                              <span className="text-green-600 font-semibold">{formatCurrency(laCarte.current_price_paise)}</span>
-                              <span className="px-1 bg-green-50 text-green-700 border border-green-200 rounded">
-                                -{Math.round(((laCarte.real_price_paise - laCarte.current_price_paise) / Math.max(laCarte.real_price_paise, 1)) * 100)}%
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-gray-500">{formatCurrency(laCarte.current_price_paise)}</span>
-                          )}
-                          {laCarte.real_price_paise > laCarte.current_price_paise && laCarte.discount_note && (
-                            <div className="text-[10px] text-gray-500 mt-0.5">{laCarte.discount_note}</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <span>{formatCurrency(9900)}</span>
-                  </div>
-                  <div className="border-t pt-2 mt-2">
-                    <div className="flex justify-between font-bold">
-                      <span>Total Amount</span>
-                      <span>{formatCurrency(totals.total)}</span>
-                    </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-1">
+                      Confirm Your Order
+                    </h3>
+                    <p className="text-white/80 text-sm">
+                      Review and finalize your service package
+                    </p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                <p className="text-sm text-yellow-800">
-                  <strong>Important:</strong> This is the rough amount that you will be charged upon the successful completion of your service. 
-                  Please note that the final charges may vary slightly due to additional services or parts that may be required during the service.
-                </p>
-              </div>
+              <div className="p-6">
+                {/* Order Summary with Enhanced Design */}
+                <div className="mb-6">
+                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-white/80 backdrop-blur-sm px-4 py-3 border-b border-gray-200">
+                      <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                        Order Summary
+                      </h4>
+                    </div>
 
-              <div className="flex gap-3">
-                <Button
-                  onClick={() => setShowConfirmation(false)}
-                  variant="outline"
-                  className="flex-1"
-                  disabled={isConfirming}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleFinalConfirmation}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
-                  disabled={isConfirming}
-                >
-                  {isConfirming ? 'Confirming...' : 'Confirm Order'}
-                </Button>
+                    {/* Line Items */}
+                    <div className="p-4 space-y-3">
+                      {/* Services */}
+                      <div className="flex justify-between items-center py-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                          <span className="text-sm text-gray-700">Selected Services ({selectedItems.size} items)</span>
+                        </div>
+                        <span className="font-semibold text-gray-900">{formatCurrency(totals.subtotal)}</span>
+                      </div>
+
+                      {/* Add-ons */}
+                      {selectedAddons.size > 0 && (
+                        <div className="flex justify-between items-center py-2">
+                          <div className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+                            <span className="text-sm text-gray-700">Add-on Services ({selectedAddons.size} items)</span>
+                          </div>
+                          <span className="font-semibold text-gray-900">{formatCurrency(totals.addonsTotal)}</span>
+                        </div>
+                      )}
+
+                      {/* Bundles */}
+                      {selectedBundles.size > 0 && (
+                        <div className="flex justify-between items-center py-2">
+                          <div className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
+                            <span className="text-sm text-gray-700">Service Bundles ({selectedBundles.size} items)</span>
+                          </div>
+                          <span className="font-semibold text-gray-900">{formatCurrency(totals.bundlesTotal)}</span>
+                        </div>
+                      )}
+
+                      {/* La Carte */}
+                      <div className="flex justify-between items-start py-2">
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                            <span className="text-sm text-gray-700">La Carte Services</span>
+                          </div>
+                          {laCarte && laCarte.real_price_paise > laCarte.current_price_paise && (
+                            <div className="ml-3.5 mt-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs line-through text-gray-400">{formatCurrency(laCarte.real_price_paise)}</span>
+                                <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-semibold">
+                                  -{Math.round(((laCarte.real_price_paise - laCarte.current_price_paise) / Math.max(laCarte.real_price_paise, 1)) * 100)}% OFF
+                                </span>
+                              </div>
+                              {laCarte.discount_note && (
+                                <div className="text-xs text-green-600 mt-0.5">{laCarte.discount_note}</div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <span className="font-semibold text-gray-900">{formatCurrency(9900)}</span>
+                      </div>
+
+                      {/* Total */}
+                      <div className="border-t border-gray-300 pt-3 mt-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-base font-bold text-gray-900">Total Amount</span>
+                          <span className="text-xl font-bold text-green-600">{formatCurrency(totals.total)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Enhanced Important Notice */}
+                <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-l-4 border-amber-400 rounded-lg p-4 mb-6">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-amber-600 text-sm">⚠️</span>
+                    </div>
+                    <div>
+                      <h5 className="font-semibold text-amber-800 mb-1">Important Notice</h5>
+                      <p className="text-sm text-amber-700 leading-relaxed">
+                        This is the estimated amount for your service. Final charges may vary slightly due to additional services or parts required during the service.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Enhanced Action Buttons */}
+                <div className="flex gap-3">
+                  <Button
+                    onClick={() => setShowConfirmation(false)}
+                    variant="outline"
+                    className="flex-1 h-12 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all duration-300"
+                    disabled={isConfirming}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleFinalConfirmation}
+                    className="flex-1 h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-200/50 transition-all duration-300 transform hover:scale-105"
+                    disabled={isConfirming}
+                  >
+                    {isConfirming ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        Confirming...
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span>✓</span>
+                        Confirm Order
+                      </div>
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
         </div>
