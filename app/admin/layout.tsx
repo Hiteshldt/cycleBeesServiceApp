@@ -16,6 +16,7 @@ export default function AdminLayout({
   const [isLoading, setIsLoading] = useState(true)
   const [loadingNewRequest, setLoadingNewRequest] = useState(false)
   const [loadingSettings, setLoadingSettings] = useState(false)
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
 
@@ -60,10 +61,16 @@ export default function AdminLayout({
     router.push('/admin/settings')
   }
 
+  const handleAnalyticsClick = () => {
+    setLoadingAnalytics(true)
+    router.push('/admin/analytics')
+  }
+
   // Reset loading states when pathname changes
   useEffect(() => {
     setLoadingNewRequest(false)
     setLoadingSettings(false)
+    setLoadingAnalytics(false)
   }, [pathname])
 
   // Show enhanced loading state
@@ -156,6 +163,29 @@ export default function AdminLayout({
                   </>
                 )}
                 <div className="absolute inset-0 bg-white rounded-xl opacity-0 group-hover:opacity-10 transition-opacity"></div>
+              </button>
+              <button
+                onClick={handleAnalyticsClick}
+                disabled={loadingAnalytics}
+                className="group relative text-gray-600 hover:text-purple-600 px-2 sm:px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-purple-50 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {loadingAnalytics ? (
+                  <>
+                    <div className="relative z-10 flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-t-purple-600 border-r-purple-500 absolute top-0 left-0"></div>
+                      </div>
+                      <span className="hidden sm:inline">Loading...</span>
+                      <span className="sm:hidden">⏳</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <span className="relative z-10 hidden sm:inline">Analytics</span>
+                    <span className="relative z-10 sm:hidden">📊</span>
+                  </>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl opacity-0 group-hover:opacity-10 transition-opacity"></div>
               </button>
               <button
                 onClick={handleSettingsClick}
