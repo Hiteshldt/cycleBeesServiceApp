@@ -49,73 +49,71 @@ export function BillPreview({ billData, title }: BillPreviewProps) {
   const replacementItems = billData.items.filter(item => item.section === 'replacement')
   
   return (
-    <div className="p-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-sm min-h-full">
-      {/* Enhanced Header */}
-      <div className="text-center mb-6">
-        <div className="flex items-center justify-center mb-4">
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl blur opacity-20"></div>
-            <div className="relative bg-gradient-to-r from-blue-500 to-indigo-600 p-3 rounded-2xl">
-              <div className="text-2xl filter brightness-0 invert">🚴‍♂️</div>
-            </div>
+    <div className="p-4 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-sm min-h-full">
+      {/* Compact Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="relative flex-shrink-0">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl blur opacity-20"></div>
+          <div className="relative bg-gradient-to-r from-blue-500 to-indigo-600 p-2 rounded-xl">
+            <div className="text-lg filter brightness-0 invert">🚴‍♂️</div>
           </div>
         </div>
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+        <div className="flex-1">
+          <h1 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
             CycleBees
           </h1>
-          <h2 className="text-lg font-semibold text-gray-700">
+          <h2 className="text-sm font-semibold text-gray-700">
             {title || (billData.status === 'confirmed' ? 'Confirmed Service Order' : 'Service Estimate')}
           </h2>
-          <p className="text-sm text-gray-600">🔧 Professional Doorstep Bike Service</p>
+          <p className="text-xs text-gray-600">🔧 Professional Doorstep Bike Service</p>
         </div>
       </div>
 
-      {/* Enhanced Order Information */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 p-5 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20">
-        <div className="space-y-1">
-          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">🆔 Order ID</div>
-          <div className="font-bold text-blue-600">{billData.order_id}</div>
+      {/* Compact Order Information */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4 p-3 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/20">
+        <div className="space-y-0.5">
+          <div className="text-xs font-medium text-gray-500">🆔 Order ID</div>
+          <div className="font-bold text-blue-600 text-sm">{billData.order_id}</div>
         </div>
-        <div className="space-y-1">
-          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-            📅 {billData.status === 'confirmed' ? 'Confirmed Date' : 'Sent Date'}
+        <div className="space-y-0.5">
+          <div className="text-xs font-medium text-gray-500">
+            📅 {billData.status === 'confirmed' ? 'Confirmed' : 'Sent'}
           </div>
-          <div className="font-semibold text-gray-800">
+          <div className="font-semibold text-gray-800 text-sm">
             {formatDate(billData.confirmed_at || billData.created_at)}
           </div>
         </div>
-        <div className="space-y-1">
-          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">👤 Customer</div>
-          <div className="font-semibold text-gray-800">{billData.customer_name}</div>
+        <div className="space-y-0.5">
+          <div className="text-xs font-medium text-gray-500">👤 Customer</div>
+          <div className="font-semibold text-gray-800 text-sm">{billData.customer_name}</div>
         </div>
-        <div className="space-y-1">
-          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">🚴‍♂️ Bike Model</div>
-          <div className="font-semibold text-gray-800">{billData.bike_name}</div>
+        <div className="space-y-0.5">
+          <div className="text-xs font-medium text-gray-500">🚴‍♂️ Bike</div>
+          <div className="font-semibold text-gray-800 text-sm">{billData.bike_name}</div>
         </div>
       </div>
 
-      {/* Enhanced Services Table */}
-      <div className="mb-6">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 overflow-hidden">
-          <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 px-5 py-4 border-b border-gray-200/50">
-            <h3 className="font-bold text-gray-900 text-base">📋 Service Details</h3>
+      {/* Compact Services Table */}
+      <div className="mb-4">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 overflow-hidden">
+          <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 px-3 py-2 border-b border-gray-200/50">
+            <h3 className="font-bold text-gray-900 text-sm">📋 Service Details</h3>
           </div>
 
           <div className="divide-y divide-gray-200/50">
             {/* Repair Items */}
             {repairItems.length > 0 && (
               <>
-                <div className="px-5 py-3 bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-400">
-                  <div className="font-semibold text-red-800 text-sm flex items-center gap-2">
+                <div className="px-3 py-2 bg-gradient-to-r from-red-50 to-orange-50 border-l-3 border-red-400">
+                  <div className="font-semibold text-red-800 text-xs flex items-center gap-1">
                     <span>🔧</span>
                     <span>REPAIR SERVICES</span>
                   </div>
                 </div>
                 {repairItems.map((item, index) => (
-                  <div key={index} className="px-5 py-3 flex justify-between items-center hover:bg-blue-50/30 transition-colors">
-                    <span className="flex-1 text-gray-800">{item.label}</span>
-                    <span className="font-bold text-green-700 bg-green-50 px-3 py-1 rounded-full text-sm">
+                  <div key={index} className="px-3 py-2 flex justify-between items-center hover:bg-blue-50/30 transition-colors">
+                    <span className="flex-1 text-gray-800 text-sm">{item.label}</span>
+                    <span className="font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full text-xs">
                       {formatCurrency(item.price_paise)}
                     </span>
                   </div>
@@ -126,16 +124,16 @@ export function BillPreview({ billData, title }: BillPreviewProps) {
             {/* Replacement Items */}
             {replacementItems.length > 0 && (
               <>
-                <div className="px-5 py-3 bg-gradient-to-r from-purple-50 to-indigo-50 border-l-4 border-purple-400">
-                  <div className="font-semibold text-purple-800 text-sm flex items-center gap-2">
+                <div className="px-3 py-2 bg-gradient-to-r from-purple-50 to-indigo-50 border-l-3 border-purple-400">
+                  <div className="font-semibold text-purple-800 text-xs flex items-center gap-1">
                     <span>⚙️</span>
                     <span>REPLACEMENT PARTS</span>
                   </div>
                 </div>
                 {replacementItems.map((item, index) => (
-                  <div key={index} className="px-5 py-3 flex justify-between items-center hover:bg-blue-50/30 transition-colors">
-                    <span className="flex-1 text-gray-800">{item.label}</span>
-                    <span className="font-bold text-green-700 bg-green-50 px-3 py-1 rounded-full text-sm">
+                  <div key={index} className="px-3 py-2 flex justify-between items-center hover:bg-blue-50/30 transition-colors">
+                    <span className="flex-1 text-gray-800 text-sm">{item.label}</span>
+                    <span className="font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full text-xs">
                       {formatCurrency(item.price_paise)}
                     </span>
                   </div>
@@ -146,22 +144,22 @@ export function BillPreview({ billData, title }: BillPreviewProps) {
             {/* Add-ons */}
             {billData.addons.length > 0 && (
               <>
-                <div className="px-5 py-3 bg-gradient-to-r from-yellow-50 to-amber-50 border-l-4 border-yellow-400">
-                  <div className="font-semibold text-yellow-800 text-sm flex items-center gap-2">
+                <div className="px-3 py-2 bg-gradient-to-r from-yellow-50 to-amber-50 border-l-3 border-yellow-400">
+                  <div className="font-semibold text-yellow-800 text-xs flex items-center gap-1">
                     <span>✨</span>
-                    <span>PREMIUM ADD-ON SERVICES</span>
+                    <span>ADD-ON SERVICES</span>
                   </div>
                 </div>
                 {billData.addons.map((addon, index) => (
-                  <div key={index} className="px-5 py-3 hover:bg-blue-50/30 transition-colors">
+                  <div key={index} className="px-3 py-2 hover:bg-blue-50/30 transition-colors">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <div className="font-medium text-gray-800">{addon.name}</div>
+                        <div className="font-medium text-gray-800 text-sm">{addon.name}</div>
                         {addon.description && (
-                          <div className="text-sm text-gray-600 mt-1">{addon.description}</div>
+                          <div className="text-xs text-gray-600 mt-0.5">{addon.description}</div>
                         )}
                       </div>
-                      <span className="font-bold text-green-700 bg-green-50 px-3 py-1 rounded-full text-sm ml-3">
+                      <span className="font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full text-xs ml-2">
                         {formatCurrency(addon.price_paise)}
                       </span>
                     </div>
@@ -173,22 +171,22 @@ export function BillPreview({ billData, title }: BillPreviewProps) {
             {/* Service Bundles */}
             {billData.bundles && billData.bundles.length > 0 && (
               <>
-                <div className="px-5 py-3 bg-gradient-to-r from-indigo-50 to-purple-50 border-l-4 border-indigo-400">
-                  <div className="font-semibold text-indigo-800 text-sm flex items-center gap-2">
+                <div className="px-3 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 border-l-3 border-indigo-400">
+                  <div className="font-semibold text-indigo-800 text-xs flex items-center gap-1">
                     <span>📦</span>
                     <span>SERVICE BUNDLES</span>
                   </div>
                 </div>
                 {billData.bundles.map((bundle, index) => (
-                  <div key={index} className="px-5 py-3 hover:bg-blue-50/30 transition-colors">
+                  <div key={index} className="px-3 py-2 hover:bg-blue-50/30 transition-colors">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <div className="font-medium text-gray-800">{bundle.name}</div>
+                        <div className="font-medium text-gray-800 text-sm">{bundle.name}</div>
                         {bundle.description && (
-                          <div className="text-sm text-gray-600 mt-1">{bundle.description}</div>
+                          <div className="text-xs text-gray-600 mt-0.5">{bundle.description}</div>
                         )}
                       </div>
-                      <span className="font-bold text-green-700 bg-green-50 px-3 py-1 rounded-full text-sm ml-3">
+                      <span className="font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full text-xs ml-2">
                         {formatCurrency(bundle.price_paise)}
                       </span>
                     </div>
@@ -198,18 +196,18 @@ export function BillPreview({ billData, title }: BillPreviewProps) {
             )}
 
             {/* La Carte Service */}
-            <div className="px-5 py-4 bg-gradient-to-r from-emerald-50 to-green-50 border-l-4 border-emerald-400">
-              <div className="flex justify-between items-start">
+            <div className="px-3 py-2 bg-gradient-to-r from-emerald-50 to-green-50 border-l-3 border-emerald-400">
+              <div className="flex justify-between items-center">
                 <div className="flex-1">
-                  <div className="font-semibold text-emerald-800 flex items-center gap-2 mb-2">
+                  <div className="font-semibold text-emerald-800 flex items-center gap-1 text-sm">
                     <span>📦</span>
-                    <span>La Carte Service Package</span>
+                    <span>La Carte Package</span>
                   </div>
-                  <div className="text-sm text-emerald-700">
-                    Includes doorstep pickup & delivery, basic tools & equipment
+                  <div className="text-xs text-emerald-700">
+                    Doorstep pickup & delivery, tools & equipment
                   </div>
                 </div>
-                <span className="font-bold text-green-700 bg-green-100 px-3 py-1 rounded-full text-sm ml-3">
+                <span className="font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full text-xs ml-2">
                   {formatCurrency(billData.lacarte_paise)}
                 </span>
               </div>
@@ -218,45 +216,45 @@ export function BillPreview({ billData, title }: BillPreviewProps) {
         </div>
       </div>
 
-      {/* Enhanced Total Summary */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-5 mb-6">
-        <div className="space-y-3">
-          <div className="flex justify-between items-center text-gray-700">
-            <span className="flex items-center gap-2">
+      {/* Compact Total Summary */}
+      <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-3 mb-4">
+        <div className="space-y-2">
+          <div className="flex justify-between items-center text-gray-700 text-sm">
+            <span className="flex items-center gap-1">
               <span>🔧</span>
-              <span>Services Subtotal:</span>
+              <span>Services:</span>
             </span>
             <span className="font-semibold">{formatCurrency(billData.subtotal_paise)}</span>
           </div>
           {billData.addons_paise > 0 && (
-            <div className="flex justify-between items-center text-gray-700">
-              <span className="flex items-center gap-2">
+            <div className="flex justify-between items-center text-gray-700 text-sm">
+              <span className="flex items-center gap-1">
                 <span>✨</span>
-                <span>Add-on Services:</span>
+                <span>Add-ons:</span>
               </span>
               <span className="font-semibold">{formatCurrency(billData.addons_paise)}</span>
             </div>
           )}
           {billData.bundles_paise && billData.bundles_paise > 0 && (
-            <div className="flex justify-between items-center text-gray-700">
-              <span className="flex items-center gap-2">
+            <div className="flex justify-between items-center text-gray-700 text-sm">
+              <span className="flex items-center gap-1">
                 <span>📦</span>
-                <span>Service Bundles:</span>
+                <span>Bundles:</span>
               </span>
               <span className="font-semibold">{formatCurrency(billData.bundles_paise)}</span>
             </div>
           )}
-          <div className="flex justify-between items-center text-gray-700">
-            <span className="flex items-center gap-2">
+          <div className="flex justify-between items-center text-gray-700 text-sm">
+            <span className="flex items-center gap-1">
               <span>📦</span>
-              <span>La Carte Package:</span>
+              <span>La Carte:</span>
             </span>
             <span className="font-semibold">{formatCurrency(billData.lacarte_paise)}</span>
           </div>
-          <div className="flex justify-between items-center text-xl font-bold border-t-2 border-gradient-to-r from-blue-200 to-indigo-200 pt-4 text-gray-900">
-            <span className="flex items-center gap-2">
+          <div className="flex justify-between items-center text-lg font-bold border-t border-gray-200 pt-2 text-gray-900">
+            <span className="flex items-center gap-1">
               <span>💰</span>
-              <span>Total Amount:</span>
+              <span>Total:</span>
             </span>
             <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
               {formatCurrency(billData.total_paise)}
@@ -265,22 +263,19 @@ export function BillPreview({ billData, title }: BillPreviewProps) {
         </div>
       </div>
 
-      {/* Enhanced Footer Note */}
-      <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-5 text-center">
-        <div className="space-y-3">
-          <div className="flex items-center justify-center mb-3">
-            <div className="w-8 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"></div>
-          </div>
-          <div className="text-sm text-gray-700">
+      {/* Compact Footer Note */}
+      <div className="bg-white/60 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-3 text-center">
+        <div className="space-y-2">
+          <div className="text-xs text-gray-700">
             <strong className="text-gray-900">📋 Note:</strong> {billData.status === 'confirmed'
-              ? 'This is a confirmed service order. Our technician will contact you to schedule the service.'
-              : 'This is a service estimate. Final pricing may vary based on actual work required.'}
+              ? 'Confirmed order - technician will contact you.'
+              : 'Estimate only - final pricing may vary.'}
           </div>
-          <div className="pt-3 border-t border-gray-200/50">
-            <div className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <div className="pt-2 border-t border-gray-200/50">
+            <div className="text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               🚴‍♂️ CycleBees
             </div>
-            <div className="text-sm text-gray-600 mt-1">
+            <div className="text-xs text-gray-600">
               Your bike, our care! | www.cyclebees.in
             </div>
           </div>

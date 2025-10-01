@@ -2,12 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { createRequestSchema } from '@/lib/validations'
 
-// GET /api/requests - List all requests with optional status filter
+// GET /api/requests - List requests with pagination and optional status filter
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
+    const search = searchParams.get('search')
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '30')
 
+    // Validate pagination parameters
+    const validPage = Math.max(1, page)
+    const validLimit = Math.min(Math.max(1, limit), 100) // Max 100 per page
+    const offset = (validPage - 1) * validLimit
+
+    // Build the main query for requests
     let query = supabase
       .from('requests')
       .select(`
@@ -26,6 +35,25 @@ export async function GET(request: NextRequest) {
       query = query.eq('status', status)
     }
 
+    // Add search functionality - search across multiple fields efficiently
+    if (search && search.trim()) {
+      const searchTerm = search.trim()
+
+      // Use Supabase's textSearch for efficient full-text search, or use OR conditions for partial matches
+      // Search in: order_id, customer_name, bike_name, phone_digits_intl, short_slug
+      query = query.or(
+        `order_id.ilike.%${searchTerm}%,` +
+        `customer_name.ilike.%${searchTerm}%,` +
+        `bike_name.ilike.%${searchTerm}%,` +
+        `phone_digits_intl.ilike.%${searchTerm}%,` +
+        `short_slug.ilike.%${searchTerm}%`
+      )
+    }
+
+    // Apply pagination
+    query = query.range(offset, offset + validLimit - 1)
+
+    // Get the paginated results
     const { data: requests, error } = await query
 
     if (error) {
@@ -36,13 +64,63 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Get total count for pagination info
+    let countQuery = supabase
+      .from('requests')
+      .select('*', { count: 'exact', head: true })
+
+    // Apply same status filter for count
+    if (status && status !== 'all') {
+      countQuery = countQuery.eq('status', status)
+    }
+
+    // Apply same search filter for count
+    if (search && search.trim()) {
+      const searchTerm = search.trim()
+      countQuery = countQuery.or(
+        `order_id.ilike.%${searchTerm}%,` +
+        `customer_name.ilike.%${searchTerm}%,` +
+        `bike_name.ilike.%${searchTerm}%,` +
+        `phone_digits_intl.ilike.%${searchTerm}%,` +
+        `short_slug.ilike.%${searchTerm}%`
+      )
+    }
+
+    const { count, error: countError } = await countQuery
+
+    if (countError) {
+      console.error('Count error:', countError)
+      return NextResponse.json(
+        { error: 'Failed to get total count' },
+        { status: 500 }
+      )
+    }
+
     // Add total_items count for each request
     const requestsWithCount = requests?.map(request => ({
       ...request,
       total_items: request.request_items?.length || 0,
     }))
 
-    return NextResponse.json(requestsWithCount || [])
+    // Calculate pagination metadata
+    const totalRequests = count || 0
+    const totalPages = Math.ceil(totalRequests / validLimit)
+    const hasNextPage = validPage < totalPages
+    const hasPrevPage = validPage > 1
+
+    return NextResponse.json({
+      requests: requestsWithCount || [],
+      pagination: {
+        currentPage: validPage,
+        totalPages,
+        totalRequests,
+        limit: validLimit,
+        hasNextPage,
+        hasPrevPage,
+        startIndex: offset + 1,
+        endIndex: Math.min(offset + validLimit, totalRequests)
+      }
+    })
   } catch (error) {
     console.error('API error:', error)
     return NextResponse.json(

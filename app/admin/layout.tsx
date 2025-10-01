@@ -14,6 +14,8 @@ export default function AdminLayout({
 }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [loadingNewRequest, setLoadingNewRequest] = useState(false)
+  const [loadingSettings, setLoadingSettings] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
 
@@ -48,6 +50,22 @@ export default function AdminLayout({
     router.push('/admin/login')
   }
 
+  const handleNewRequestClick = () => {
+    setLoadingNewRequest(true)
+    router.push('/admin/new')
+  }
+
+  const handleSettingsClick = () => {
+    setLoadingSettings(true)
+    router.push('/admin/settings')
+  }
+
+  // Reset loading states when pathname changes
+  useEffect(() => {
+    setLoadingNewRequest(false)
+    setLoadingSettings(false)
+  }, [pathname])
+
   // Show enhanced loading state
   if (isLoading) {
     return (
@@ -79,7 +97,7 @@ export default function AdminLayout({
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Enhanced Header */}
       <header className="bg-white/80 backdrop-blur-lg shadow-lg border-b border-white/20 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
           <div className="flex justify-between items-center py-4">
             {/* Enhanced Logo Section */}
             <div className="flex items-center">
@@ -116,22 +134,52 @@ export default function AdminLayout({
                 <span className="relative z-10 sm:hidden">📋</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl opacity-0 group-hover:opacity-10 transition-opacity"></div>
               </Link>
-              <Link
-                href="/admin/new"
-                className="group relative bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2 sm:px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+              <button
+                onClick={handleNewRequestClick}
+                disabled={loadingNewRequest}
+                className="group relative bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2 sm:px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <span className="relative z-10 hidden sm:inline">+ New Request</span>
-                <span className="relative z-10 sm:hidden">➕</span>
+                {loadingNewRequest ? (
+                  <>
+                    <div className="relative z-10 flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-t-white border-r-blue-200 absolute top-0 left-0"></div>
+                      </div>
+                      <span className="hidden sm:inline">Loading...</span>
+                      <span className="sm:hidden">⏳</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <span className="relative z-10 hidden sm:inline">+ New Request</span>
+                    <span className="relative z-10 sm:hidden">➕</span>
+                  </>
+                )}
                 <div className="absolute inset-0 bg-white rounded-xl opacity-0 group-hover:opacity-10 transition-opacity"></div>
-              </Link>
-              <Link
-                href="/admin/settings"
-                className="group relative text-gray-600 hover:text-blue-600 px-2 sm:px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-blue-50"
+              </button>
+              <button
+                onClick={handleSettingsClick}
+                disabled={loadingSettings}
+                className="group relative text-gray-600 hover:text-blue-600 px-2 sm:px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-blue-50 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <span className="relative z-10 hidden sm:inline">Settings</span>
-                <span className="relative z-10 sm:hidden">⚙️</span>
+                {loadingSettings ? (
+                  <>
+                    <div className="relative z-10 flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-t-blue-600 border-r-indigo-500 absolute top-0 left-0"></div>
+                      </div>
+                      <span className="hidden sm:inline">Loading...</span>
+                      <span className="sm:hidden">⏳</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <span className="relative z-10 hidden sm:inline">Settings</span>
+                    <span className="relative z-10 sm:hidden">⚙️</span>
+                  </>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl opacity-0 group-hover:opacity-10 transition-opacity"></div>
-              </Link>
+              </button>
               <div className="w-px h-6 bg-gray-300 mx-2 hidden sm:block"></div>
               <Button
                 onClick={handleLogout}
@@ -148,10 +196,8 @@ export default function AdminLayout({
       </header>
 
       {/* Optimized Main Content */}
-      <main className="max-w-7xl mx-auto py-4 sm:px-6 lg:px-8">
-        <div className="px-4 sm:px-0">
-          {children}
-        </div>
+      <main className="max-w-7xl mx-auto py-4 px-2 sm:px-4 lg:px-6">
+        {children}
       </main>
     </div>
   )

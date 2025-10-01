@@ -111,10 +111,10 @@ export default function NewRequestPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div>
       {/* Compact Header */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 mb-3">
-        <div className="px-4 py-3">
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 mb-2">
+        <div className="px-3 py-2">
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl blur opacity-20"></div>
@@ -134,16 +134,16 @@ export default function NewRequestPage() {
 
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20">
 
-        <form onSubmit={handleSubmit(onSubmit)} className="p-4 space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-3 space-y-3">
           {/* Compact Basic Information Section */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="flex items-center gap-2 pb-1 border-b border-gray-200/50">
-              <div className="w-5 h-5 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+              <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
                 <span className="text-white text-xs font-bold">1</span>
               </div>
-              <h3 className="text-base font-semibold text-gray-900">Basic Information</h3>
+              <h3 className="text-sm font-semibold text-gray-900">Basic Information</h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="order_id" className="text-gray-700 text-sm font-medium flex items-center gap-1">
                   <span>🆔</span>
@@ -227,177 +227,180 @@ export default function NewRequestPage() {
             </div>
           </div>
 
-          {/* Compact Repair Items Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 pb-1 border-b border-gray-200/50">
-              <div className="w-5 h-5 bg-gradient-to-r from-red-500 to-orange-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">2</span>
-              </div>
-              <h3 className="text-base font-semibold text-gray-900">Repair Services</h3>
-              <div className="ml-auto">
-                <Button
-                  type="button"
-                  onClick={() => appendRepair({ label: '', price_paise: 0, is_suggested: true })}
-                  size="sm"
-                  className="bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white h-8 px-3 text-xs rounded-xl shadow-lg transition-all duration-200"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Service
-                </Button>
-              </div>
-            </div>
-
+          {/* Side-by-side Repair Services and Replacement Parts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {/* Repair Services Section */}
             <div className="space-y-2">
-              {repairFields.map((field, index) => (
-                <div key={field.id} className="bg-red-50/50 border border-red-200/50 rounded-xl p-3">
-                  <div className="flex gap-2 items-end">
-                    <div className="flex-1 space-y-1">
-                      <Label htmlFor={`repair_${index}_label`} className="text-gray-700 text-sm font-medium flex items-center gap-1">
-                        <span>🔧</span>
-                        Service Name
-                      </Label>
-                      <Input
-                        id={`repair_${index}_label`}
-                        {...register(`repair_items.${index}.label` as const)}
-                        placeholder="e.g., Oil Change, Brake Adjustment"
-                        className="border-gray-300 h-9 text-sm rounded-xl focus:border-red-500 focus:ring-1 focus:ring-red-200 transition-all"
-                      />
+              <div className="flex items-center gap-2 pb-1 border-b border-gray-200/50">
+                <div className="w-4 h-4 bg-gradient-to-r from-red-500 to-orange-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">2</span>
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900">Repair Services</h3>
+                <div className="ml-auto">
+                  <Button
+                    type="button"
+                    onClick={() => appendRepair({ label: '', price_paise: 0, is_suggested: true })}
+                    size="sm"
+                    className="bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white h-7 px-2 text-xs rounded-xl shadow-lg transition-all duration-200"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Add Service
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                {repairFields.map((field, index) => (
+                  <div key={field.id} className="bg-red-50/50 border border-red-200/50 rounded-xl p-2">
+                    <div className="flex gap-2 items-end">
+                      <div className="flex-1 space-y-1">
+                        <Label htmlFor={`repair_${index}_label`} className="text-gray-700 text-sm font-medium flex items-center gap-1">
+                          <span>🔧</span>
+                          Service Name
+                        </Label>
+                        <Input
+                          id={`repair_${index}_label`}
+                          {...register(`repair_items.${index}.label` as const)}
+                          placeholder="e.g., Oil Change, Brake Adjustment"
+                          className="border-gray-300 h-9 text-sm rounded-xl focus:border-red-500 focus:ring-1 focus:ring-red-200 transition-all"
+                        />
+                      </div>
+                      <div className="w-20 space-y-1">
+                        <Label htmlFor={`repair_${index}_price`} className="text-gray-700 text-sm font-medium flex items-center gap-1">
+                          <span>💰</span>
+                          ₹
+                        </Label>
+                        <Controller
+                          name={`repair_items.${index}.price_paise` as const}
+                          control={control}
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              type="number"
+                              step="1"
+                              placeholder="0"
+                              className="border-gray-300 h-9 text-sm rounded-xl focus:border-red-500 focus:ring-1 focus:ring-red-200 transition-all"
+                              onChange={(e) => {
+                                const rupees = parseInt(e.target.value) || 0
+                                field.onChange(rupeesToPaise(rupees))
+                              }}
+                              value={field.value ? Math.round(field.value / 100).toString() : ''}
+                            />
+                          )}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => removeRepair(index)}
+                        size="icon"
+                        variant="outline"
+                        className="!h-9 !w-9 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 rounded-xl transition-all duration-200"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <div className="w-24 space-y-1">
-                      <Label htmlFor={`repair_${index}_price`} className="text-gray-700 text-sm font-medium flex items-center gap-1">
-                        <span>💰</span>
-                        ₹
-                      </Label>
-                      <Controller
-                        name={`repair_items.${index}.price_paise` as const}
-                        control={control}
-                        render={({ field }) => (
-                          <Input
-                            {...field}
-                            type="number"
-                            step="1"
-                            placeholder="0"
-                            className="border-gray-300 h-9 text-sm rounded-xl focus:border-red-500 focus:ring-1 focus:ring-red-200 transition-all"
-                            onChange={(e) => {
-                              const rupees = parseInt(e.target.value) || 0
-                              field.onChange(rupeesToPaise(rupees))
-                            }}
-                            value={field.value ? Math.round(field.value / 100).toString() : ''}
-                          />
-                        )}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      onClick={() => removeRepair(index)}
-                      size="icon"
-                      variant="outline"
-                      className="!h-9 !w-9 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 rounded-xl transition-all duration-200"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
                   </div>
-                </div>
-              ))}
-              {repairFields.length === 0 && (
-                <div className="text-center py-4 text-gray-500 bg-gray-50/50 rounded-xl border-2 border-dashed border-gray-300">
-                  <div className="text-xl mb-1">🔧</div>
-                  <p className="text-sm">No repair services added yet</p>
-                  <p className="text-xs">Click "Add Service" to get started</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Compact Replacement Items Section */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 pb-1 border-b border-gray-200/50">
-              <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">3</span>
-              </div>
-              <h3 className="text-base font-semibold text-gray-900">Replacement Parts</h3>
-              <div className="ml-auto">
-                <Button
-                  type="button"
-                  onClick={() => appendReplacement({ label: '', price_paise: 0, is_suggested: true })}
-                  size="sm"
-                  className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white h-8 px-3 text-xs rounded-xl shadow-lg transition-all duration-200"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Part
-                </Button>
+                ))}
+                {repairFields.length === 0 && (
+                  <div className="text-center py-4 text-gray-500 bg-gray-50/50 rounded-xl border-2 border-dashed border-gray-300">
+                    <div className="text-xl mb-1">🔧</div>
+                    <p className="text-sm">No repair services added yet</p>
+                    <p className="text-xs">Click "Add Service" to get started</p>
+                  </div>
+                )}
               </div>
             </div>
 
+            {/* Replacement Parts Section */}
             <div className="space-y-2">
-              {replacementFields.map((field, index) => (
-                <div key={field.id} className="bg-purple-50/50 border border-purple-200/50 rounded-xl p-3">
-                  <div className="flex gap-2 items-end">
-                    <div className="flex-1 space-y-1">
-                      <Label htmlFor={`replacement_${index}_label`} className="text-gray-700 text-sm font-medium flex items-center gap-1">
-                        <span>⚙️</span>
-                        Part Name
-                      </Label>
-                      <Input
-                        id={`replacement_${index}_label`}
-                        {...register(`replacement_items.${index}.label` as const)}
-                        placeholder="e.g., Brake Pads, Chain, Tire"
-                        className="border-gray-300 h-9 text-sm rounded-xl focus:border-purple-500 focus:ring-1 focus:ring-purple-200 transition-all"
-                      />
+              <div className="flex items-center gap-2 pb-1 border-b border-gray-200/50">
+                <div className="w-4 h-4 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">3</span>
+                </div>
+                <h3 className="text-sm font-semibold text-gray-900">Replacement Parts</h3>
+                <div className="ml-auto">
+                  <Button
+                    type="button"
+                    onClick={() => appendReplacement({ label: '', price_paise: 0, is_suggested: true })}
+                    size="sm"
+                    className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white h-7 px-2 text-xs rounded-xl shadow-lg transition-all duration-200"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Add Part
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                {replacementFields.map((field, index) => (
+                  <div key={field.id} className="bg-purple-50/50 border border-purple-200/50 rounded-xl p-2">
+                    <div className="flex gap-2 items-end">
+                      <div className="flex-1 space-y-1">
+                        <Label htmlFor={`replacement_${index}_label`} className="text-gray-700 text-sm font-medium flex items-center gap-1">
+                          <span>⚙️</span>
+                          Part Name
+                        </Label>
+                        <Input
+                          id={`replacement_${index}_label`}
+                          {...register(`replacement_items.${index}.label` as const)}
+                          placeholder="e.g., Brake Pads, Chain, Tire"
+                          className="border-gray-300 h-9 text-sm rounded-xl focus:border-purple-500 focus:ring-1 focus:ring-purple-200 transition-all"
+                        />
+                      </div>
+                      <div className="w-20 space-y-1">
+                        <Label htmlFor={`replacement_${index}_price`} className="text-gray-700 text-sm font-medium flex items-center gap-1">
+                          <span>💰</span>
+                          ₹
+                        </Label>
+                        <Controller
+                          name={`replacement_items.${index}.price_paise` as const}
+                          control={control}
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              type="number"
+                              step="1"
+                              placeholder="0"
+                              className="border-gray-300 h-9 text-sm rounded-xl focus:border-purple-500 focus:ring-1 focus:ring-purple-200 transition-all"
+                              onChange={(e) => {
+                                const rupees = parseInt(e.target.value) || 0
+                                field.onChange(rupeesToPaise(rupees))
+                              }}
+                              value={field.value ? Math.round(field.value / 100).toString() : ''}
+                            />
+                          )}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => removeReplacement(index)}
+                        size="icon"
+                        variant="outline"
+                        className="!h-9 !w-9 border-purple-300 text-purple-600 hover:bg-purple-50 hover:border-purple-400 rounded-xl transition-all duration-200"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <div className="w-24 space-y-1">
-                      <Label htmlFor={`replacement_${index}_price`} className="text-gray-700 text-sm font-medium flex items-center gap-1">
-                        <span>💰</span>
-                        ₹
-                      </Label>
-                      <Controller
-                        name={`replacement_items.${index}.price_paise` as const}
-                        control={control}
-                        render={({ field }) => (
-                          <Input
-                            {...field}
-                            type="number"
-                            step="1"
-                            placeholder="0"
-                            className="border-gray-300 h-9 text-sm rounded-xl focus:border-purple-500 focus:ring-1 focus:ring-purple-200 transition-all"
-                            onChange={(e) => {
-                              const rupees = parseInt(e.target.value) || 0
-                              field.onChange(rupeesToPaise(rupees))
-                            }}
-                            value={field.value ? Math.round(field.value / 100).toString() : ''}
-                          />
-                        )}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      onClick={() => removeReplacement(index)}
-                      size="icon"
-                      variant="outline"
-                      className="!h-9 !w-9 border-purple-300 text-purple-600 hover:bg-purple-50 hover:border-purple-400 rounded-xl transition-all duration-200"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
                   </div>
-                </div>
-              ))}
-              {replacementFields.length === 0 && (
-                <div className="text-center py-4 text-gray-500 bg-gray-50/50 rounded-xl border-2 border-dashed border-gray-300">
-                  <div className="text-xl mb-1">⚙️</div>
-                  <p className="text-sm">No replacement parts added yet</p>
-                  <p className="text-xs">Click "Add Part" to get started</p>
-                </div>
-              )}
+                ))}
+                {replacementFields.length === 0 && (
+                  <div className="text-center py-4 text-gray-500 bg-gray-50/50 rounded-xl border-2 border-dashed border-gray-300">
+                    <div className="text-xl mb-1">⚙️</div>
+                    <p className="text-sm">No replacement parts added yet</p>
+                    <p className="text-xs">Click "Add Part" to get started</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Compact Total Summary */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4">
-            <div className="flex items-center gap-2 mb-2 pb-1 border-b border-gray-200/50">
-              <div className="w-5 h-5 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 pb-1 border-b border-gray-200/50">
+              <div className="w-4 h-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
                 <span className="text-white text-xs font-bold">4</span>
               </div>
-              <h3 className="text-base font-semibold text-gray-900">Order Summary</h3>
+              <h3 className="text-sm font-semibold text-gray-900">Order Summary</h3>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between items-center text-gray-700 text-sm">
@@ -427,13 +430,13 @@ export default function NewRequestPage() {
           </div>
 
           {/* Compact Action Buttons */}
-          <div className="flex gap-3 pt-3">
+          <div className="flex gap-2 pt-2 border-t border-gray-200/50">
             <Button
               type="submit"
               disabled={isLoading}
-              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-10 px-4 text-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-8 px-3 text-xs rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
             >
-              <Save className="h-4 w-4" />
+              <Save className="h-3 w-3" />
               {isLoading ? 'Saving...' : 'Save Request'}
             </Button>
 
@@ -441,9 +444,9 @@ export default function NewRequestPage() {
               <Button
                 type="button"
                 onClick={handleSendWhatsApp}
-                className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white h-10 px-4 text-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white h-8 px-3 text-xs rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-3 w-3" />
                 Send on WhatsApp
               </Button>
             )}

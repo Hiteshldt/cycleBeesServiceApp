@@ -2,24 +2,52 @@
 
 import React, { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Pagination } from '@/components/ui/pagination'
 import { Request } from '@/lib/supabase'
 import { formatCurrency, formatDate, getStatusColor, openWhatsApp, generateWhatsAppMessage } from '@/lib/utils'
 import { NotificationManager, StatusChangeDetector } from '@/lib/notification'
 import { Modal } from '@/components/ui/modal'
 import { BillPreview } from '@/components/BillPreview'
 import { getLaCartePrice } from '@/lib/lacarte'
-import { Eye, Send, Copy, Filter, Download, Bell, BellOff, Trash2, FileText, X } from 'lucide-react'
+import { Eye, Send, Copy, Filter, Download, Bell, BellOff, Trash2, FileText, X, Search } from 'lucide-react'
 
 type RequestWithTotal = Request & {
   total_items: number
 }
 
+interface PaginationInfo {
+  currentPage: number
+  totalPages: number
+  totalRequests: number
+  limit: number
+  hasNextPage: boolean
+  hasPrevPage: boolean
+  startIndex: number
+  endIndex: number
+}
+
 export default function AdminDashboard() {
   const [requests, setRequests] = useState<RequestWithTotal[]>([])
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    currentPage: 1,
+    totalPages: 1,
+    totalRequests: 0,
+    limit: 30,
+    hasNextPage: false,
+    hasPrevPage: false,
+    startIndex: 1,
+    endIndex: 0
+  })
   const [isLoading, setIsLoading] = useState(true)
+  const [isPaginationLoading, setIsPaginationLoading] = useState(false)
+  const [loadingRequestId, setLoadingRequestId] = useState<string | null>(null)
+  const [loadingNewRequest, setLoadingNewRequest] = useState(false)
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [searchQuery, setSearchQuery] = useState<string>('')
+  const [searchLoading, setSearchLoading] = useState(false)
   const [notificationsEnabled, setNotificationsEnabled] = useState(true)
   const [previewModal, setPreviewModal] = useState<{
     isOpen: boolean
@@ -30,42 +58,85 @@ export default function AdminDashboard() {
     billData: null,
     title: ''
   })
-  
+
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
   // Notification system refs
   const notificationManager = useRef<NotificationManager | null>(null)
   const statusDetector = useRef<StatusChangeDetector | null>(null)
   const pollingInterval = useRef<NodeJS.Timeout | null>(null)
 
-  const fetchRequests = async () => {
+  const fetchRequests = async (page?: number, showPaginationLoading = false) => {
     try {
-      const url = statusFilter === 'all' 
-        ? '/api/requests'
-        : `/api/requests?status=${statusFilter}`
-      
+      // Set loading states
+      if (showPaginationLoading) {
+        setIsPaginationLoading(true)
+      }
+
+      // Get current page from URL params or use provided page
+      const currentPage = page || parseInt(searchParams.get('page') || '1')
+
+      // Build URL with pagination, status filter, and search
+      const params = new URLSearchParams()
+      params.set('page', currentPage.toString())
+      params.set('limit', '30')
+      if (statusFilter && statusFilter !== 'all') {
+        params.set('status', statusFilter)
+      }
+      if (searchQuery && searchQuery.trim()) {
+        params.set('search', searchQuery.trim())
+      }
+
+      const url = `/api/requests?${params.toString()}`
+
       console.log('Fetching requests from:', url)
       const response = await fetch(url)
       console.log('Response status:', response.status)
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      
+
       const data = await response.json()
       console.log('Received data:', data)
-      setRequests(data)
-      
+
+      // Update state with paginated results
+      setRequests(data.requests || [])
+      setPagination(data.pagination || {
+        currentPage: 1,
+        totalPages: 1,
+        totalRequests: 0,
+        limit: 30,
+        hasNextPage: false,
+        hasPrevPage: false,
+        startIndex: 1,
+        endIndex: 0
+      })
+
       // Initialize status detector with current statuses to prevent false notifications
-      if (statusDetector.current && data.length > 0) {
+      if (statusDetector.current && data.requests && data.requests.length > 0) {
         statusDetector.current.initializeStatuses(
-          data.map((req: RequestWithTotal) => ({ id: req.id, status: req.status }))
+          data.requests.map((req: RequestWithTotal) => ({ id: req.id, status: req.status }))
         )
       }
     } catch (error) {
       console.error('Error fetching requests:', error)
       // Set empty array on error so the UI still renders
       setRequests([])
+      setPagination({
+        currentPage: 1,
+        totalPages: 1,
+        totalRequests: 0,
+        limit: 30,
+        hasNextPage: false,
+        hasPrevPage: false,
+        startIndex: 1,
+        endIndex: 0
+      })
     } finally {
       setIsLoading(false)
+      setIsPaginationLoading(false)
     }
   }
 
@@ -84,10 +155,65 @@ export default function AdminDashboard() {
     }
   }, [])
 
-  // Fetch requests and check for changes
+  // Initialize status filter and search query from URL params
+  useEffect(() => {
+    const statusFromUrl = searchParams.get('status') || 'all'
+    const searchFromUrl = searchParams.get('search') || ''
+    setStatusFilter(statusFromUrl)
+    setSearchQuery(searchFromUrl)
+  }, [searchParams])
+
+  // Fetch requests when status filter, search query, or page changes
   useEffect(() => {
     fetchRequests()
-  }, [statusFilter])
+  }, [statusFilter, searchQuery, searchParams])
+
+  // Reset loading states when component unmounts or pathname changes
+  useEffect(() => {
+    return () => {
+      setLoadingNewRequest(false)
+    }
+  }, [])
+
+  // Handle page changes
+  const handlePageChange = (newPage: number) => {
+    // Show loading immediately for better UX
+    setIsPaginationLoading(true)
+
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('page', newPage.toString())
+    if (statusFilter && statusFilter !== 'all') {
+      params.set('status', statusFilter)
+    } else {
+      params.delete('status')
+    }
+    router.push(`/admin?${params.toString()}`)
+  }
+
+  // Handle status filter changes
+  const handleStatusFilterChange = (newStatus: string) => {
+    setStatusFilter(newStatus)
+    const params = new URLSearchParams()
+    params.set('page', '1') // Reset to first page when changing filter
+    if (newStatus && newStatus !== 'all') {
+      params.set('status', newStatus)
+    }
+    router.push(`/admin?${params.toString()}`)
+  }
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value)
+    // Reset to page 1 when searching
+    const params = new URLSearchParams()
+    params.set('page', '1')
+    if (statusFilter && statusFilter !== 'all') {
+      params.set('status', statusFilter)
+    }
+    if (value && value.trim()) {
+      params.set('search', value.trim())
+    }
+    router.push(`/admin?${params.toString()}`)
+  }
 
   // Start/stop polling based on notifications enabled state
   useEffect(() => {
@@ -120,16 +246,18 @@ export default function AdminDashboard() {
     if (!statusDetector.current) return
 
     try {
-      const response = await fetch('/api/requests')
+      // Get all requests (unpaginated) for notification checking
+      const response = await fetch('/api/requests?limit=1000') // Get more requests for comprehensive notification checking
       if (response.ok) {
         const data = await response.json()
+        const requests = data.requests || data // Handle both old and new API response formats
         const hasChanges = statusDetector.current.checkForChanges(
-          data.map((req: RequestWithTotal) => ({ id: req.id, status: req.status }))
+          requests.map((req: RequestWithTotal) => ({ id: req.id, status: req.status }))
         )
-        
-        // If there are changes, refresh the main requests list
+
+        // If there are changes, refresh the main requests list with current pagination
         if (hasChanges) {
-          setRequests(data)
+          fetchRequests() // This will use current page and filters
         }
       }
     } catch (error) {
@@ -179,9 +307,14 @@ export default function AdminDashboard() {
     alert('Order link copied to clipboard!')
   }
 
+  const handleNewRequestClick = () => {
+    setLoadingNewRequest(true)
+    router.push('/admin/new')
+  }
 
   const handlePreviewRequest = async (request: Request) => {
     try {
+      setLoadingRequestId(request.id)
       let billData: any
 
       if (request.status === 'confirmed') {
@@ -283,6 +416,8 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('Error loading preview data:', error)
       alert('Failed to load preview data. Please try again.')
+    } finally {
+      setLoadingRequestId(null)
     }
   }
 
@@ -421,34 +556,118 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-64 flex justify-center items-center">
-        <div className="text-center">
-          <div className="relative mb-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 mx-auto"></div>
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-blue-600 border-r-indigo-500 mx-auto absolute top-0 left-1/2 transform -translate-x-1/2"></div>
-          </div>
-          <div className="space-y-1">
-            <p className="text-lg font-medium text-gray-800 animate-pulse">Loading Requests...</p>
-            <p className="text-xs text-gray-600">📋 Fetching service requests data</p>
-          </div>
-          {/* Compact Loading skeleton cards */}
-          <div className="mt-6 space-y-2 max-w-4xl mx-auto">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white/60 rounded-xl p-3 shadow-sm animate-pulse border border-white/20">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-                  <div className="flex-1 space-y-1">
-                    <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-2 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                  <div className="flex space-x-1">
-                    <div className="h-6 w-6 bg-gray-200 rounded"></div>
-                    <div className="h-6 w-6 bg-gray-200 rounded"></div>
-                    <div className="h-6 w-6 bg-gray-200 rounded"></div>
-                  </div>
-                </div>
+      <div className="space-y-4">
+        {/* Loading Header - Mimics the actual header */}
+        <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gray-200 rounded-xl animate-pulse"></div>
+              <div className="space-y-1">
+                <div className="h-5 bg-gray-200 rounded w-32 animate-pulse"></div>
+                <div className="h-3 bg-gray-200 rounded w-24 animate-pulse"></div>
               </div>
-            ))}
+            </div>
+            <div className="flex gap-2">
+              <div className="h-6 w-6 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-6 w-6 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+
+          {/* Filter buttons skeleton */}
+          <div className="flex items-center justify-between mt-4">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-3 bg-gray-200 rounded w-20 animate-pulse"></div>
+            </div>
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-7 w-16 bg-gray-200 rounded animate-pulse"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Loading Table - Mimics the actual table structure */}
+        <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 overflow-hidden">
+          <div className="p-4 text-center">
+            <div className="relative mb-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 mx-auto"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-blue-600 border-r-indigo-500 mx-auto absolute top-0 left-1/2 transform -translate-x-1/2"></div>
+            </div>
+            <div className="space-y-1 mb-6">
+              <p className="text-lg font-medium text-gray-800 animate-pulse">Loading Requests...</p>
+              <p className="text-xs text-gray-600">📋 Fetching service requests data</p>
+            </div>
+          </div>
+
+          {/* Table skeleton */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="bg-gray-50/50">
+                <tr>
+                  {/* Table header skeleton */}
+                  {['Order ID', 'Customer', 'Bike', 'Items', 'Amount', 'Status', 'Created', 'Actions'].map((header, i) => (
+                    <th key={i} className="px-3 py-2 text-left">
+                      <div className="h-3 bg-gray-200 rounded animate-pulse" style={{ width: `${60 + (i * 10)}px` }}></div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200/50">
+                {/* Table rows skeleton */}
+                {Array.from({ length: 8 }).map((_, rowIndex) => (
+                  <tr key={rowIndex} className="animate-pulse">
+                    <td className="px-3 py-2">
+                      <div className="h-4 bg-gray-200 rounded w-20"></div>
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="space-y-1">
+                        <div className="h-3 bg-gray-200 rounded w-24"></div>
+                        <div className="h-2 bg-gray-200 rounded w-20"></div>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="h-3 bg-gray-200 rounded w-32"></div>
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="h-3 bg-gray-200 rounded w-8"></div>
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="h-4 bg-gray-200 rounded w-16"></div>
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="h-5 bg-gray-200 rounded-full w-16"></div>
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="h-3 bg-gray-200 rounded w-12"></div>
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex gap-1">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="h-8 w-8 bg-gray-200 rounded"></div>
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination skeleton */}
+          <div className="border-t border-gray-200/50 p-4">
+            <div className="flex items-center justify-between">
+              <div className="h-3 bg-gray-200 rounded w-40 animate-pulse"></div>
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="h-8 w-8 bg-gray-200 rounded animate-pulse"></div>
+                  ))}
+                </div>
+                <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -494,40 +713,84 @@ export default function AdminDashboard() {
                 </>
               )}
             </Button>
-            <Link href="/admin/new">
-              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto h-8 px-3 text-xs">
-                <span className="mr-1">+</span>
-                <span className="hidden sm:inline">Create New Request</span>
-                <span className="sm:hidden">New Request</span>
-              </Button>
-            </Link>
+            <Button
+              onClick={handleNewRequestClick}
+              disabled={loadingNewRequest}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto h-8 px-3 text-xs disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {loadingNewRequest ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 mr-1">
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-t-white border-r-blue-200 absolute top-0 left-0"></div>
+                  </div>
+                  <span className="hidden sm:inline">Loading...</span>
+                  <span className="sm:hidden">⏳</span>
+                </>
+              ) : (
+                <>
+                  <span className="mr-1">+</span>
+                  <span className="hidden sm:inline">Create New Request</span>
+                  <span className="sm:hidden">New Request</span>
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* Optimized Status Filter */}
+      {/* Optimized Status Filter & Search */}
       <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-3">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-          <div className="flex items-center gap-1 text-gray-700">
-            <Filter className="h-4 w-4 text-blue-600" />
-            <span className="font-medium text-xs">Filter by status:</span>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+          {/* Status Filter Section */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="flex items-center gap-1 text-gray-700">
+              <Filter className="h-4 w-4 text-blue-600" />
+              <span className="font-medium text-xs">Filter by status:</span>
+            </div>
+            <div className="flex gap-1 flex-wrap">
+              {['all', 'sent', 'viewed', 'confirmed', 'cancelled'].map((status) => (
+                <Button
+                  key={status}
+                  onClick={() => handleStatusFilterChange(status)}
+                  variant={statusFilter === status ? 'default' : 'outline'}
+                  size="sm"
+                  className={`transition-all duration-200 text-xs h-7 px-2 ${
+                    statusFilter === status
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
+                      : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700'
+                  }`}
+                >
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Button>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-1 flex-wrap">
-            {['all', 'sent', 'viewed', 'confirmed', 'cancelled'].map((status) => (
-              <Button
-                key={status}
-                onClick={() => setStatusFilter(status)}
-                variant={statusFilter === status ? 'default' : 'outline'}
-                size="sm"
-                className={`transition-all duration-200 text-xs h-7 px-2 ${
-                  statusFilter === status
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
-                    : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700'
-                }`}
-              >
-                {status.charAt(0).toUpperCase() + status.slice(1)}
-              </Button>
-            ))}
+
+          {/* Search Section */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 text-gray-700">
+              <Search className="h-4 w-4 text-blue-600" />
+              <span className="font-medium text-xs">Search:</span>
+            </div>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Order ID, customer, phone, bike..."
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="w-64 sm:w-72 h-7 px-3 pr-8 text-xs bg-white/80 backdrop-blur-sm border border-gray-300 rounded-xl
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                         placeholder-gray-500 transition-all duration-200"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => handleSearchChange('')}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -539,15 +802,41 @@ export default function AdminDashboard() {
             <div className="text-4xl mb-3">📋</div>
             <p className="text-lg font-medium text-gray-700 mb-1">No requests found</p>
             <p className="text-gray-500 mb-4 text-sm">Get started by creating your first service request</p>
-            <Link href="/admin/new">
-              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg h-8 px-3 text-xs">
-                <span className="mr-1">+</span>
-                Create your first request
-              </Button>
-            </Link>
+            <Button
+              onClick={handleNewRequestClick}
+              disabled={loadingNewRequest}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg h-8 px-3 text-xs disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {loadingNewRequest ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 mr-1">
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-t-white border-r-blue-200 absolute top-0 left-0"></div>
+                  </div>
+                  <span>Loading...</span>
+                </>
+              ) : (
+                <>
+                  <span className="mr-1">+</span>
+                  Create your first request
+                </>
+              )}
+            </Button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
+            {/* Pagination Loading Overlay */}
+            {isPaginationLoading && (
+              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="relative mb-3">
+                    <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-200 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-4 border-t-blue-600 border-r-indigo-500 mx-auto absolute top-0 left-1/2 transform -translate-x-1/2"></div>
+                  </div>
+                  <p className="text-sm font-medium text-gray-700">Loading page...</p>
+                </div>
+              </div>
+            )}
+
             <table className="min-w-full divide-y divide-gray-200/50">
               <thead className="bg-gradient-to-r from-gray-50 to-blue-50/50">
                 <tr>
@@ -578,13 +867,29 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="bg-white/50 divide-y divide-gray-200/50">
-                {requests.map((request) => (
+                {requests.map((request) => {
+                  const isRequestLoading = loadingRequestId === request.id
+                  return (
                   <tr
                     key={request.id}
-                    className="hover:bg-blue-50/30 transition-colors duration-200 cursor-pointer"
-                    onClick={() => handlePreviewRequest(request)}
-                    title="Click to view request details"
+                    className={`hover:bg-blue-50/30 transition-colors duration-200 cursor-pointer relative ${
+                      isRequestLoading ? 'opacity-60' : ''
+                    }`}
+                    onClick={() => !isRequestLoading && handlePreviewRequest(request)}
+                    title={isRequestLoading ? "Loading request details..." : "Click to view request details"}
                   >
+                    {/* Loading overlay for individual request */}
+                    {isRequestLoading && (
+                      <td colSpan={8} className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center">
+                        <div className="flex items-center gap-2">
+                          <div className="relative">
+                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-200"></div>
+                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-blue-600 border-r-indigo-500 absolute top-0 left-0"></div>
+                          </div>
+                          <span className="text-sm font-medium text-gray-700">Loading details...</span>
+                        </div>
+                      </td>
+                    )}
                     <td className="px-3 py-2 whitespace-nowrap">
                       <div className="text-xs text-gray-900">
                         {formatDate(request.created_at)}
@@ -702,9 +1007,27 @@ export default function AdminDashboard() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!isLoading && pagination.totalRequests > 0 && (
+          <div className="mt-4 px-4 pb-4">
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.totalRequests}
+              itemsPerPage={pagination.limit}
+              startIndex={pagination.startIndex}
+              endIndex={pagination.endIndex}
+              onPageChange={handlePageChange}
+              disabled={isPaginationLoading}
+              className="border-t border-gray-200/50 pt-4"
+            />
           </div>
         )}
       </div>
