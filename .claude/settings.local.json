@@ -11,7 +11,8 @@
       "Bash(psql:*)",
       "Bash(npm run:*)",
       "Bash(rm:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

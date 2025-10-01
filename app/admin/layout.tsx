@@ -48,13 +48,19 @@ export default function AdminLayout({
     router.push('/admin/login')
   }
 
-  // Show loading state
+  // Show enhanced loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 mx-auto"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-blue-600 border-r-indigo-500 mx-auto absolute top-0 left-1/2 transform -translate-x-1/2"></div>
+          </div>
+          <div className="mt-6 space-y-2">
+            <p className="text-lg font-medium text-gray-800 animate-pulse">Loading Dashboard...</p>
+            <p className="text-sm text-gray-600">🚴‍♂️ Preparing your admin workspace</p>
+          </div>
         </div>
       </div>
     )
@@ -70,59 +76,80 @@ export default function AdminLayout({
     return null
   }
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Enhanced Header */}
+      <header className="bg-white/80 backdrop-blur-lg shadow-lg border-b border-white/20 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
+            {/* Enhanced Logo Section */}
             <div className="flex items-center">
-              <Image
-                src="/logo.png"
-                alt="CycleBees Logo"
-                width={36}
-                height={36}
-                className="object-contain mr-3"
-                priority
-              />
-              <h1 className="text-2xl font-bold text-gray-900">CycleBees</h1>
-              <span className="ml-2 text-sm text-gray-500">Admin Dashboard</span>
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl blur opacity-20"></div>
+                <div className="relative bg-gradient-to-r from-blue-500 to-indigo-600 p-2 rounded-xl">
+                  <Image
+                    src="/logo.png"
+                    alt="CycleBees Logo"
+                    width={32}
+                    height={32}
+                    className="object-contain filter brightness-0 invert"
+                    priority
+                  />
+                </div>
+              </div>
+              <div className="ml-4">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                  CycleBees
+                </h1>
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Admin Dashboard
+                </span>
+              </div>
             </div>
-            <nav className="flex items-center space-x-4">
+
+            {/* Enhanced Navigation with Responsive Design */}
+            <nav className="flex items-center space-x-2">
               <Link
                 href="/admin"
-                className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                className="group relative text-gray-600 hover:text-blue-600 px-2 sm:px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-blue-50"
               >
-                Requests
+                <span className="relative z-10 hidden sm:inline">Requests</span>
+                <span className="relative z-10 sm:hidden">📋</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl opacity-0 group-hover:opacity-10 transition-opacity"></div>
               </Link>
               <Link
                 href="/admin/new"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md text-sm font-medium"
+                className="group relative bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-2 sm:px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
               >
-                New Request
+                <span className="relative z-10 hidden sm:inline">+ New Request</span>
+                <span className="relative z-10 sm:hidden">➕</span>
+                <div className="absolute inset-0 bg-white rounded-xl opacity-0 group-hover:opacity-10 transition-opacity"></div>
               </Link>
               <Link
                 href="/admin/settings"
-                className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                className="group relative text-gray-600 hover:text-blue-600 px-2 sm:px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-blue-50"
               >
-                Settings
+                <span className="relative z-10 hidden sm:inline">Settings</span>
+                <span className="relative z-10 sm:hidden">⚙️</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl opacity-0 group-hover:opacity-10 transition-opacity"></div>
               </Link>
+              <div className="w-px h-6 bg-gray-300 mx-2 hidden sm:block"></div>
               <Button
                 onClick={handleLogout}
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-2"
+                className="group relative border-gray-300 text-gray-600 hover:text-red-600 hover:border-red-300 px-2 sm:px-4 py-2.5 rounded-xl transition-all duration-200 hover:bg-red-50"
               >
-                <LogOut className="h-4 w-4" />
-                Logout
+                <LogOut className="h-4 w-4 sm:mr-2 transition-transform group-hover:scale-110" />
+                <span className="hidden sm:inline">Logout</span>
               </Button>
             </nav>
           </div>
         </div>
       </header>
 
-      {/* Main content */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      {/* Optimized Main Content */}
+      <main className="max-w-7xl mx-auto py-4 sm:px-6 lg:px-8">
+        <div className="px-4 sm:px-0">
           {children}
         </div>
       </main>

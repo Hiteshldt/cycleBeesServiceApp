@@ -10,7 +10,7 @@ import { NotificationManager, StatusChangeDetector } from '@/lib/notification'
 import { Modal } from '@/components/ui/modal'
 import { BillPreview } from '@/components/BillPreview'
 import { getLaCartePrice } from '@/lib/lacarte'
-import { Eye, Send, Copy, Filter, Download, Bell, BellOff, Trash2, FileText } from 'lucide-react'
+import { Eye, Send, Copy, Filter, Download, Bell, BellOff, Trash2, FileText, X } from 'lucide-react'
 
 type RequestWithTotal = Request & {
   total_items: number
@@ -179,18 +179,6 @@ export default function AdminDashboard() {
     alert('Order link copied to clipboard!')
   }
 
-  const handleStatusChange = async (requestId: string, newStatus: string) => {
-    try {
-      await fetch(`/api/requests/${requestId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      })
-      fetchRequests() // Refresh the list
-    } catch (error) {
-      console.error('Error updating request status:', error)
-    }
-  }
 
   const handlePreviewRequest = async (request: Request) => {
     try {
@@ -290,7 +278,7 @@ export default function AdminDashboard() {
       setPreviewModal({
         isOpen: true,
         billData,
-        title: `${request.status === 'confirmed' ? 'Confirmed Order' : 'Service Estimate'} - ${request.order_id}`
+        title: `${request.status === 'confirmed' ? 'Confirmed Order Details' : 'Service Request Details'} - ${request.order_id}`
       })
     } catch (error) {
       console.error('Error loading preview data:', error)
@@ -299,8 +287,36 @@ export default function AdminDashboard() {
   }
 
 
+  const handleCancelRequest = async (requestId: string, orderId: string) => {
+    const isConfirmed = confirm(
+      `Are you sure you want to cancel request ${orderId}? This will preserve the request for records but mark it as cancelled.`
+    )
+    if (!isConfirmed) return
+
+    try {
+      const response = await fetch(`/api/requests/${requestId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'cancelled' }),
+      })
+
+      if (response.ok) {
+        alert(`✅ Request ${orderId} cancelled successfully`)
+        fetchRequests() // Refresh the list
+      } else {
+        const errorData = await response.json()
+        alert(`❌ Failed to cancel request: ${errorData.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error cancelling request:', error)
+      alert('❌ Failed to cancel request. Please check your connection and try again.')
+    }
+  }
+
   const handleDeleteRequest = async (requestId: string, orderId: string) => {
-    const isConfirmed = confirm(`Are you sure you want to delete request ${orderId}? This action cannot be undone.`)
+    const isConfirmed = confirm(
+      `Are you sure you want to permanently delete request ${orderId}? This action cannot be undone.`
+    )
     if (!isConfirmed) return
 
     try {
@@ -405,187 +421,240 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="flex items-center space-x-2">
-          <div className="spinner"></div>
-          <div className="text-lg text-gray-600">Loading requests...</div>
+      <div className="min-h-64 flex justify-center items-center">
+        <div className="text-center">
+          <div className="relative mb-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-blue-600 border-r-indigo-500 mx-auto absolute top-0 left-1/2 transform -translate-x-1/2"></div>
+          </div>
+          <div className="space-y-1">
+            <p className="text-lg font-medium text-gray-800 animate-pulse">Loading Requests...</p>
+            <p className="text-xs text-gray-600">📋 Fetching service requests data</p>
+          </div>
+          {/* Compact Loading skeleton cards */}
+          <div className="mt-6 space-y-2 max-w-4xl mx-auto">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white/60 rounded-xl p-3 shadow-sm animate-pulse border border-white/20">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                  <div className="flex-1 space-y-1">
+                    <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-2 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                  <div className="flex space-x-1">
+                    <div className="h-6 w-6 bg-gray-200 rounded"></div>
+                    <div className="h-6 w-6 bg-gray-200 rounded"></div>
+                    <div className="h-6 w-6 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Service Requests</h1>
-          <p className="text-gray-600">Manage all customer service requests</p>
-        </div>
-        <div className="flex gap-3">
-          <Button
-            onClick={toggleNotifications}
-            variant={notificationsEnabled ? "default" : "outline"}
-            size="sm"
-            title={notificationsEnabled ? "Disable notifications" : "Enable notifications"}
-          >
-            {notificationsEnabled ? (
-              <>
-                <Bell className="h-4 w-4 mr-2" />
-                Notifications On
-              </>
-            ) : (
-              <>
-                <BellOff className="h-4 w-4 mr-2" />
-                Notifications Off
-              </>
-            )}
-          </Button>
-          <Link href="/admin/new">
-            <Button>Create New Request</Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Status Filter */}
-      <div className="mb-6 flex items-center gap-2">
-        <Filter className="h-4 w-4 text-gray-500" />
-        <span className="text-sm font-medium text-gray-700">Filter by status:</span>
-        <div className="flex gap-2">
-          {['all', 'sent', 'viewed', 'confirmed', 'cancelled'].map((status) => (
+    <div className="space-y-4">
+      {/* Optimized Header Section */}
+      <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+          <div>
+            <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              Service Requests
+            </h1>
+            <p className="text-gray-600 flex items-center gap-1 text-xs">
+              <span>📋</span>
+              Manage all customer service requests
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
             <Button
-              key={status}
-              onClick={() => setStatusFilter(status)}
-              variant={statusFilter === status ? 'default' : 'outline'}
+              onClick={toggleNotifications}
+              variant={notificationsEnabled ? "default" : "outline"}
               size="sm"
+              className={`transition-all duration-200 h-8 px-3 text-xs ${notificationsEnabled
+                ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg'
+                : 'border-gray-300 hover:border-green-400 hover:bg-green-50'
+              }`}
+              title={notificationsEnabled ? "Disable notifications" : "Enable notifications"}
             >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
+              {notificationsEnabled ? (
+                <>
+                  <Bell className="h-3 w-3 mr-1" />
+                  <span className="hidden sm:inline">Notifications On</span>
+                  <span className="sm:hidden">🔔 On</span>
+                </>
+              ) : (
+                <>
+                  <BellOff className="h-3 w-3 mr-1" />
+                  <span className="hidden sm:inline">Notifications Off</span>
+                  <span className="sm:hidden">🔕 Off</span>
+                </>
+              )}
             </Button>
-          ))}
+            <Link href="/admin/new">
+              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto h-8 px-3 text-xs">
+                <span className="mr-1">+</span>
+                <span className="hidden sm:inline">Create New Request</span>
+                <span className="sm:hidden">New Request</span>
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* Requests Table */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      {/* Optimized Status Filter */}
+      <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <div className="flex items-center gap-1 text-gray-700">
+            <Filter className="h-4 w-4 text-blue-600" />
+            <span className="font-medium text-xs">Filter by status:</span>
+          </div>
+          <div className="flex gap-1 flex-wrap">
+            {['all', 'sent', 'viewed', 'confirmed', 'cancelled'].map((status) => (
+              <Button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                variant={statusFilter === status ? 'default' : 'outline'}
+                size="sm"
+                className={`transition-all duration-200 text-xs h-7 px-2 ${
+                  statusFilter === status
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
+                    : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700'
+                }`}
+              >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Requests Table */}
+      <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 overflow-hidden">
         {requests.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-500">No requests found.</p>
+            <div className="text-4xl mb-3">📋</div>
+            <p className="text-lg font-medium text-gray-700 mb-1">No requests found</p>
+            <p className="text-gray-500 mb-4 text-sm">Get started by creating your first service request</p>
             <Link href="/admin/new">
-              <Button className="mt-4">Create your first request</Button>
+              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg h-8 px-3 text-xs">
+                <span className="mr-1">+</span>
+                Create your first request
+              </Button>
             </Link>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200/50">
+              <thead className="bg-gradient-to-r from-gray-50 to-blue-50/50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    📅 Created
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Order ID
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    🆔 Order ID
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Customer
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    👤 Customer
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Phone
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    📱 Phone
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Bike
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    🚴‍♂️ Bike
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    📊 Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    💰 Total
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    ⚡ Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white/50 divide-y divide-gray-200/50">
                 {requests.map((request) => (
-                  <tr key={request.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatDate(request.created_at)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {request.order_id}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        #{request.short_slug}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {request.customer_name}
+                  <tr
+                    key={request.id}
+                    className="hover:bg-blue-50/30 transition-colors duration-200 cursor-pointer"
+                    onClick={() => handlePreviewRequest(request)}
+                    title="Click to view request details"
+                  >
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <div className="text-xs text-gray-900">
+                        {formatDate(request.created_at)}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      +{request.phone_digits_intl}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {request.bike_name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <Badge className={getStatusColor(request.status)}>
-                          {request.status.toUpperCase()}
-                        </Badge>
-                        {request.status !== 'sent' && (
-                          <Badge className="bg-gray-100 text-gray-600 text-xs">
-                            Locked
-                          </Badge>
-                        )}
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <div>
+                        <div className="text-xs font-bold text-gray-900 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                          {request.order_id}
+                        </div>
+                        <div className="text-xs text-gray-500 font-mono bg-gray-100 px-1 py-0.5 rounded text-xs mt-0.5 inline-block">
+                          #{request.short_slug}
+                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {formatCurrency(request.total_paise)}
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold mr-2">
+                          {request.customer_name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="text-xs font-medium text-gray-900">
+                          {request.customer_name}
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center gap-2">
-                        {/* View Order Page */}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => window.open(`/o/${request.short_slug}`, '_blank')}
-                          title="View Order Page"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <div className="text-xs text-gray-700 bg-gray-100 px-2 py-0.5 rounded-full inline-block font-mono">
+                        +{request.phone_digits_intl}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <div className="text-xs text-gray-900 bg-yellow-50 px-2 py-0.5 rounded-full inline-block">
+                        🚴‍♂️ {request.bike_name}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <Badge className={`${getStatusColor(request.status)} px-2 py-0.5 text-xs font-medium rounded-full`}>
+                        {request.status.toUpperCase()}
+                      </Badge>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <div className="text-sm font-bold text-green-700">
+                        {formatCurrency(request.total_paise)}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-1 flex-nowrap">
 
                         {/* Copy Link */}
                         <Button
                           size="sm"
                           variant="outline"
+                          className="border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 h-8 w-8 p-0 flex items-center justify-center min-w-[2rem] min-h-[2rem]"
                           onClick={() => copyOrderLink(request.short_slug)}
                           title="Copy Order Link"
                         >
-                          <Copy className="h-4 w-4" />
+                          <Copy className="h-5 w-5 flex-shrink-0" />
                         </Button>
 
-
-                        {/* Preview/View Button */}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handlePreviewRequest(request)}
-                          title="Quick Preview"
-                        >
-                          <FileText className="h-4 w-4" />
-                        </Button>
 
                         {/* Download Confirmed PDF */}
                         {request.status === 'confirmed' && (
                           <Button
                             size="sm"
                             variant="outline"
+                            className="border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400 transition-all duration-200 h-8 w-8 p-0 flex items-center justify-center min-w-[2rem] min-h-[2rem]"
                             onClick={() => handleDownloadConfirmedPDF(request)}
                             title="Download Confirmed Order PDF"
                           >
-                            <Download className="h-4 w-4" />
+                            <Download className="h-5 w-5 flex-shrink-0" />
                           </Button>
                         )}
 
@@ -594,32 +663,41 @@ export default function AdminDashboard() {
                           <Button
                             size="sm"
                             variant="outline"
+                            className="border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400 transition-all duration-200 h-8 w-8 p-0 flex items-center justify-center min-w-[2rem] min-h-[2rem]"
                             onClick={() => handleResendWhatsApp(request)}
                             title={request.status === 'sent' ? 'Send WhatsApp' : 'Resend WhatsApp'}
                           >
-                            <Send className="h-4 w-4" />
+                            <Send className="h-5 w-5 flex-shrink-0" />
                           </Button>
                         )}
 
-                        {/* Delete Request - Available for all requests */}
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDeleteRequest(request.id, request.order_id)}
-                          title="Delete Request"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-
-                        {/* Status Actions */}
-                        {(request.status === 'sent' || request.status === 'viewed') && (
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleStatusChange(request.id, 'cancelled')}
-                          >
-                            Cancel
-                          </Button>
+                        {/* Smart Cancel/Delete Button - No button for confirmed orders */}
+                        {request.status !== 'confirmed' && (
+                          <>
+                            {request.status === 'cancelled' ? (
+                              /* Delete button for already cancelled requests */
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 transition-all duration-200 h-8 w-8 p-0 flex items-center justify-center min-w-[2rem] min-h-[2rem]"
+                                onClick={() => handleDeleteRequest(request.id, request.order_id)}
+                                title="Delete cancelled request permanently"
+                              >
+                                <Trash2 className="h-5 w-5 flex-shrink-0" />
+                              </Button>
+                            ) : (
+                              /* Cancel button for active non-confirmed requests */
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-orange-300 text-orange-600 hover:bg-orange-50 hover:border-orange-400 transition-all duration-200 h-8 w-8 p-0 flex items-center justify-center min-w-[2rem] min-h-[2rem]"
+                                onClick={() => handleCancelRequest(request.id, request.order_id)}
+                                title="Cancel request (preserves for records)"
+                              >
+                                <X className="h-5 w-5 flex-shrink-0" />
+                              </Button>
+                            )}
+                          </>
                         )}
                       </div>
                     </td>

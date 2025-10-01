@@ -48,63 +48,89 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+      <div className="bg-white/80 backdrop-blur-lg p-8 rounded-2xl shadow-2xl border border-white/20 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <Image
-              src="/logo.png"
-              alt="CycleBees Logo"
-              width={40}
-              height={40}
-              className="object-contain"
-              priority
-            />
-            <h1 className="text-2xl font-bold text-gray-900">CycleBees Admin</h1>
+          <div className="flex items-center justify-center mb-6">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl blur opacity-20"></div>
+              <div className="relative bg-gradient-to-r from-blue-500 to-indigo-600 p-4 rounded-2xl">
+                <Image
+                  src="/logo.png"
+                  alt="CycleBees Logo"
+                  width={48}
+                  height={48}
+                  className="object-contain filter brightness-0 invert"
+                  priority
+                />
+              </div>
+            </div>
           </div>
-          <p className="text-gray-600 mt-2">Sign in to access the dashboard</p>
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              CycleBees Admin
+            </h1>
+            <p className="text-gray-600">🔐 Sign in to access the dashboard</p>
+          </div>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center">
-            <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
-            <span className="text-red-700 text-sm">{error}</span>
+          <div className="mb-6 p-4 bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-xl flex items-center animate-pulse">
+            <AlertCircle className="h-5 w-5 text-red-500 mr-3 flex-shrink-0" />
+            <span className="text-red-700 text-sm font-medium">{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="username">Username</Label>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="username" className="text-gray-700 font-medium">👤 Username</Label>
             <Input
               id="username"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              placeholder="Enter username"
+              placeholder="Enter your username"
+              className="h-12 bg-white/50 border-gray-300 focus:border-blue-500 focus:bg-white transition-all duration-200 rounded-xl"
             />
           </div>
 
-          <div>
-            <Label htmlFor="password">Password</Label>
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-gray-700 font-medium">🔑 Password</Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="Enter password"
+              placeholder="Enter your password"
+              className="h-12 bg-white/50 border-gray-300 focus:border-blue-500 focus:bg-white transition-all duration-200 rounded-xl"
             />
           </div>
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
             disabled={isLoading}
           >
-            {isLoading ? 'Signing in...' : 'Sign In'}
+            {isLoading ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Signing in...
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-2">
+                🚀 Sign In
+              </div>
+            )}
           </Button>
         </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-500">
+            🔒 Secure admin access • CycleBees Dashboard
+          </p>
+        </div>
       </div>
     </div>
   )
