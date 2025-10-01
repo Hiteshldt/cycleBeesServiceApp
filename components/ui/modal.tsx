@@ -22,15 +22,15 @@ export function Modal({ isOpen, onClose, title, children, size = 'lg' }: ModalPr
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center">
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black bg-opacity-50"
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
       
       {/* Modal */}
-      <div className={`relative bg-white rounded-lg shadow-xl mx-4 w-full ${sizeClasses[size]} max-h-[90vh] overflow-hidden`}>
+      <div className={`relative z-10 bg-white rounded-lg shadow-xl mx-4 w-full ${sizeClasses[size]} max-h-[90vh] overflow-hidden`}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold text-gray-900">{title}</h2>

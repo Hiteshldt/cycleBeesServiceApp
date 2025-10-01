@@ -12,7 +12,8 @@
       "Bash(npm run:*)",
       "Bash(rm:*)",
       "Bash(tree:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(node test_csv.js)"
     ],
     "deny": [],
     "ask": []

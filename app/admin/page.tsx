@@ -13,6 +13,7 @@ import { Modal } from '@/components/ui/modal'
 import { BillPreview } from '@/components/BillPreview'
 import { getLaCartePrice } from '@/lib/lacarte'
 import { Eye, Send, Copy, Filter, Download, Bell, BellOff, Trash2, FileText, X, Search } from 'lucide-react'
+import { DownloadModal, type DownloadOptions } from '@/components/DownloadModal'
 
 type RequestWithTotal = Request & {
   total_items: number
@@ -48,6 +49,8 @@ export default function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [searchLoading, setSearchLoading] = useState(false)
+  const [downloadModal, setDownloadModal] = useState(false)
+  const [downloadLoading, setDownloadLoading] = useState(false)
   const [notificationsEnabled, setNotificationsEnabled] = useState(true)
   const [previewModal, setPreviewModal] = useState<{
     isOpen: boolean
@@ -310,6 +313,160 @@ export default function AdminDashboard() {
   const handleNewRequestClick = () => {
     setLoadingNewRequest(true)
     router.push('/admin/new')
+  }
+
+  // Utility function to properly escape CSV values
+  const escapeCSVValue = (value: string | number | null | undefined): string => {
+    if (value === null || value === undefined) return ''
+
+    const stringValue = String(value)
+
+    // If the value contains quotes, commas, newlines, or carriage returns, it needs to be quoted
+    if (stringValue.includes('"') || stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('\r')) {
+      // Escape internal quotes by doubling them and wrap in quotes
+      return `"${stringValue.replace(/"/g, '""')}"`
+    }
+
+    return stringValue
+  }
+
+  const generateCSV = (requests: RequestWithTotal[], options: DownloadOptions) => {
+    const headers = [
+      'Order ID',
+      'Customer Name',
+      'Phone Number',
+      'Bike Model',
+      'Status',
+      'Created Date',
+      'Confirmed Date',
+      'Total Amount (INR)' // Changed from ₹ to INR for better compatibility
+    ]
+
+    if (options.includeDetails) {
+      headers.push('Repair Services', 'Replacement Parts', 'Add-ons', 'Bundles')
+    }
+
+    // Start with UTF-8 BOM for Excel compatibility
+    const csvRows = ['\uFEFF' + headers.map(escapeCSVValue).join(',')]
+
+    requests.forEach(request => {
+      const formatServiceItems = (items: any[], includePricing: boolean) => {
+        if (!items || items.length === 0) return ''
+        return items.map(item => {
+          const itemName = item.label || item.name || 'Unknown Item'
+          if (includePricing) {
+            const price = item.price_paise ? Math.round(item.price_paise / 100) : 0
+            return `${itemName} (INR ${price})` // Changed from ₹ to INR
+          }
+          return itemName
+        }).join('; ') // Changed from comma to semicolon to avoid CSV conflicts
+      }
+
+      // Format dates consistently
+      const formatDate = (dateString: string) => {
+        try {
+          return new Date(dateString).toLocaleDateString('en-IN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          })
+        } catch {
+          return ''
+        }
+      }
+
+      const baseData = [
+        escapeCSVValue(request.order_id || ''),
+        escapeCSVValue(request.customer_name || ''),
+        escapeCSVValue(`+${request.phone_digits_intl || ''}`),
+        escapeCSVValue(request.bike_name || ''),
+        escapeCSVValue(request.status ? request.status.charAt(0).toUpperCase() + request.status.slice(1) : ''),
+        escapeCSVValue(formatDate(request.created_at)),
+        escapeCSVValue(request.confirmed_at ? formatDate(request.confirmed_at) : ''),
+        escapeCSVValue(request.total_paise ? Math.round(request.total_paise / 100).toString() : '0')
+      ]
+
+      if (options.includeDetails) {
+        const repairItems = request.request_items?.filter(item => item.section === 'repair') || []
+        const replacementItems = request.request_items?.filter(item => item.section === 'replacement') || []
+
+        // For future extensibility - addon and bundle data
+        const addons: any[] = []
+        const bundles: any[] = []
+
+        baseData.push(
+          escapeCSVValue(formatServiceItems(repairItems, options.includePricing)),
+          escapeCSVValue(formatServiceItems(replacementItems, options.includePricing)),
+          escapeCSVValue(formatServiceItems(addons, options.includePricing)),
+          escapeCSVValue(formatServiceItems(bundles, options.includePricing))
+        )
+      }
+
+      csvRows.push(baseData.join(','))
+    })
+
+    return csvRows.join('\n')
+  }
+
+  const handleDownload = async (options: DownloadOptions) => {
+    try {
+      setDownloadLoading(true)
+
+      // Build API URL with date range and details
+      const params = new URLSearchParams()
+      params.set('limit', '1000') // Large limit for export
+      params.set('page', '1')
+      params.set('start_date', options.startDate)
+      params.set('end_date', options.endDate)
+
+      if (options.includeDetails) {
+        params.set('include_details', 'true')
+      }
+
+      const response = await fetch(`/api/requests?${params.toString()}`)
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch requests for download: ${response.status}`)
+      }
+
+      const data = await response.json()
+      const requests = data.requests || []
+
+      if (requests.length === 0) {
+        alert('No requests found for the selected date range.')
+        return
+      }
+
+      // Generate CSV
+      const csvContent = generateCSV(requests, options)
+
+      // Create and download file with proper UTF-8 encoding
+      const blob = new Blob([csvContent], {
+        type: 'text/csv;charset=utf-8;'
+      })
+      const link = document.createElement('a')
+
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob)
+        const filename = `cyclebees_requests_${options.startDate}_to_${options.endDate}.csv`
+        link.setAttribute('href', url)
+        link.setAttribute('download', filename)
+        link.style.visibility = 'hidden'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      } else {
+        throw new Error('Browser does not support file download')
+      }
+
+      setDownloadModal(false)
+
+    } catch (error) {
+      console.error('Download error:', error)
+      alert('Failed to download requests. Please try again.')
+    } finally {
+      setDownloadLoading(false)
+    }
   }
 
   const handlePreviewRequest = async (request: Request) => {
@@ -714,6 +871,17 @@ export default function AdminDashboard() {
               )}
             </Button>
             <Button
+              onClick={() => setDownloadModal(true)}
+              variant="outline"
+              size="sm"
+              className="transition-all duration-200 h-8 px-3 text-xs border-gray-300 hover:border-green-400 hover:bg-green-50 hover:text-green-700"
+              title="Download requests as CSV"
+            >
+              <Download className="h-3 w-3 mr-1" />
+              <span className="hidden sm:inline">Download CSV</span>
+              <span className="sm:hidden">📥</span>
+            </Button>
+            <Button
               onClick={handleNewRequestClick}
               disabled={loadingNewRequest}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto h-8 px-3 text-xs disabled:opacity-70 disabled:cursor-not-allowed"
@@ -1043,6 +1211,14 @@ export default function AdminDashboard() {
           <BillPreview billData={previewModal.billData} />
         )}
       </Modal>
+
+      {/* Download Modal */}
+      <DownloadModal
+        isOpen={downloadModal}
+        onClose={() => setDownloadModal(false)}
+        onDownload={handleDownload}
+        isLoading={downloadLoading}
+      />
 
     </div>
   )

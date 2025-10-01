@@ -113,17 +113,17 @@ export default function NewRequestPage() {
   return (
     <div>
       {/* Compact Header */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 mb-2">
-        <div className="px-3 py-2">
-          <div className="flex items-center gap-3">
+      <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 mb-2">
+        <div className="px-3 py-1.5">
+          <div className="flex items-center gap-2">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl blur opacity-20"></div>
-              <div className="relative bg-gradient-to-r from-blue-500 to-indigo-600 p-2 rounded-xl">
-                <div className="text-lg filter brightness-0 invert">📝</div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg blur opacity-20"></div>
+              <div className="relative bg-gradient-to-r from-blue-500 to-indigo-600 p-1.5 rounded-lg">
+                <div className="text-sm filter brightness-0 invert">📝</div>
               </div>
             </div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              <h1 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                 New Service Request
               </h1>
               <p className="text-gray-600 text-xs">🚴‍♂️ Create a new bike service estimate</p>

@@ -8,31 +8,54 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
     const search = searchParams.get('search')
+    const startDate = searchParams.get('start_date')
+    const endDate = searchParams.get('end_date')
+    const includeDetails = searchParams.get('include_details') === 'true'
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '30')
 
+    // console.log('API Request params:', { status, search, startDate, endDate, includeDetails, page, limit })
+
     // Validate pagination parameters
     const validPage = Math.max(1, page)
-    const validLimit = Math.min(Math.max(1, limit), 100) // Max 100 per page
+    const validLimit = Math.min(Math.max(1, limit), 1000) // Max 1000 for exports, 100 for regular pagination
     const offset = (validPage - 1) * validLimit
 
-    // Build the main query for requests
+    // Build the main query for requests with optional detailed joins
+    const selectQuery = `
+      *,
+      request_items (
+        id,
+        section,
+        label,
+        price_paise
+      )
+    `
+
+    // Add additional details if requested (for CSV export)
+    // Note: For now, we'll skip addon/bundle relationships as they may not exist in this schema
+    // The main request and items data will still be exported
+    if (includeDetails) {
+      // Could add other relationships here when they're available
+      // For now, request_items is sufficient for most export needs
+    }
+
     let query = supabase
       .from('requests')
-      .select(`
-        *,
-        request_items (
-          id,
-          section,
-          label,
-          price_paise
-        )
-      `)
+      .select(selectQuery)
       .order('created_at', { ascending: false })
 
     // Filter by status if provided
     if (status && status !== 'all') {
       query = query.eq('status', status)
+    }
+
+    // Add date range filtering
+    if (startDate) {
+      query = query.gte('created_at', `${startDate}T00:00:00.000Z`)
+    }
+    if (endDate) {
+      query = query.lte('created_at', `${endDate}T23:59:59.999Z`)
     }
 
     // Add search functionality - search across multiple fields efficiently
@@ -59,7 +82,7 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error('Database error:', error)
       return NextResponse.json(
-        { error: 'Failed to fetch requests' },
+        { error: 'Failed to fetch requests', details: error.message },
         { status: 500 }
       )
     }
@@ -72,6 +95,14 @@ export async function GET(request: NextRequest) {
     // Apply same status filter for count
     if (status && status !== 'all') {
       countQuery = countQuery.eq('status', status)
+    }
+
+    // Apply same date range filter for count
+    if (startDate) {
+      countQuery = countQuery.gte('created_at', `${startDate}T00:00:00.000Z`)
+    }
+    if (endDate) {
+      countQuery = countQuery.lte('created_at', `${endDate}T23:59:59.999Z`)
     }
 
     // Apply same search filter for count
