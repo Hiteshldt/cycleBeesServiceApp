@@ -29,8 +29,8 @@ export default function NewRequestPage() {
         bike_name: '',
         customer_name: '',
         phone_digits_intl: '',
-        // Use 'draft' to align with current DB constraint
-        status: 'draft',
+        // Set to 'sent' as requests are immediately sent via WhatsApp (no draft functionality)
+        status: 'sent',
       },
       repair_items: [],
       replacement_items: [],

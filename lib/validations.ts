@@ -14,7 +14,7 @@ export const requestSchema = z.object({
       }
       return phone
     }),
-  status: z.enum(['draft', 'sent', 'viewed', 'confirmed', 'cancelled']),
+  status: z.enum(['sent', 'viewed', 'confirmed', 'cancelled']),
 })
 
 // Request item validation schema

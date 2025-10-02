@@ -13,7 +13,7 @@ export interface Request {
   bike_name: string
   customer_name: string
   phone_digits_intl: string
-  status: 'draft' | 'sent' | 'viewed' | 'confirmed' | 'cancelled'
+  status: 'sent' | 'viewed' | 'confirmed' | 'cancelled'
   subtotal_paise: number
   tax_paise: number
   total_paise: number

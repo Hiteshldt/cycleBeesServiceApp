@@ -188,8 +188,8 @@ export default function PublicOrderPage() {
         }
       }
 
-      // Mark as viewed if status is still draft/sent (support both)
-      if (data.request.status === 'draft' || data.request.status === 'sent') {
+      // Mark as viewed if status is still 'sent'
+      if (data.request.status === 'sent') {
         try {
           // Use saved selections or default to suggested items for marking as viewed
           const savedItems = sessionStorage.getItem(`selectedItems_${slug}`)

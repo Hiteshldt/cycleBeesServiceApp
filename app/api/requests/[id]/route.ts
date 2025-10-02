@@ -70,11 +70,13 @@ export async function PATCH(
       )
     }
 
-    // Enforce edit restrictions: Once a request has progressed beyond 'sent', 
-    // it cannot be modified except for allowed status transitions
-    if (existingRequest.status !== 'sent') {
+    // Allow status changes to 'cancelled' from any status
+    // But prevent other modifications once request has progressed beyond 'sent'
+    const isCancelling = body.status === 'cancelled'
+
+    if (!isCancelling && existingRequest.status !== 'sent') {
       return NextResponse.json(
-        { 
+        {
           error: `Request ${existingRequest.order_id} has already been sent and cannot be modified. Current status: ${existingRequest.status}`,
           code: 'REQUEST_LOCKED'
         },
