@@ -27,10 +27,13 @@ export default function AdminLogin() {
       })
 
       if (response.ok) {
-        // Store authentication in both sessionStorage and cookie
-        sessionStorage.setItem('adminAuth', 'authenticated')
-        document.cookie = 'adminAuth=authenticated; path=/; max-age=86400; SameSite=Strict'
-        console.log('Auth stored in both sessionStorage and cookie')
+        const data = await response.json()
+
+        // Store JWT token in both sessionStorage and cookie
+        sessionStorage.setItem('adminAuth', data.token)
+        document.cookie = `adminAuth=${data.token}; path=/; max-age=86400; SameSite=Strict`
+        console.log('Auth token stored in both sessionStorage and cookie')
+
         // Use window.location for more reliable redirect
         setTimeout(() => {
           window.location.href = '/admin'

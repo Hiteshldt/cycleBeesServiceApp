@@ -16,7 +16,11 @@
       "Bash(node test_csv.js)",
       "Bash(_tmp_page_before_fix.txt )",
       "Bash(addon.list.txt.txt )",
-      "Bash(COPY_PRODUCTION_TO_TEST_COMMANDS.txt)"
+      "Bash(COPY_PRODUCTION_TO_TEST_COMMANDS.txt)",
+      "Bash(npx tsx:*)",
+      "Bash(node -e \"console.log(require(''crypto'').randomBytes(64).toString(''hex''))\")",
+      "Bash(taskkill:*)",
+      "Bash(git check-ignore:*)"
     ],
     "deny": [],
     "ask": []

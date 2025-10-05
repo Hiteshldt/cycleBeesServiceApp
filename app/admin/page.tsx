@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Pagination } from '@/components/ui/pagination'
-import { Request } from '@/lib/supabase'
+import { Request, RequestItem } from '@/lib/supabase'
 import { formatCurrency, formatDate, getStatusColor, openWhatsApp, generateWhatsAppMessage } from '@/lib/utils'
 import { NotificationManager, StatusChangeDetector } from '@/lib/notification'
 import { Modal } from '@/components/ui/modal'
@@ -17,6 +17,7 @@ import { DownloadModal, type DownloadOptions } from '@/components/DownloadModal'
 
 type RequestWithTotal = Request & {
   total_items: number
+  request_items?: RequestItem[]
 }
 
 interface PaginationInfo {
@@ -382,7 +383,7 @@ export default function AdminDashboard() {
         escapeCSVValue(request.bike_name || ''),
         escapeCSVValue(request.status ? request.status.charAt(0).toUpperCase() + request.status.slice(1) : ''),
         escapeCSVValue(formatDate(request.created_at)),
-        escapeCSVValue(request.confirmed_at ? formatDate(request.confirmed_at) : ''),
+        escapeCSVValue(request.sent_at ? formatDate(request.sent_at) : ''),
         escapeCSVValue(request.total_paise ? Math.round(request.total_paise / 100).toString() : '0')
       ]
 

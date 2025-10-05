@@ -27,15 +27,40 @@ export default function AdminLayout({
       return
     }
 
-    // Check authentication status with a small delay to ensure sessionStorage is available
-    const checkAuth = () => {
-      const authStatus = sessionStorage.getItem('adminAuth')
-      console.log('Checking auth status:', authStatus)
-      if (authStatus === 'authenticated') {
-        setIsAuthenticated(true)
-        setIsLoading(false)
-      } else {
+    // Check authentication status with JWT verification
+    const checkAuth = async () => {
+      const token = sessionStorage.getItem('adminAuth')
+      console.log('Checking auth token:', token ? 'Token found' : 'No token')
+
+      if (!token) {
         console.log('Not authenticated, redirecting to login')
+        router.push('/admin/login')
+        setIsLoading(false)
+        return
+      }
+
+      try {
+        // Verify token with server
+        const response = await fetch('/api/admin/verify-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        })
+
+        if (response.ok) {
+          setIsAuthenticated(true)
+          setIsLoading(false)
+        } else {
+          console.log('Token invalid, redirecting to login')
+          sessionStorage.removeItem('adminAuth')
+          document.cookie = 'adminAuth=; path=/; max-age=0'
+          router.push('/admin/login')
+          setIsLoading(false)
+        }
+      } catch (error) {
+        console.error('Auth verification error:', error)
         router.push('/admin/login')
         setIsLoading(false)
       }

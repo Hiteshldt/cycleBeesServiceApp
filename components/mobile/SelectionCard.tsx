@@ -155,7 +155,7 @@ export function SelectionCard({
             <div className="mb-3">
               <h4 className="text-gray-900 font-semibold text-xs mb-2 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
-                What's Included
+                What&apos;s Included
               </h4>
 
               <div className="grid gap-2">

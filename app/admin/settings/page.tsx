@@ -603,7 +603,7 @@ export default function AdminSettings() {
           <div className="text-center py-4 text-gray-500 bg-gray-50/50 rounded-xl border-2 border-dashed border-gray-300">
             <div className="text-lg mb-1">📦</div>
             <p className="text-sm">No add-on services configured</p>
-            <p className="text-xs">Click "Add Service" to get started</p>
+            <p className="text-xs">Click &quot;Add Service&quot; to get started</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -782,7 +782,7 @@ export default function AdminSettings() {
           <div className="text-center py-4 text-gray-500 bg-gray-50/50 rounded-xl border-2 border-dashed border-gray-300">
             <div className="text-lg mb-1">📦</div>
             <p className="text-sm">No service bundles configured</p>
-            <p className="text-xs">Click "Add Bundle" to get started</p>
+            <p className="text-xs">Click &quot;Add Bundle&quot; to get started</p>
           </div>
         ) : (
           <div className="space-y-2">

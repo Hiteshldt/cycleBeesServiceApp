@@ -749,8 +749,8 @@ export default function PublicOrderPage() {
     )
   }
 
-  // If order is not confirmed and no selections in session storage, redirect to services page
-  if (request.status !== 'confirmed') {
+  // If order is in active state and no selections in session storage, redirect to services page
+  if (request.status === 'pending' || request.status === 'sent' || request.status === 'viewed') {
     const hasSelections = sessionStorage.getItem(`selectedItems_${slug}`) ||
                          sessionStorage.getItem(`selectedAddons_${slug}`)
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { verifyPassword, generateToken } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,12 +13,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check credentials against database
+    // Fetch admin credentials (including hashed password)
     const { data: adminData, error } = await supabase
       .from('admin_credentials')
-      .select('id, username')
+      .select('id, username, password')
       .eq('username', username)
-      .eq('password', password)
       .eq('is_active', true)
       .single()
 
@@ -28,9 +28,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Return success response
+    // Verify password using bcrypt
+    const isValidPassword = await verifyPassword(password, adminData.password)
+
+    if (!isValidPassword) {
+      return NextResponse.json(
+        { error: 'Invalid username or password' },
+        { status: 401 }
+      )
+    }
+
+    // Generate JWT token
+    const token = await generateToken({
+      userId: adminData.id,
+      username: adminData.username
+    })
+
+    // Return success response with JWT token
     return NextResponse.json(
-      { success: true, message: 'Authentication successful' },
+      {
+        success: true,
+        message: 'Authentication successful',
+        token
+      },
       { status: 200 }
     )
   } catch (error) {

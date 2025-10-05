@@ -37,16 +37,16 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const totalRevenue = requests?.reduce((sum, req) => sum + (req.total_paise || 0), 0) || 0
+    const totalRevenue = requests?.reduce((sum: number, req: any) => sum + (req.total_paise || 0), 0) || 0
     const totalOrders = requests?.length || 0
     const averageOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0
 
     // 2. Calculate confirmation rate
-    const confirmedOrders = requests?.filter(req => req.status === 'confirmed').length || 0
+    const confirmedOrders = requests?.filter((req: any) => req.status === 'confirmed').length || 0
     const confirmationRate = totalOrders > 0 ? (confirmedOrders / totalOrders) * 100 : 0
 
     // 3. Get order status distribution
-    const statusCounts = requests?.reduce((acc: Record<string, number>, req) => {
+    const statusCounts = requests?.reduce((acc: Record<string, number>, req: any) => {
       acc[req.status] = (acc[req.status] || 0) + 1
       return acc
     }, {}) || {}
