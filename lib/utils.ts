@@ -106,6 +106,8 @@ export function formatDate(date: string | Date): string {
 // Status badge colors
 export function getStatusColor(status: string): string {
   switch (status) {
+    case 'pending':
+      return 'bg-amber-100 text-amber-800 animate-pulse'
     case 'sent':
       return 'bg-blue-100 text-blue-800'
     case 'viewed':

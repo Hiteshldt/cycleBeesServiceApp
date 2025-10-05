@@ -7,13 +7,28 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createRequestSchema, type CreateRequestData } from '@/lib/validations'
-import { formatCurrency, rupeesToPaise, openWhatsApp, generateWhatsAppMessage, generateOrderID } from '@/lib/utils'
-import { Trash2, Plus, Send, Save } from 'lucide-react'
+import { formatCurrency, rupeesToPaise, generateOrderID } from '@/lib/utils'
+import { Trash2, Plus, Send } from 'lucide-react'
 
 export default function NewRequestPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [shortSlug, setShortSlug] = useState<string | null>(null)
   const [requestId, setRequestId] = useState<string | null>(null)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [pendingData, setPendingData] = useState<CreateRequestData | null>(null)
+
+  // Prevent user from leaving page during critical operation
+  React.useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isLoading) {
+        e.preventDefault()
+        e.returnValue = 'Request is being created. Are you sure you want to leave?'
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [isLoading])
 
   const {
     register,
@@ -29,8 +44,8 @@ export default function NewRequestPage() {
         bike_name: '',
         customer_name: '',
         phone_digits_intl: '',
-        // Set to 'sent' as requests are immediately sent via WhatsApp (no draft functionality)
-        status: 'sent',
+        // Set to 'pending' initially - will be updated to 'sent' after WhatsApp confirmation
+        status: 'pending',
       },
       repair_items: [],
       replacement_items: [],
@@ -63,6 +78,11 @@ export default function NewRequestPage() {
   const orderId = watch('request.order_id')
   const phone = watch('request.phone_digits_intl')
 
+  // Real-time phone validation
+  const phoneDigits = phone?.replace(/\D/g, '') || ''
+  const isPhoneValid = phoneDigits.length === 10
+  const showPhoneError = phone && phoneDigits.length > 0 && phoneDigits.length !== 10
+
   // Calculate totals (GST inclusive prices)
   const subtotalPaise = [...repairItems, ...replacementItems].reduce(
     (sum, item) => sum + (item.price_paise || 0),
@@ -70,8 +90,56 @@ export default function NewRequestPage() {
   )
   const totalPaise = subtotalPaise // All prices are GST inclusive
 
+  // Helper function to update status with retry logic
+  const updateStatusWithRetry = async (
+    requestId: string,
+    statusData: { success: boolean; whatsappMessageId?: string | null; whatsappError?: string },
+    maxRetries = 3
+  ) => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await fetch(`/api/requests/${requestId}/update-whatsapp-status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(statusData),
+        })
+
+        if (response.ok) {
+          return await response.json()
+        }
+
+        // If not the last attempt, wait before retrying (exponential backoff)
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+        }
+      } catch (error) {
+        console.error(`Status update attempt ${attempt} failed:`, error)
+
+        // If not the last attempt, wait before retrying
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+        } else {
+          throw error
+        }
+      }
+    }
+
+    throw new Error('Failed to update status after maximum retries')
+  }
+
   const onSubmit = async (data: CreateRequestData) => {
+    // Show confirmation modal first
+    setPendingData(data)
+    setShowConfirmModal(true)
+  }
+
+  const handleConfirmAndSend = async () => {
+    if (!pendingData) return
+
+    setShowConfirmModal(false)
     setIsLoading(true)
+
+    const data = pendingData
     try {
       // Filter out empty items and convert prices to paise
       const processedData = {
@@ -80,6 +148,7 @@ export default function NewRequestPage() {
         replacement_items: data.replacement_items.filter(item => item.label.trim() && item.price_paise > 0),
       }
 
+      // Step 1: Save request to database
       const response = await fetch('/api/requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -93,6 +162,83 @@ export default function NewRequestPage() {
       const result = await response.json()
       setRequestId(result.id)
       setShortSlug(result.short_slug)
+
+      // Step 2: Automatically send WhatsApp message via n8n webhook
+      const orderUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/o/${result.short_slug}`
+
+      const webhookResponse = await fetch('/api/webhooks/send-whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: data.request.phone_digits_intl,
+          customerName: data.request.customer_name,
+          bikeName: data.request.bike_name,
+          orderId: data.request.order_id,
+          orderUrl,
+          requestId: result.id,
+        }),
+      })
+
+      if (!webhookResponse.ok) {
+        const errorData = await webhookResponse.json().catch(() => ({}))
+        console.error('WhatsApp send failed:', errorData)
+
+        // More specific error messages
+        let errorMessage = 'Unknown error'
+        if (errorData.details) {
+          // Check for common WhatsApp errors
+          if (errorData.details.includes('not a WhatsApp user') || errorData.details.includes('1006')) {
+            errorMessage = 'This phone number is not registered on WhatsApp'
+          } else if (errorData.details.includes('invalid number') || errorData.details.includes('1008')) {
+            errorMessage = 'Invalid phone number format'
+          } else if (errorData.details.includes('rate limit')) {
+            errorMessage = 'Too many messages sent. Please wait a few minutes.'
+          } else {
+            errorMessage = errorData.details
+          }
+        } else if (errorData.error) {
+          errorMessage = errorData.error
+        }
+
+        // Update request status to keep it as 'pending' with error message
+        try {
+          await updateStatusWithRetry(result.id, {
+            success: false,
+            whatsappError: errorMessage
+          })
+        } catch (statusUpdateError) {
+          console.error('Failed to update request status after retries:', statusUpdateError)
+          // Continue anyway - the request is already saved as pending by default
+        }
+
+        alert(`⚠️ Request saved as PENDING (not sent yet):\n\n${errorMessage}\n\nThe request is saved but WhatsApp was not sent. You can retry from the admin dashboard or contact the customer directly.`)
+      } else {
+        const successData = await webhookResponse.json().catch(() => ({}))
+        console.log('WhatsApp sent successfully:', successData)
+
+        // Show message ID if available for confirmation
+        const messageId = successData?.data?.whatsappMessageId
+
+        // Update request status to 'sent' with WhatsApp confirmation (with retry)
+        try {
+          await updateStatusWithRetry(result.id, {
+            success: true,
+            whatsappMessageId: messageId
+          })
+        } catch (statusUpdateError) {
+          console.error('Failed to update request status after retries:', statusUpdateError)
+          // WhatsApp was sent, so we'll show success but mention status update issue
+          alert(`✅ WhatsApp message sent successfully!\n\n${messageId ? `Message ID: ${messageId.slice(0, 20)}...` : ''}\n\n⚠️ Note: Status update failed after multiple attempts. Please refresh the dashboard.`)
+          return
+        }
+
+        if (messageId) {
+          alert(`✅ Request created and WhatsApp message sent successfully!\n\nMessage ID: ${messageId.slice(0, 20)}...\n\nStatus: SENT ✅`)
+        } else {
+          alert('✅ Request created and WhatsApp message sent successfully!\n\nStatus: SENT ✅')
+        }
+      }
+
     } catch (error) {
       console.error('Error creating request:', error)
       alert('Failed to create request. Please try again.')
@@ -101,17 +247,78 @@ export default function NewRequestPage() {
     }
   }
 
-  const handleSendWhatsApp = () => {
-    if (!shortSlug || !phone || !customerName || !bikeName || !orderId) return
-    
-    const orderUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/o/${shortSlug}`
-    const message = generateWhatsAppMessage(customerName, bikeName, orderId, orderUrl)
-    // Open WhatsApp (app deep link first, then web fallback)
-    openWhatsApp(phone, message)
+  // Format phone number for display
+  const formatPhoneDisplay = (phone: string) => {
+    // Remove any non-digits
+    const digits = phone.replace(/\D/g, '')
+
+    // If it starts with 91 and has 12 digits, format as Indian number
+    if (digits.startsWith('91') && digits.length === 12) {
+      const number = digits.slice(2) // Remove 91
+      return `+91 ${number.slice(0, 5)} ${number.slice(5)}`
+    }
+
+    // Otherwise just show with + prefix
+    return `+${digits}`
   }
 
   return (
     <div>
+      {/* Confirmation Modal */}
+      {showConfirmModal && pendingData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="text-center mb-4">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Send className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Confirm WhatsApp Send</h3>
+              <p className="text-sm text-gray-600 mt-1">Please verify the phone number before sending</p>
+            </div>
+
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 mb-4">
+              <div className="space-y-2">
+                <div>
+                  <p className="text-xs text-gray-600 font-medium">Customer Name</p>
+                  <p className="text-sm font-semibold text-gray-900">{pendingData.request.customer_name}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 font-medium">Bike</p>
+                  <p className="text-sm font-semibold text-gray-900">{pendingData.request.bike_name}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 font-medium">Order ID</p>
+                  <p className="text-sm font-semibold text-gray-900">{pendingData.request.order_id}</p>
+                </div>
+                <div className="pt-2 border-t border-indigo-200">
+                  <p className="text-xs text-gray-600 font-medium mb-1">WhatsApp Number</p>
+                  <p className="text-lg font-bold text-green-600">{formatPhoneDisplay(pendingData.request.phone_digits_intl)}</p>
+                  <p className="text-xs text-gray-500 mt-1">⚠️ Please verify this number is correct</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                onClick={() => setShowConfirmModal(false)}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 h-10 rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleConfirmAndSend}
+                className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white h-10 rounded-xl flex items-center justify-center gap-2"
+              >
+                <Send className="h-4 w-4" />
+                Confirm & Send
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Compact Header */}
       <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 mb-2">
         <div className="px-3 py-1.5">
@@ -210,14 +417,24 @@ export default function NewRequestPage() {
                     id="phone"
                     {...register('request.phone_digits_intl')}
                     placeholder="7005192650"
-                    className="pl-7 border-gray-300 h-9 text-sm rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-200 transition-all"
+                    className={`pl-7 h-9 text-sm rounded-xl transition-all ${
+                      showPhoneError
+                        ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-200'
+                        : 'border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-200'
+                    }`}
                     type="tel"
                     maxLength={15}
                   />
                 </div>
-                <p className="text-xs text-gray-600 bg-blue-50 px-2 py-1 rounded-lg">
-                  📝 10-digit number (91 added auto)
-                </p>
+                {showPhoneError ? (
+                  <p className="text-red-500 text-xs mt-1 font-medium">
+                    ❌ Must be exactly 10 digits (currently: {phoneDigits.length})
+                  </p>
+                ) : (
+                  <p className="text-xs text-gray-600 bg-blue-50 px-2 py-1 rounded-lg">
+                    📝 10-digit number (91 added auto)
+                  </p>
+                )}
                 {errors.request?.phone_digits_intl && (
                   <p className="text-red-500 text-sm mt-1">
                     {errors.request.phone_digits_intl.message}
@@ -305,7 +522,7 @@ export default function NewRequestPage() {
                   <div className="text-center py-4 text-gray-500 bg-gray-50/50 rounded-xl border-2 border-dashed border-gray-300">
                     <div className="text-xl mb-1">🔧</div>
                     <p className="text-sm">No repair services added yet</p>
-                    <p className="text-xs">Click "Add Service" to get started</p>
+                    <p className="text-xs">Click &quot;Add Service&quot; to get started</p>
                   </div>
                 )}
               </div>
@@ -387,7 +604,7 @@ export default function NewRequestPage() {
                   <div className="text-center py-4 text-gray-500 bg-gray-50/50 rounded-xl border-2 border-dashed border-gray-300">
                     <div className="text-xl mb-1">⚙️</div>
                     <p className="text-sm">No replacement parts added yet</p>
-                    <p className="text-xs">Click "Add Part" to get started</p>
+                    <p className="text-xs">Click &quot;Add Part&quot; to get started</p>
                   </div>
                 )}
               </div>
@@ -433,23 +650,12 @@ export default function NewRequestPage() {
           <div className="flex gap-2 pt-2 border-t border-gray-200/50">
             <Button
               type="submit"
-              disabled={isLoading}
-              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-8 px-3 text-xs rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+              disabled={isLoading || !isPhoneValid}
+              className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white h-8 px-3 text-xs rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Save className="h-3 w-3" />
-              {isLoading ? 'Saving...' : 'Save Request'}
+              <Send className="h-3 w-3" />
+              {isLoading ? 'Saving & Sending...' : 'Save & Send via WhatsApp'}
             </Button>
-
-            {shortSlug && (
-              <Button
-                type="button"
-                onClick={handleSendWhatsApp}
-                className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white h-8 px-3 text-xs rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                <Send className="h-3 w-3" />
-                Send on WhatsApp
-              </Button>
-            )}
           </div>
 
           {/* Compact Success Message */}

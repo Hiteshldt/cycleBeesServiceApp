@@ -13,7 +13,10 @@
       "Bash(rm:*)",
       "Bash(tree:*)",
       "Bash(cat:*)",
-      "Bash(node test_csv.js)"
+      "Bash(node test_csv.js)",
+      "Bash(_tmp_page_before_fix.txt )",
+      "Bash(addon.list.txt.txt )",
+      "Bash(COPY_PRODUCTION_TO_TEST_COMMANDS.txt)"
     ],
     "deny": [],
     "ask": []

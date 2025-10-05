@@ -13,12 +13,15 @@ export interface Request {
   bike_name: string
   customer_name: string
   phone_digits_intl: string
-  status: 'sent' | 'viewed' | 'confirmed' | 'cancelled'
+  status: 'pending' | 'sent' | 'viewed' | 'confirmed' | 'cancelled'
   subtotal_paise: number
   tax_paise: number
   total_paise: number
   created_at: string
   sent_at: string | null
+  whatsapp_message_id: string | null
+  whatsapp_sent_at: string | null
+  whatsapp_error: string | null
 }
 
 export interface RequestItem {

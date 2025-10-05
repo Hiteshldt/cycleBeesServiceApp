@@ -593,7 +593,6 @@ export default function AdminDashboard() {
       })
 
       if (response.ok) {
-        alert(`✅ Request ${orderId} cancelled successfully`)
         fetchRequests() // Refresh the list
       } else {
         const errorData = await response.json()
@@ -617,7 +616,6 @@ export default function AdminDashboard() {
       })
 
       if (response.ok) {
-        alert(`✅ Request ${orderId} deleted successfully`)
         fetchRequests() // Refresh the list
       } else {
         const errorData = await response.json()
@@ -916,7 +914,7 @@ export default function AdminDashboard() {
               <span className="font-medium text-xs">Filter by status:</span>
             </div>
             <div className="flex gap-1 flex-wrap">
-              {['all', 'sent', 'viewed', 'confirmed', 'cancelled'].map((status) => (
+              {['all', 'pending', 'sent', 'viewed', 'confirmed', 'cancelled'].map((status) => (
                 <Button
                   key={status}
                   onClick={() => handleStatusFilterChange(status)}
@@ -924,11 +922,13 @@ export default function AdminDashboard() {
                   size="sm"
                   className={`transition-all duration-200 text-xs h-7 px-2 ${
                     statusFilter === status
-                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
+                      ? status === 'pending'
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg'
+                        : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
                       : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700'
                   }`}
                 >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                  {status === 'pending' ? '⏳ Pending' : status.charAt(0).toUpperCase() + status.slice(1)}
                 </Button>
               ))}
             </div>
@@ -1132,13 +1132,17 @@ export default function AdminDashboard() {
                         )}
 
                         {/* Send/Resend WhatsApp */}
-                        {(request.status === 'sent' || request.status === 'viewed') && (
+                        {(request.status === 'pending' || request.status === 'sent' || request.status === 'viewed') && (
                           <Button
                             size="sm"
                             variant="outline"
-                            className="border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400 transition-all duration-200 h-8 w-8 p-0 flex items-center justify-center min-w-[2rem] min-h-[2rem]"
+                            className={`transition-all duration-200 h-8 w-8 p-0 flex items-center justify-center min-w-[2rem] min-h-[2rem] ${
+                              request.status === 'pending'
+                                ? 'border-amber-400 text-amber-600 hover:bg-amber-50 hover:border-amber-500 animate-pulse'
+                                : 'border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400'
+                            }`}
                             onClick={() => handleResendWhatsApp(request)}
-                            title={request.status === 'sent' ? 'Send WhatsApp' : 'Resend WhatsApp'}
+                            title={request.status === 'pending' ? 'Send WhatsApp (Failed Initially)' : request.status === 'sent' ? 'Send WhatsApp' : 'Resend WhatsApp'}
                           >
                             <Send className="h-5 w-5 flex-shrink-0" />
                           </Button>
