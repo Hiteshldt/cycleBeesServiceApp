@@ -2,12 +2,11 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { verifyTokenEdge } from '@/lib/auth-edge'
 
-// Define which API routes require authentication
+// Define which API routes require authentication (admin only)
 const protectedApiRoutes = [
-  '/api/requests',
-  '/api/addons',
-  '/api/pricing',
-  '/api/analytics'
+  '/api/requests',    // Admin only - request management
+  '/api/analytics'    // Admin only - business analytics
+  // Note: /api/addons, /api/bundles, /api/pricing are PUBLIC (customers need these)
 ]
 
 export async function middleware(request: NextRequest) {
