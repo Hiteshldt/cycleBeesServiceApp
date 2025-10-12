@@ -508,7 +508,8 @@ export default function AdminDashboard() {
         const subtotal = selectedItemsDetails.reduce((sum: number, it: any) => sum + (it.price_paise || 0), 0)
         const addonsTotal = selectedAddonsDetails.reduce((sum: number, ad: any) => sum + (ad.price_paise || 0), 0)
         const bundlesTotal = selectedBundlesDetails.reduce((sum: number, bd: any) => sum + (bd.price_paise || 0), 0)
-        const laCarte = await getLaCartePrice()
+        // Use request-specific La Carte price if set, otherwise use global settings
+        const laCarte = request.lacarte_paise ?? await getLaCartePrice()
         const total = subtotal + addonsTotal + bundlesTotal + laCarte
 
         billData = {
@@ -549,7 +550,8 @@ export default function AdminDashboard() {
 
         const requestData = await requestResponse.json()
         const subtotal = (requestData.request_items || []).reduce((sum: number, item: any) => sum + item.price_paise, 0)
-        const laCarte = await getLaCartePrice()
+        // Use request-specific La Carte price if set, otherwise use global settings
+        const laCarte = request.lacarte_paise ?? await getLaCartePrice()
 
         billData = {
           order_id: request.order_id,
@@ -666,7 +668,8 @@ export default function AdminDashboard() {
       const subtotal = selectedItemsDetails.reduce((sum: number, it: { price_paise: number }) => sum + (it.price_paise || 0), 0)
       const addonsTotal = selectedAddonsDetails.reduce((sum: number, ad: { price_paise: number }) => sum + (ad.price_paise || 0), 0)
       const bundlesTotal = selectedBundlesDetails.reduce((sum: number, b: { price_paise: number }) => sum + (b.price_paise || 0), 0)
-      const laCarte = await getLaCartePrice()
+      // Use request-specific La Carte price if set, otherwise use global settings
+      const laCarte = request.lacarte_paise ?? await getLaCartePrice()
       const total = subtotal + addonsTotal + bundlesTotal + laCarte
 
       // 6) Create bill data with exact selections

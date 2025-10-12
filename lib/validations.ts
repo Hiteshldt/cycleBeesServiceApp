@@ -15,6 +15,7 @@ export const requestSchema = z.object({
       return phone
     }),
   status: z.enum(['pending', 'sent', 'viewed', 'confirmed', 'cancelled']),
+  lacarte_paise: z.number().int('La Carte price must be a whole number').min(0, 'La Carte price cannot be negative').max(10000000, 'La Carte price too high').optional().nullable(),
 })
 
 // Request item validation schema

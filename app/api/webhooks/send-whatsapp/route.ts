@@ -1,53 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateWhatsAppMessage } from '@/lib/utils'
 
 // POST /api/webhooks/send-whatsapp - Trigger n8n to send WhatsApp message
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
-    // Validate required fields
-    const { phone, customerName, bikeName, orderId, orderUrl } = body
+    // Validate required fields (now using snake_case for template compatibility)
+    const { phone, customerName, bikeName, orderId, orderKey } = body
 
-    if (!phone || !customerName || !bikeName || !orderId || !orderUrl) {
+    if (!phone || !customerName || !bikeName || !orderId || !orderKey) {
       return NextResponse.json(
-        { error: 'Missing required fields: phone, customerName, bikeName, orderId, orderUrl' },
+        { error: 'Missing required fields: phone, customerName, bikeName, orderId, orderKey' },
         { status: 400 }
       )
     }
 
-    // Generate WhatsApp message using existing utility
-    const message = generateWhatsAppMessage(customerName, bikeName, orderId, orderUrl)
-
-    // Validate message content
-    if (!message || message.trim().length === 0) {
-      console.error('❌ Failed to generate WhatsApp message')
-      return NextResponse.json(
-        { error: 'Failed to generate message content' },
-        { status: 500 }
-      )
-    }
-
-    if (message.length > 4096) {
-      console.error('❌ WhatsApp message too long:', message.length, 'characters')
-      return NextResponse.json(
-        { error: 'Message content too long (max 4096 characters)' },
-        { status: 400 }
-      )
-    }
-
-    // Prepare payload for n8n webhook
+    // Prepare payload for n8n template node (exact format for WhatsApp template)
     // Phone already includes country code (e.g., "917005192650")
     // WhatsApp Business API needs it with + prefix: "+917005192650"
     const n8nPayload = {
       phone: phone.startsWith('+') ? phone : `+${phone}`,
-      message,
-      customerName,
-      bikeName,
-      orderId,
-      orderUrl,
-      timestamp: new Date().toISOString(),
-      requestId: body.requestId || null,
+      customer_name: customerName,
+      bike_name: bikeName,
+      order_id: orderId,
+      order_key: orderKey,
+      image_url: 'https://res.cloudinary.com/djoqfvphw/image/upload/v1760277275/whatsapp_request_promo_image_sqgzil.jpg'
     }
 
     // Get n8n webhook URL from environment
@@ -214,15 +191,20 @@ export async function POST(request: NextRequest) {
       whatsappMessageId = webhookResult.messages[0].id
       whatsappStatus = webhookResult.messages[0].message_status || 'sent'
     }
-    // Format 2: n8n custom response with messageId
+    // Format 2: n8n custom response with messageId (camelCase)
     else if (webhookResult?.messageId) {
       whatsappMessageId = webhookResult.messageId
     }
-    // Format 3: n8n custom response with data wrapper
+    // Format 3: n8n custom response with messages_id (snake_case)
+    else if (webhookResult?.messages_id) {
+      whatsappMessageId = webhookResult.messages_id
+      whatsappStatus = webhookResult.messages_status || 'sent'
+    }
+    // Format 4: n8n custom response with data wrapper
     else if (webhookResult?.data?.messageId) {
       whatsappMessageId = webhookResult.data.messageId
     }
-    // Format 4: Check if success explicitly set to false
+    // Format 5: Check if success explicitly set to false
     else if (webhookResult?.success === false) {
       console.error('❌ n8n returned success: false without error details')
       return NextResponse.json(

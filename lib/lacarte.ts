@@ -118,7 +118,7 @@ export function formatLaCarteDisplay(settings: LaCarteSettings): {
   hasDiscount: boolean
 } {
   const hasDiscount = settings.real_price_paise > settings.current_price_paise
-  
+
   return {
     currentPrice: settings.current_price_paise,
     originalPrice: hasDiscount ? settings.real_price_paise : undefined,
@@ -126,4 +126,24 @@ export function formatLaCarteDisplay(settings: LaCarteSettings): {
     discountNote: settings.discount_note || undefined,
     hasDiscount
   }
+}
+
+// Get La Carte price with request-specific override
+// This ensures consistent fallback logic across the entire application
+export function getRequestLaCartePrice(
+  requestLaCartePaise: number | null | undefined,
+  globalSettings?: LaCarteSettings
+): number {
+  // Priority 1: Use request-specific price if explicitly set (including 0 for free)
+  if (requestLaCartePaise !== null && requestLaCartePaise !== undefined) {
+    return requestLaCartePaise
+  }
+
+  // Priority 2: Use provided global settings
+  if (globalSettings) {
+    return globalSettings.current_price_paise
+  }
+
+  // Priority 3: Default fallback (₹99)
+  return 9900
 }

@@ -88,7 +88,8 @@ export async function GET(
     const subtotal = confirmedItems.reduce((sum, item) => sum + (item?.price_paise || 0), 0)
     const addonsTotal = confirmedAddonsList.reduce((sum, addon) => sum + (addon?.price_paise || 0), 0)
     const bundlesTotal = confirmedBundlesList.reduce((sum, bundle: any) => sum + (bundle?.price_paise || 0), 0)
-    const laCarteCharge = await getLaCartePrice()
+    // Use request-specific La Carte price if set, otherwise use global settings
+    const laCarteCharge = requestData.lacarte_paise ?? await getLaCartePrice()
     const total = subtotal + addonsTotal + bundlesTotal + laCarteCharge
 
     // Generate PDF data

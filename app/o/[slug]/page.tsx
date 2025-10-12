@@ -52,6 +52,7 @@ export default function PublicOrderPage() {
   const [isConfirming, setIsConfirming] = useState(false)
   const [confirmedData, setConfirmedData] = useState<ConfirmedData | null>(null)
   const [laCarte, setLaCarte] = useState<LaCarteSettings | null>(null)
+  const [laCartePaise, setLaCartePaise] = useState<number>(9900) // Request-specific La Carte price
 
   useEffect(() => {
     if (slug) {
@@ -112,6 +113,15 @@ export default function PublicOrderPage() {
       const data = await response.json()
       setOrderData(data)
 
+      // Set La Carte price from request-specific value or use global settings
+      if (data.request.lacarte_paise !== null && data.request.lacarte_paise !== undefined) {
+        setLaCartePaise(data.request.lacarte_paise)
+      } else {
+        // Fetch global settings as fallback
+        const globalLaCarte = await getLaCartePrice()
+        setLaCartePaise(globalLaCarte)
+      }
+
       // Pre-select all suggested items or load confirmed selections
       if (data.request.status === 'confirmed') {
         // For confirmed orders, load the actual confirmed selections
@@ -163,7 +173,9 @@ export default function PublicOrderPage() {
             }
             
             const subtotal = confirmedItems.reduce((sum: number, item: RequestItem & { selected?: boolean }) => sum + item.price_paise, 0)
-            const laCarteCharge = await getLaCartePrice()
+            // Use request-specific La Carte price if set, otherwise global settings
+            const laCarteCharge = data.request.lacarte_paise ?? await getLaCartePrice()
+            setLaCartePaise(laCarteCharge) // Update state with the price being used
             const total = subtotal + addonsTotal + bundlesTotal + laCarteCharge
             
             setConfirmedData({
@@ -283,9 +295,9 @@ export default function PublicOrderPage() {
     const bundlesTotal = bundles
       .filter(bundle => selectedBundles.has(bundle.id))
       .reduce((sum, bundle) => sum + bundle.price_paise, 0)
-    
-    // Add fixed La Carte Services charge (Ã¢â€šÂ¹99)
-    const laCarteCharge = 9900 // Ã¢â€šÂ¹99 in paise
+
+    // Use request-specific La Carte price (set from order data)
+    const laCarteCharge = laCartePaise
     const total = subtotal + addonsTotal + bundlesTotal + laCarteCharge
 
     return { subtotal, addonsTotal, bundlesTotal, laCarteCharge, total }
@@ -293,7 +305,7 @@ export default function PublicOrderPage() {
 
   const handleConfirmOrder = () => {
     const totals = calculateTotal()
-    if (totals.total < 9900) {
+    if (totals.total < laCartePaise) {
       showToast('Please select at least one service (La Carte included).', 'error')
       return
     }
@@ -381,7 +393,8 @@ export default function PublicOrderPage() {
     const subtotal = confirmedItems.reduce((sum, item) => sum + item.price_paise, 0)
     const addonsTotal = confirmedAddons.reduce((sum, addon) => sum + addon.price_paise, 0)
     const bundlesTotal = confirmedBundles.reduce((sum, bundle) => sum + bundle.price_paise, 0)
-    const laCarteCharge = await getLaCartePrice()
+    // Use request-specific La Carte price
+    const laCarteCharge = laCartePaise
     const total = subtotal + addonsTotal + bundlesTotal + laCarteCharge
 
     // Generate confirmed order PDF
@@ -644,7 +657,7 @@ export default function PublicOrderPage() {
                   </div>
                 ) : (
                   <span className="text-lg font-bold text-green-700">
-                    {formatCurrency(9900)}
+                    {formatCurrency(laCartePaise)}
                   </span>
                 )}
               </div>
@@ -700,7 +713,7 @@ export default function PublicOrderPage() {
               )}
               <div className="flex justify-between text-gray-700">
                 <span>La Carte Services (Fixed)</span>
-                <span className="font-medium">{formatCurrency(laCarte?.current_price_paise || 9900)}</span>
+                <span className="font-medium">{formatCurrency(laCartePaise)}</span>
               </div>
               <div className="border-t pt-2 mt-3">
                 <div className="flex justify-between text-base font-bold text-gray-900">
@@ -727,7 +740,7 @@ export default function PublicOrderPage() {
           servicesBreakdown={{
             selectedServicesPaise: totals.subtotal + totals.addonsTotal + totals.bundlesTotal,
             selectedCount: selectedItems.size + selectedAddons.size + selectedBundles.size,
-            laCartePaise: laCarte?.current_price_paise || 9900,
+            laCartePaise: laCartePaise,
             laCarteDisplay: laCarte ? formatLaCarteDisplay(laCarte) : undefined
           }}
         />
@@ -970,7 +983,7 @@ export default function PublicOrderPage() {
                 </div>
               ) : (
                 <span className="text-lg font-bold text-green-700">
-                  {formatCurrency(9900)}
+                  {formatCurrency(laCartePaise)}
                 </span>
               )}
             </div>
@@ -1014,7 +1027,7 @@ export default function PublicOrderPage() {
         servicesBreakdown={{
           selectedServicesPaise: totals.subtotal + totals.addonsTotal + totals.bundlesTotal,
           selectedCount: selectedItems.size + selectedAddons.size + selectedBundles.size,
-          laCartePaise: laCarte?.current_price_paise || 9900,
+          laCartePaise: laCartePaise,
           laCarteDisplay: laCarte ? formatLaCarteDisplay(laCarte) : undefined
         }}
       />
@@ -1124,7 +1137,7 @@ export default function PublicOrderPage() {
                             </div>
                           )}
                         </div>
-                        <span className="font-semibold text-gray-900">{formatCurrency(9900)}</span>
+                        <span className="font-semibold text-gray-900">{formatCurrency(laCartePaise)}</span>
                       </div>
 
                       {/* Total */}

@@ -90,7 +90,8 @@ export async function POST(
       bundlesTotal = bundlesData?.reduce((sum, bundle) => sum + bundle.price_paise, 0) || 0
     }
     
-    const laCartePaise = await getLaCartePrice()
+    // Use request-specific La Carte price if set, otherwise use global settings
+    const laCartePaise = orderData.lacarte_paise ?? await getLaCartePrice()
     const totalPaise = subtotalPaise + addonsTotal + bundlesTotal + laCartePaise
 
     // Determine the status to update to

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useForm, useFieldArray, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createRequestSchema, type CreateRequestData } from '@/lib/validations'
 import { formatCurrency, rupeesToPaise, generateOrderID } from '@/lib/utils'
-import { Trash2, Plus, Send } from 'lucide-react'
+import { getLaCarteSettings, type LaCarteSettings, calculateDiscountPercentage } from '@/lib/lacarte'
+import { Trash2, Plus, Send, Edit2 } from 'lucide-react'
 
 export default function NewRequestPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -16,6 +17,27 @@ export default function NewRequestPage() {
   const [requestId, setRequestId] = useState<string | null>(null)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [pendingData, setPendingData] = useState<CreateRequestData | null>(null)
+
+  // La Carte pricing state
+  const [laCarteSettings, setLaCarteSettings] = useState<LaCarteSettings | null>(null)
+  const [laCartePaise, setLaCartePaise] = useState<number | null>(null)
+  const [showLaCarteEditor, setShowLaCarteEditor] = useState(false)
+
+  // Load La Carte settings on mount
+  useEffect(() => {
+    async function loadLaCarteSettings() {
+      try {
+        const settings = await getLaCarteSettings()
+        setLaCarteSettings(settings)
+        setLaCartePaise(settings.current_price_paise) // Set default
+      } catch (error) {
+        console.error('Failed to load La Carte settings:', error)
+        // Fallback to hardcoded default
+        setLaCartePaise(9900)
+      }
+    }
+    loadLaCarteSettings()
+  }, [])
 
   // Prevent user from leaving page during critical operation
   React.useEffect(() => {
@@ -144,6 +166,10 @@ export default function NewRequestPage() {
       // Filter out empty items and convert prices to paise
       const processedData = {
         ...data,
+        request: {
+          ...data.request,
+          lacarte_paise: laCartePaise, // Include custom La Carte price
+        },
         repair_items: data.repair_items.filter(item => item.label.trim() && item.price_paise > 0),
         replacement_items: data.replacement_items.filter(item => item.label.trim() && item.price_paise > 0),
       }
@@ -163,9 +189,7 @@ export default function NewRequestPage() {
       setRequestId(result.id)
       setShortSlug(result.short_slug)
 
-      // Step 2: Automatically send WhatsApp message via n8n webhook
-      const orderUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/o/${result.short_slug}`
-
+      // Step 2: Automatically send WhatsApp message via n8n webhook (using template format)
       const webhookResponse = await fetch('/api/webhooks/send-whatsapp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -174,8 +198,7 @@ export default function NewRequestPage() {
           customerName: data.request.customer_name,
           bikeName: data.request.bike_name,
           orderId: data.request.order_id,
-          orderUrl,
-          requestId: result.id,
+          orderKey: result.short_slug,
         }),
       })
 
@@ -313,6 +336,108 @@ export default function NewRequestPage() {
               >
                 <Send className="h-4 w-4" />
                 Confirm & Send
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* La Carte Editor Modal */}
+      {showLaCarteEditor && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="text-center mb-4">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Edit2 className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Edit La Carte Price</h3>
+              <p className="text-sm text-gray-600 mt-1">Customize price for this request</p>
+            </div>
+
+            {/* Default Price Info */}
+            {laCarteSettings && (
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 mb-4">
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-xs text-gray-600 font-medium">Default Global Price</p>
+                    <div className="flex items-baseline gap-2">
+                      <p className="text-lg font-bold text-gray-900">{formatCurrency(laCarteSettings.current_price_paise)}</p>
+                      {laCarteSettings.real_price_paise > laCarteSettings.current_price_paise && (
+                        <>
+                          <p className="text-sm line-through text-gray-500">{formatCurrency(laCarteSettings.real_price_paise)}</p>
+                          <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-semibold">
+                            {calculateDiscountPercentage(laCarteSettings)}% OFF
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    {laCarteSettings.discount_note && (
+                      <p className="text-xs text-gray-600 mt-1">Note: {laCarteSettings.discount_note}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Custom Price Input */}
+            <div className="space-y-3 mb-4">
+              <Label htmlFor="custom_lacarte" className="text-gray-700 text-sm font-medium">
+                Custom Price for This Request (₹)
+              </Label>
+              <Input
+                id="custom_lacarte"
+                type="number"
+                step="1"
+                min="0"
+                max="100000"
+                placeholder="Enter custom price"
+                value={laCartePaise ? Math.round(laCartePaise / 100) : ''}
+                onChange={(e) => {
+                  const rupees = parseInt(e.target.value) || 0
+                  setLaCartePaise(rupeesToPaise(rupees))
+                }}
+                className="border-gray-300 h-10 text-sm rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-200 transition-all"
+              />
+              <p className="text-xs text-gray-500">Enter price in rupees (e.g., 99 for ₹99.00)</p>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="flex gap-2 mb-4">
+              <Button
+                type="button"
+                onClick={() => setLaCartePaise(0)}
+                size="sm"
+                variant="outline"
+                className="flex-1 h-8 text-xs border-green-300 text-green-700 hover:bg-green-50"
+              >
+                Set to ₹0 (Free)
+              </Button>
+              <Button
+                type="button"
+                onClick={() => setLaCartePaise(laCarteSettings?.current_price_paise ?? 9900)}
+                size="sm"
+                variant="outline"
+                className="flex-1 h-8 text-xs border-blue-300 text-blue-700 hover:bg-blue-50"
+              >
+                Reset to Default
+              </Button>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                onClick={() => setShowLaCarteEditor(false)}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 h-10 rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={() => setShowLaCarteEditor(false)}
+                className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-10 rounded-xl"
+              >
+                Save Price
               </Button>
             </div>
           </div>
@@ -632,7 +757,17 @@ export default function NewRequestPage() {
                   <span>📦</span>
                   <span>La Carte Package:</span>
                 </span>
-                <span className="font-semibold">{formatCurrency(9900)}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">{formatCurrency(laCartePaise ?? 9900)}</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowLaCarteEditor(true)}
+                    className="text-blue-600 hover:text-blue-800 p-1 rounded-lg hover:bg-blue-50 transition-all"
+                    title="Edit La Carte price"
+                  >
+                    <Edit2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
               <div className="flex justify-between items-center font-bold text-lg border-t border-gray-200 pt-2 text-gray-900">
                 <span className="flex items-center gap-1">
@@ -640,7 +775,7 @@ export default function NewRequestPage() {
                   <span>Total Amount:</span>
                 </span>
                 <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                  {formatCurrency(totalPaise + 9900)}
+                  {formatCurrency(totalPaise + (laCartePaise ?? 9900))}
                 </span>
               </div>
             </div>
