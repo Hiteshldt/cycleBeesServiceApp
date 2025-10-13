@@ -198,8 +198,8 @@ export default function ServiceSelectionPage() {
   const replacementItems = items.filter(item => item.section === 'replacement')
   const servicesTotal = calculateServicesTotal()
 
-  // Calculate La Carte price and create breakdown data
-  const laCartePrice = laCarte?.current_price_paise || 9900
+  // Calculate La Carte price - use request-specific price if set, otherwise global settings
+  const laCartePrice = request.lacarte_paise ?? (laCarte?.current_price_paise || 9900)
   const laCarteDisplay = laCarte ? formatLaCarteDisplay(laCarte) : undefined
 
   // Check if order is cancelled
@@ -343,7 +343,7 @@ export default function ServiceSelectionPage() {
                 </div>
               ) : (
                 <span className="text-lg font-bold text-green-700">
-                  {formatCurrency(9900)}
+                  {formatCurrency(laCartePrice)}
                 </span>
               )}
             </div>

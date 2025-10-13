@@ -151,7 +151,8 @@ export default function BundlesSelectionPage() {
       .filter(bundle => selectedBundles.has(bundle.id))
       .reduce((sum, bundle) => sum + bundle.price_paise, 0)
 
-    const laCarteCharge = laCarte?.current_price_paise || 9900
+    // Use request-specific La Carte price if set, otherwise global settings
+    const laCarteCharge = orderData.request.lacarte_paise ?? (laCarte?.current_price_paise || 9900)
     const grandTotal = servicesTotal + addonsTotal + bundlesTotal + laCarteCharge
 
     return { servicesTotal, addonsTotal, bundlesTotal, laCarteCharge, grandTotal }

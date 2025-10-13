@@ -17,6 +17,7 @@ export interface Request {
   subtotal_paise: number
   tax_paise: number
   total_paise: number
+  lacarte_paise: number | null  // Custom La Carte price for this request (null = use global settings)
   created_at: string
   sent_at: string | null
   whatsapp_message_id: string | null
