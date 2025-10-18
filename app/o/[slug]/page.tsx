@@ -643,10 +643,10 @@ export default function PublicOrderPage() {
                 </div>
               </div>
               <div className="text-right flex-shrink-0">
-                {laCarte && laCarte.real_price_paise > laCarte.current_price_paise ? (
+                {laCarte && laCarte.real_price_paise > laCartePaise ? (
                   <div className="space-y-1">
                     <div className="text-lg font-bold text-green-700">
-                      {formatCurrency(laCarte.current_price_paise)}
+                      {formatCurrency(laCartePaise)}
                     </div>
                     <div className="flex items-center justify-end gap-2">
                       <span className="text-xs text-gray-500 font-medium">MRP</span>
@@ -966,10 +966,10 @@ export default function PublicOrderPage() {
               </div>
             </div>
             <div className="text-right flex-shrink-0">
-              {laCarte && laCarte.real_price_paise > laCarte.current_price_paise ? (
+              {laCarte && laCarte.real_price_paise > laCartePaise ? (
                 <div className="space-y-1">
                   <div className="text-lg font-bold text-green-700">
-                    {formatCurrency(laCarte.current_price_paise)}
+                    {formatCurrency(laCartePaise)}
                   </div>
                   <div className="flex items-center justify-end gap-2">
                     <span className="text-xs text-gray-500 font-medium">MRP</span>
@@ -978,7 +978,7 @@ export default function PublicOrderPage() {
                     </span>
                   </div>
                   <div className="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold inline-block">
-                    {Math.round(((laCarte.real_price_paise - laCarte.current_price_paise) / Math.max(laCarte.real_price_paise, 1)) * 100)}% off
+                    {Math.round(((laCarte.real_price_paise - laCartePaise) / Math.max(laCarte.real_price_paise, 1)) * 100)}% off
                   </div>
                 </div>
               ) : (
