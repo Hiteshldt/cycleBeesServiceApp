@@ -90,22 +90,27 @@ export default function ServiceSelectionPage() {
       // Mark as viewed if status is 'pending' or 'sent'
       if (data.request.status === 'pending' || data.request.status === 'sent') {
         try {
+          const suggestedItems = data.items.filter((item: RequestItem) => item.is_suggested).map((item: RequestItem) => item.id)
+          console.log('Marking as viewed. Slug:', slug, 'Status:', data.request.status, 'Suggested items:', suggestedItems.length)
+
           const response = await fetch(`/api/public/orders/${slug}/view`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              selected_items: data.items.filter((item: RequestItem) => item.is_suggested).map((item: RequestItem) => item.id),
+              selected_items: suggestedItems,
               status: 'viewed'
             }),
           })
 
           if (response.ok) {
+            console.log('Successfully marked as viewed')
             setOrderData({
               ...data,
               request: { ...data.request, status: 'viewed' }
             })
           } else {
-            console.error('Failed to mark as viewed:', response.statusText)
+            const errorData = await response.json().catch(() => ({}))
+            console.error('Failed to mark as viewed:', response.status, response.statusText, errorData)
           }
         } catch (error) {
           console.error('Error marking as viewed:', error)

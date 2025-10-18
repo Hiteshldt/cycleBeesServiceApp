@@ -209,6 +209,8 @@ export default function PublicOrderPage() {
             ? JSON.parse(savedItems)
             : data.items.filter((item: RequestItem) => item.is_suggested).map((item: RequestItem) => item.id)
 
+          console.log('[Main] Marking as viewed. Slug:', slug, 'Status:', data.request.status, 'Items count:', itemsToMark.length)
+
           const response = await fetch(`/api/public/orders/${slug}/view`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -219,6 +221,7 @@ export default function PublicOrderPage() {
           })
 
           if (response.ok) {
+            console.log('[Main] Successfully marked as viewed')
             setHasViewedEstimate(true)
             // Update local status
             setOrderData({
@@ -226,10 +229,11 @@ export default function PublicOrderPage() {
               request: { ...data.request, status: 'viewed' }
             })
           } else {
-            console.error('Failed to mark as viewed:', response.statusText)
+            const errorData = await response.json().catch(() => ({}))
+            console.error('[Main] Failed to mark as viewed:', response.status, response.statusText, errorData)
           }
         } catch (error) {
-          console.error('Error marking as viewed:', error)
+          console.error('[Main] Error marking as viewed:', error)
         }
       }
     } catch (error) {

@@ -22,7 +22,13 @@
       "Bash(taskkill:*)",
       "Bash(git check-ignore:*)",
       "WebSearch",
-      "Bash(git push --force origin main)"
+      "Bash(git push --force origin main)",
+      "Bash(git rev-parse HEAD)",
+      "Bash(git add app/api/public/orders/[slug]/view/route.ts)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nFix critical 404 bug in view API endpoint\n\nFixed the issue where marking orders as ''viewed'' would fail with 404 when no items are selected. The API was using an INNER JOIN with selected_items filter, which would return no results when the array was empty.\n\nChanges:\n- Added conditional query logic: use INNER JOIN only when items are selected\n- When just marking as viewed (no items), use simple query without JOIN\n- Only update totals when items are actually selected\n- Added proper error handling instead of silent failures\n\nThis fixes the status update issue where orders would never get marked as ''viewed'' in the database.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push origin main)",
+      "Bash(git add -A)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd comprehensive debugging for status update issues\n\nAdded detailed console logging to track:\n- When status update requests are made\n- Number of items being sent\n- Response status and error details\n- Which page triggered the update\n\nThis will help diagnose why status updates are not working in production.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

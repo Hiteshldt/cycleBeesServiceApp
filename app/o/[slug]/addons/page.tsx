@@ -74,6 +74,8 @@ export default function AddonsSelectionPage() {
             ? JSON.parse(savedItems)
             : data.items.filter((item: RequestItem) => item.is_suggested).map((item: RequestItem) => item.id)
 
+          console.log('[Addons] Marking as viewed. Slug:', slug, 'Status:', data.request.status, 'Items count:', itemsToMark.length)
+
           const response = await fetch(`/api/public/orders/${slug}/view`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -84,15 +86,17 @@ export default function AddonsSelectionPage() {
           })
 
           if (response.ok) {
+            console.log('[Addons] Successfully marked as viewed')
             setOrderData({
               ...data,
               request: { ...data.request, status: 'viewed' }
             })
           } else {
-            console.error('Failed to mark as viewed:', response.statusText)
+            const errorData = await response.json().catch(() => ({}))
+            console.error('[Addons] Failed to mark as viewed:', response.status, response.statusText, errorData)
           }
         } catch (error) {
-          console.error('Error marking as viewed:', error)
+          console.error('[Addons] Error marking as viewed:', error)
         }
       }
     } catch (error) {

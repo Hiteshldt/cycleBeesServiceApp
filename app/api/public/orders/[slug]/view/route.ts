@@ -65,15 +65,21 @@ export async function POST(
     }
 
     if (orderError) {
+      console.error('Database error for slug:', slug, 'Error:', orderError)
       if (orderError.code === 'PGRST116') {
         return NextResponse.json(
-          { error: 'Order not found or invalid items selected' },
+          {
+            error: 'Order not found or invalid items selected',
+            slug: slug,
+            hasItems: selected_items && selected_items.length > 0,
+            itemCount: selected_items?.length || 0
+          },
           { status: 404 }
         )
       }
       console.error('Database error:', orderError)
       return NextResponse.json(
-        { error: 'Failed to fetch order details' },
+        { error: 'Failed to fetch order details', details: orderError.message },
         { status: 500 }
       )
     }
