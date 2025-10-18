@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Request, RequestItem } from '@/lib/supabase'
 import { openWhatsApp, formatCurrency } from '@/lib/utils'
 import { MessageCircle, AlertCircle, Check } from 'lucide-react'
-import { getLaCarteSettings, formatLaCarteDisplay, type LaCarteSettings } from '@/lib/lacarte'
+import { getLaCarteSettings, getLaCartePrice, formatLaCarteDisplay, type LaCarteSettings } from '@/lib/lacarte'
 import { AppHeader } from '@/components/mobile/AppHeader'
 import { SelectionCard } from '@/components/mobile/SelectionCard'
 import { CategorySection } from '@/components/mobile/CategorySection'
@@ -28,6 +28,7 @@ export default function ServiceSelectionPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [laCarte, setLaCarte] = useState<LaCarteSettings | null>(null)
+  const [laCartePaise, setLaCartePaise] = useState<number>(9900) // Request-specific La Carte price
 
   useEffect(() => {
     if (slug) {
@@ -62,6 +63,10 @@ export default function ServiceSelectionPage() {
 
       const data = await response.json()
       setOrderData(data)
+
+      // Set La Carte price - use request-specific price if set, otherwise global settings
+      const laCarteCharge = data.request.lacarte_paise ?? await getLaCartePrice()
+      setLaCartePaise(laCarteCharge)
 
       // If already confirmed, redirect to main page
       if (data.request.status === 'confirmed') {
@@ -208,8 +213,8 @@ export default function ServiceSelectionPage() {
   const replacementItems = items.filter(item => item.section === 'replacement')
   const servicesTotal = calculateServicesTotal()
 
-  // Calculate La Carte price - use request-specific price if set, otherwise global settings
-  const laCartePrice = request.lacarte_paise ?? (laCarte?.current_price_paise || 9900)
+  // Use La Carte price from state (already set in fetchOrderData)
+  const laCartePrice = laCartePaise
   const laCarteDisplay = laCarte ? formatLaCarteDisplay(laCarte) : undefined
 
   // Check if order is cancelled
@@ -319,11 +324,11 @@ export default function ServiceSelectionPage() {
               </div>
             </div>
             <div className="text-right flex-shrink-0">
-              {laCarte && laCarte.real_price_paise > laCarte.current_price_paise ? (
+              {laCarte && laCarte.real_price_paise > laCartePaise ? (
                 <div className="space-y-1">
                   {/* Discounted Price - First and Larger */}
                   <div className="text-lg font-bold text-green-700">
-                    {formatCurrency(laCarte.current_price_paise)}
+                    {formatCurrency(laCartePaise)}
                   </div>
 
                   {/* MRP - Below Price */}
@@ -336,12 +341,12 @@ export default function ServiceSelectionPage() {
 
                   {/* Percentage Off - Below MRP */}
                   <div className="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold inline-block">
-                    {Math.round(((laCarte.real_price_paise - laCarte.current_price_paise) / Math.max(laCarte.real_price_paise, 1)) * 100)}% off
+                    {Math.round(((laCarte.real_price_paise - laCartePaise) / Math.max(laCarte.real_price_paise, 1)) * 100)}% off
                   </div>
 
                   {/* Savings Amount */}
                   <div className="text-xs text-green-600 font-medium">
-                    You save {formatCurrency(laCarte.real_price_paise - laCarte.current_price_paise)}!
+                    You save {formatCurrency(laCarte.real_price_paise - laCartePaise)}!
                   </div>
 
                   {/* Offer Note */}
@@ -353,7 +358,7 @@ export default function ServiceSelectionPage() {
                 </div>
               ) : (
                 <span className="text-lg font-bold text-green-700">
-                  {formatCurrency(laCartePrice)}
+                  {formatCurrency(laCartePaise)}
                 </span>
               )}
             </div>
