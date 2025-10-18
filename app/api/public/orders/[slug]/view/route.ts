@@ -26,21 +26,43 @@ export async function POST(
 
     const { selected_items, selected_addons, selected_bundles, status } = validationResult.data
 
-    // Get order details
-    const { data: orderData, error: orderError } = await supabase
-      .from('requests')
-      .select(`
-        *,
-        request_items!inner (
-          id,
-          section,
-          label,
-          price_paise
-        )
-      `)
-      .eq('short_slug', slug)
-      .in('request_items.id', selected_items)
-      .single()
+    // Determine the status to update to
+    const newStatus = status || 'viewed'
+
+    // Get order details - different query based on whether we have selected items
+    let orderData
+    let orderError
+
+    if (selected_items && selected_items.length > 0) {
+      // If items are selected, validate them with INNER JOIN
+      const result = await supabase
+        .from('requests')
+        .select(`
+          *,
+          request_items!inner (
+            id,
+            section,
+            label,
+            price_paise
+          )
+        `)
+        .eq('short_slug', slug)
+        .in('request_items.id', selected_items)
+        .single()
+
+      orderData = result.data
+      orderError = result.error
+    } else {
+      // If no items selected (just marking as viewed), get order without items validation
+      const result = await supabase
+        .from('requests')
+        .select('*')
+        .eq('short_slug', slug)
+        .single()
+
+      orderData = result.data
+      orderError = result.error
+    }
 
     if (orderError) {
       if (orderError.code === 'PGRST116') {
@@ -64,9 +86,12 @@ export async function POST(
       )
     }
 
-    // Calculate total for selected items
-    const selectedItems = orderData.request_items || []
-    const subtotalPaise = selectedItems.reduce((sum: number, item: { price_paise: number }) => sum + item.price_paise, 0)
+    // Calculate total for selected items (only if items are provided)
+    let subtotalPaise = 0
+    if (selected_items && selected_items.length > 0 && orderData.request_items) {
+      const selectedItems = orderData.request_items || []
+      subtotalPaise = selectedItems.reduce((sum: number, item: { price_paise: number }) => sum + item.price_paise, 0)
+    }
     
     // Calculate add-ons total if add-ons are selected
     let addonsTotal = 0
@@ -94,23 +119,29 @@ export async function POST(
     const laCartePaise = orderData.lacarte_paise ?? await getLaCartePrice()
     const totalPaise = subtotalPaise + addonsTotal + bundlesTotal + laCartePaise
 
-    // Determine the status to update to
-    const newStatus = status || 'viewed'
+    // Update request status and store the final totals (only if we have selections)
+    let updateData: any = {
+      status: newStatus,
+    }
 
-    // Update request status and store the final totals
+    // Only update totals if we have selected items (not just marking as viewed)
+    if (selected_items && selected_items.length > 0) {
+      updateData.subtotal_paise = subtotalPaise
+      updateData.tax_paise = 0 // No separate GST as prices are inclusive
+      updateData.total_paise = totalPaise
+    }
+
     const { error: updateError } = await supabase
       .from('requests')
-      .update({
-        status: newStatus,
-        subtotal_paise: subtotalPaise,
-        tax_paise: 0, // No separate GST as prices are inclusive
-        total_paise: totalPaise,
-      })
+      .update(updateData)
       .eq('id', orderData.id)
 
     if (updateError) {
       console.error('Request update error:', updateError)
-      // Don't fail the request if we can't update status
+      return NextResponse.json(
+        { error: 'Failed to update order status' },
+        { status: 500 }
+      )
     }
 
     // If confirming the order, store the selected items, addons, and bundles
