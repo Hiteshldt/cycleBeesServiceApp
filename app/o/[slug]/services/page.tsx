@@ -87,10 +87,10 @@ export default function ServiceSelectionPage() {
         setSelectedItems(suggestedItemIds)
       }
 
-      // Mark as viewed if status is still sent
-      if (data.request.status === 'sent') {
+      // Mark as viewed if status is 'pending' or 'sent'
+      if (data.request.status === 'pending' || data.request.status === 'sent') {
         try {
-          await fetch(`/api/public/orders/${slug}/view`, {
+          const response = await fetch(`/api/public/orders/${slug}/view`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -98,10 +98,15 @@ export default function ServiceSelectionPage() {
               status: 'viewed'
             }),
           })
-          setOrderData({
-            ...data,
-            request: { ...data.request, status: 'viewed' }
-          })
+
+          if (response.ok) {
+            setOrderData({
+              ...data,
+              request: { ...data.request, status: 'viewed' }
+            })
+          } else {
+            console.error('Failed to mark as viewed:', response.statusText)
+          }
         } catch (error) {
           console.error('Error marking as viewed:', error)
         }

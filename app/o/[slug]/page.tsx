@@ -205,11 +205,11 @@ export default function PublicOrderPage() {
         try {
           // Use saved selections or default to suggested items for marking as viewed
           const savedItems = sessionStorage.getItem(`selectedItems_${slug}`)
-          const itemsToMark = savedItems 
+          const itemsToMark = savedItems
             ? JSON.parse(savedItems)
             : data.items.filter((item: RequestItem) => item.is_suggested).map((item: RequestItem) => item.id)
-          
-          await fetch(`/api/public/orders/${slug}/view`, {
+
+          const response = await fetch(`/api/public/orders/${slug}/view`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -217,12 +217,17 @@ export default function PublicOrderPage() {
               status: 'viewed'
             }),
           })
-          setHasViewedEstimate(true)
-          // Update local status
-          setOrderData({
-            ...data,
-            request: { ...data.request, status: 'viewed' }
-          })
+
+          if (response.ok) {
+            setHasViewedEstimate(true)
+            // Update local status
+            setOrderData({
+              ...data,
+              request: { ...data.request, status: 'viewed' }
+            })
+          } else {
+            console.error('Failed to mark as viewed:', response.statusText)
+          }
         } catch (error) {
           console.error('Error marking as viewed:', error)
         }

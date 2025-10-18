@@ -21,7 +21,8 @@
       "Bash(node -e \"console.log(require(''crypto'').randomBytes(64).toString(''hex''))\")",
       "Bash(taskkill:*)",
       "Bash(git check-ignore:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(git push --force origin main)"
     ],
     "deny": [],
     "ask": []

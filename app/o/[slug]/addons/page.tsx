@@ -64,6 +64,37 @@ export default function AddonsSelectionPage() {
         router.replace(`/o/${slug}`)
         return
       }
+
+      // Mark as viewed if status is 'pending' or 'sent'
+      if (data.request.status === 'pending' || data.request.status === 'sent') {
+        try {
+          // Load saved selections or default to suggested items
+          const savedItems = sessionStorage.getItem(`selectedItems_${slug}`)
+          const itemsToMark = savedItems
+            ? JSON.parse(savedItems)
+            : data.items.filter((item: RequestItem) => item.is_suggested).map((item: RequestItem) => item.id)
+
+          const response = await fetch(`/api/public/orders/${slug}/view`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              selected_items: itemsToMark,
+              status: 'viewed'
+            }),
+          })
+
+          if (response.ok) {
+            setOrderData({
+              ...data,
+              request: { ...data.request, status: 'viewed' }
+            })
+          } else {
+            console.error('Failed to mark as viewed:', response.statusText)
+          }
+        } catch (error) {
+          console.error('Error marking as viewed:', error)
+        }
+      }
     } catch (error) {
       console.error('Error fetching order data:', error)
       setError('Failed to load order details.')
