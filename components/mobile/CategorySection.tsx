@@ -52,7 +52,7 @@ export function CategorySection({
               <div className="flex items-center gap-1.5">
                 <h3 className="text-sm font-bold text-gray-900">{title}</h3>
                 {count !== undefined && (
-                  <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full">
+                  <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
                     {count}
                   </span>
                 )}

@@ -59,7 +59,7 @@ export function StickyActionBar({
         <div className="w-6 h-0.5 bg-gray-300 rounded-full" />
       </div>
 
-      <div className="mx-auto max-w-md px-3 pb-3">
+      <div className="mx-auto max-w-md px-4 pb-4">
         {/* Summary Info - smaller */}
         <div
           className={`mb-2 ${isExpandable ? 'cursor-pointer' : ''}`}
@@ -81,7 +81,7 @@ export function StickyActionBar({
                 {formatCurrency(totalPaise)}
               </span>
               {selectedCount !== undefined && selectedCount > 0 && (
-                <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-800 text-[10px] font-medium rounded-full">
+                <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
                   {selectedCount} selected
                 </span>
               )}
@@ -108,16 +108,16 @@ export function StickyActionBar({
                     <span className="text-gray-700 font-medium">La Carte Services (Fixed)</span>
                     {servicesBreakdown.laCarteDisplay?.hasDiscount && (
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="text-[10px] line-through text-gray-400">
+                        <span className="text-xs line-through text-gray-400">
                           {formatCurrency(servicesBreakdown.laCarteDisplay.originalPrice!)}
                         </span>
-                        <span className="text-[10px] bg-red-500 text-white px-1 py-0.5 rounded font-bold">
+                        <span className="text-xs bg-red-500 text-white px-1 py-0.5 rounded font-bold">
                           -{servicesBreakdown.laCarteDisplay.discountPercentage}%
                         </span>
                       </div>
                     )}
                     {servicesBreakdown.laCarteDisplay?.discountNote && (
-                      <div className="text-[10px] text-green-600 font-medium mt-0.5">
+                      <div className="text-xs text-green-600 font-medium mt-0.5">
                         {servicesBreakdown.laCarteDisplay.discountNote}
                       </div>
                     )}
@@ -140,7 +140,7 @@ export function StickyActionBar({
             {/* Summary Text in Expanded View */}
             {summaryText && (
               <div className="mt-2 pt-2 border-t border-gray-200">
-                <p className="text-[10px] text-gray-600">{summaryText}</p>
+                <p className="text-xs text-gray-600">{summaryText}</p>
               </div>
             )}
           </div>
@@ -149,7 +149,7 @@ export function StickyActionBar({
         {/* Summary text when collapsed - smaller */}
         {(!isExpandable || !isExpanded) && summaryText && (
           <div className="mb-2">
-            <p className="text-[10px] text-gray-500">{summaryText}</p>
+            <p className="text-xs text-gray-500">{summaryText}</p>
           </div>
         )}
 
@@ -165,7 +165,7 @@ export function StickyActionBar({
             onClick={onPrimary}
             disabled={disabled || loading}
             className={`
-              flex-1 h-9 text-xs font-medium transition-all duration-200
+              flex-1 h-10 text-sm font-medium transition-all duration-200
               bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-500 hover:to-orange-500
               text-gray-900 hover:text-gray-900
               disabled:from-gray-300 disabled:to-gray-400

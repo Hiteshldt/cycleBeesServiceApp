@@ -81,12 +81,12 @@ export function SelectionCard({
               {/* Left: Badges */}
               <div className="flex gap-1">
                 {/* Popular Badge */}
-                <div className="bg-white/20 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded-full font-bold border border-white/30">
+                <div className="bg-white/20 backdrop-blur-sm text-white text-xs px-2 py-0.5 rounded-full font-bold border border-white/30">
                   🎁 Bundle
                 </div>
                 {/* Discount Badge */}
                 {discount && (
-                  <div className="bg-gradient-to-r from-orange-400 to-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-md">
+                  <div className="bg-gradient-to-r from-orange-400 to-red-500 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-md">
                     -{discount.percentage}% OFF
                   </div>
                 )}
@@ -122,13 +122,13 @@ export function SelectionCard({
               <div className="flex items-baseline gap-1.5 mb-1.5">
                 {discount ? (
                   <>
-                    <span className="text-white/60 text-[10px] line-through">
+                    <span className="text-white/60 text-xs line-through">
                       {formatCurrency(discount.originalPrice)}
                     </span>
                     <span className="text-white font-black text-lg tracking-tight">
                       {formatCurrency(price)}
                     </span>
-                    <span className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 text-[10px] px-1 py-0.5 rounded-full font-bold">
+                    <span className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 text-xs px-1 py-0.5 rounded-full font-bold">
                       SAVE {formatCurrency(discount.originalPrice - price)}
                     </span>
                   </>
@@ -141,7 +141,7 @@ export function SelectionCard({
 
               {/* Description */}
               {description && (
-                <p className="text-white/80 text-[10px] leading-relaxed">
+                <p className="text-white/80 text-xs leading-relaxed">
                   {description}
                 </p>
               )}
@@ -151,7 +151,7 @@ export function SelectionCard({
           {/* Features Section - smaller */}
           <div className="px-3 py-3 bg-white/95 backdrop-blur-sm">
             <div className="mb-2">
-              <h4 className="text-gray-900 font-semibold text-[10px] mb-1.5 flex items-center gap-1">
+              <h4 className="text-gray-900 font-semibold text-xs mb-1.5 flex items-center gap-1">
                 <span className="w-1 h-1 bg-purple-500 rounded-full"></span>
                 What&apos;s Included
               </h4>
@@ -162,7 +162,7 @@ export function SelectionCard({
                     <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover/item:scale-110 transition-transform">
                       <Check className="w-2 h-2 text-white font-bold" />
                     </div>
-                    <span className="text-gray-700 text-[10px] leading-relaxed group-hover/item:text-gray-900 transition-colors">
+                    <span className="text-gray-700 text-xs leading-relaxed group-hover/item:text-gray-900 transition-colors">
                       {point}
                     </span>
                   </div>
@@ -171,9 +171,9 @@ export function SelectionCard({
                 {bulletPoints.length > 3 && (
                   <div className="flex items-center gap-2 mt-0.5">
                     <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center flex-shrink-0">
-                      <span className="text-white text-[10px] font-bold">+</span>
+                      <span className="text-white text-xs font-bold">+</span>
                     </div>
-                    <span className="text-purple-600 font-semibold text-[10px]">
+                    <span className="text-purple-600 font-semibold text-xs">
                       {bulletPoints.length - 3} more premium services included
                     </span>
                   </div>
@@ -186,18 +186,18 @@ export function SelectionCard({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 flex items-center justify-center">
-                    <span className="text-white text-[10px] font-bold">✓</span>
+                    <span className="text-white text-xs font-bold">✓</span>
                   </div>
-                  <span className="text-green-600 font-semibold text-[10px]">Best Value Package</span>
+                  <span className="text-green-600 font-semibold text-xs">Best Value Package</span>
                 </div>
-                <span className="text-purple-600 font-bold text-[10px]">Complete Care</span>
+                <span className="text-purple-600 font-bold text-xs">Complete Care</span>
               </div>
             </div>
           </div>
         </div>
       ) : (
         // Simple layout - 20% smaller
-        <div className="p-2.5">
+        <div className="px-3 py-3">
           <div className="flex items-start justify-between">
             {/* Left side: Checkbox + Content */}
             <div className="flex items-start gap-2.5 flex-1">
@@ -238,7 +238,7 @@ export function SelectionCard({
 
                 {/* Recommended text below */}
                 {isRecommended && (
-                  <p className="text-[10px] text-blue-600 font-medium mt-0.5">
+                  <p className="text-xs text-blue-600 font-medium mt-0.5">
                     Recommended
                   </p>
                 )}
@@ -249,7 +249,7 @@ export function SelectionCard({
             <div className="text-right flex-shrink-0 ml-2.5">
               {discount ? (
                 <div className="space-y-0.5">
-                  <div className="text-[10px] text-gray-400 line-through opacity-75 group-hover:opacity-100 transition-opacity">
+                  <div className="text-xs text-gray-400 line-through opacity-75 group-hover:opacity-100 transition-opacity">
                     {formatCurrency(discount.originalPrice)}
                   </div>
                   <div className="text-sm font-bold text-green-600 group-hover:text-green-700 transition-colors">
@@ -257,13 +257,7 @@ export function SelectionCard({
                   </div>
                 </div>
               ) : (
-                <div className={`
-                  text-sm font-bold transition-all duration-300 group-hover:scale-105
-                  ${isSelected
-                    ? 'text-yellow-600 group-hover:text-yellow-700'
-                    : 'text-gray-900 group-hover:text-gray-800'
-                  }
-                `}>
+                <div className="text-sm font-bold text-green-700 group-hover:text-green-800 transition-all duration-300 group-hover:scale-105">
                   {formatCurrency(price)}
                 </div>
               )}
