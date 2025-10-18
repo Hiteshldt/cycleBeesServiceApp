@@ -126,7 +126,7 @@ export async function POST(
     const totalPaise = subtotalPaise + addonsTotal + bundlesTotal + laCartePaise
 
     // Update request status and store the final totals (only if we have selections)
-    let updateData: any = {
+    const updateData: any = {
       status: newStatus,
     }
 
