@@ -52,7 +52,6 @@ export function ConfirmedOrderView({
       <AppHeader
         title="Order Confirmed"
         subtitle="Thank you for choosing CycleBees"
-        meta={`${request.bike_name} - ${request.customer_name}`}
         progress={100}
         onHelp={onNeedHelp}
       />

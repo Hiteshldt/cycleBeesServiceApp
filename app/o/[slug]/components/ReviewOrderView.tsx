@@ -54,7 +54,6 @@ export function ReviewOrderView({
       <AppHeader
         title="Review Your Order"
         subtitle="Double-check your selections before confirming"
-        meta={`${request.bike_name} - ${request.customer_name}`}
         progress={100}
         showBack={true}
         onBack={onBack}
