@@ -484,14 +484,23 @@ Service Package")
 
 ---
 
-### 2. `request_notes` (Missing)
+### 2. `request_notes` (REMOVED - 2025-10-19)
 
-**Referenced In**:
+**Status**: ❌ Removed from project
 
-- `app/api/requests/[id]/notes/route.ts:1`
-- `app/api/requests/[id]/notes/[noteId]/route.ts:1`
+**Reason**:
 
-**Expected Schema** (inferred from API code):
+- Table existed but was empty (0 rows)
+- No UI components used this feature
+- API endpoints were orphaned code
+- Removed in migration `003_remove_request_notes.sql`
+
+**Previously Referenced In** (removed):
+
+- ~~`app/api/requests/[id]/notes/route.ts`~~ (deleted)
+- ~~`app/api/requests/[id]/notes/[noteId]/route.ts`~~ (deleted)
+
+**Schema** (for reference only):
 
 ```sql
 CREATE TABLE request_notes (

@@ -26,6 +26,7 @@ interface AnalyticsData {
   ordersByStatus: Array<{ status: string; count: number; percentage: number }>
   revenueByPeriod: Array<{ period: string; revenue: number; orders: number }>
   addonsPerformance: Array<{ name: string; adoptionRate: number; revenue: number }>
+  bundlesPerformance: Array<{ name: string; adoptionRate: number; revenue: number }>
   dailyTrends: Array<{ date: string; orders: number; revenue: number }>
 }
 
@@ -71,6 +72,7 @@ export default function AnalyticsPage() {
           ordersByStatus: [],
           revenueByPeriod: [],
           addonsPerformance: [],
+          bundlesPerformance: [],
           dailyTrends: [],
         })
       }
@@ -83,6 +85,7 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     fetchAnalytics()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange.startDate, dateRange.endDate])
 
   const formatCurrency = (paise: number) => {
@@ -413,23 +416,75 @@ export default function AnalyticsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {analyticsData.addonsPerformance.map((addon) => (
-                  <div key={addon.name} className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="font-medium text-sm mb-2">{addon.name}</h4>
-                    <div className="space-y-1">
-                      <p className="text-xs text-gray-600">
-                        Adoption Rate:{' '}
-                        <span className="font-medium">{addon.adoptionRate.toFixed(1)}%</span>
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        Revenue:{' '}
-                        <span className="font-medium">{formatCurrency(addon.revenue)}</span>
-                      </p>
+              {analyticsData.addonsPerformance.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {analyticsData.addonsPerformance.map((addon) => (
+                    <div key={addon.name} className="bg-gray-50 rounded-lg p-4">
+                      <h4 className="font-medium text-sm mb-2">{addon.name}</h4>
+                      <div className="space-y-1">
+                        <p className="text-xs text-gray-600">
+                          Adoption Rate:{' '}
+                          <span className="font-medium">{addon.adoptionRate.toFixed(1)}%</span>
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          Revenue:{' '}
+                          <span className="font-medium">{formatCurrency(addon.revenue)}</span>
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <TrendingUp className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-sm text-gray-500">No addon data available</p>
+                  <p className="text-xs text-gray-400">
+                    Customers haven&apos;t selected any addons yet
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Bundles Performance */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Service Bundles Performance
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {analyticsData.bundlesPerformance && analyticsData.bundlesPerformance.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {analyticsData.bundlesPerformance.map((bundle) => (
+                    <div
+                      key={bundle.name}
+                      className="bg-blue-50 rounded-lg p-4 border border-blue-100"
+                    >
+                      <h4 className="font-medium text-sm mb-2">{bundle.name}</h4>
+                      <div className="space-y-1">
+                        <p className="text-xs text-gray-600">
+                          Adoption Rate:{' '}
+                          <span className="font-medium">{bundle.adoptionRate.toFixed(1)}%</span>
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          Revenue:{' '}
+                          <span className="font-medium">{formatCurrency(bundle.revenue)}</span>
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <TrendingUp className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-sm text-gray-500">No bundle data available</p>
+                  <p className="text-xs text-gray-400">
+                    Customers haven&apos;t selected any bundles yet
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </>

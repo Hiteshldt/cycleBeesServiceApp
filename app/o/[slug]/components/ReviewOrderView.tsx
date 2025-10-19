@@ -89,7 +89,7 @@ export function ReviewOrderView({
         {repairItems.filter((item) => selectedItems.has(item.id)).length > 0 && (
           <CategorySection
             title="Repair Services"
-            emoji="??"
+            emoji="🔧"
             description="Selected essential fixes for your bike"
             count={repairItems.filter((item) => selectedItems.has(item.id)).length}
             isCollapsible={false}
@@ -117,7 +117,7 @@ export function ReviewOrderView({
         {replacementItems.filter((item) => selectedItems.has(item.id)).length > 0 && (
           <CategorySection
             title="Replacement Parts"
-            emoji="??"
+            emoji="⚙️"
             description="Selected new parts for better performance"
             count={replacementItems.filter((item) => selectedItems.has(item.id)).length}
             isCollapsible={false}
@@ -145,7 +145,7 @@ export function ReviewOrderView({
         {addons.filter((addon) => selectedAddons.has(addon.id)).length > 0 && (
           <CategorySection
             title="Add-on Services"
-            emoji="?"
+            emoji="✨"
             description="Selected premium services to enhance your bike care"
             count={addons.filter((addon) => selectedAddons.has(addon.id)).length}
             isCollapsible={false}
@@ -173,7 +173,7 @@ export function ReviewOrderView({
         {bundles.filter((bundle) => selectedBundles.has(bundle.id)).length > 0 && (
           <CategorySection
             title="Service Bundles"
-            emoji="??"
+            emoji="📦"
             description="Selected comprehensive packages with multiple services"
             count={bundles.filter((bundle) => selectedBundles.has(bundle.id)).length}
             isCollapsible={false}
@@ -272,7 +272,7 @@ export function ReviewOrderView({
 
         <CategorySection
           title="Order Summary"
-          emoji="??"
+          emoji="📋"
           description="Complete breakdown of confirmed services"
           isCollapsible={false}
         >

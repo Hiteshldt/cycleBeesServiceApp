@@ -29,7 +29,7 @@ type ConfirmedOrderViewProps = {
 }
 
 export function ConfirmedOrderView({
-  request,
+  request: _request,
   items,
   addons,
   bundles,
@@ -77,7 +77,7 @@ export function ConfirmedOrderView({
         {repairItems.filter((item) => selectedItems.has(item.id)).length > 0 && (
           <CategorySection
             title="Confirmed Repair Services"
-            emoji="??"
+            emoji="🔧"
             description="Essential fixes for your bike"
             count={repairItems.filter((item) => selectedItems.has(item.id)).length}
             isCollapsible={true}
@@ -106,7 +106,7 @@ export function ConfirmedOrderView({
         {replacementItems.filter((item) => selectedItems.has(item.id)).length > 0 && (
           <CategorySection
             title="Confirmed Replacement Parts"
-            emoji="??"
+            emoji="⚙️"
             description="New parts for better performance"
             count={replacementItems.filter((item) => selectedItems.has(item.id)).length}
             isCollapsible={true}
@@ -135,7 +135,7 @@ export function ConfirmedOrderView({
         {addons.filter((addon) => selectedAddons.has(addon.id)).length > 0 && (
           <CategorySection
             title="Confirmed Add-on Services"
-            emoji="?"
+            emoji="✨"
             description="Premium services to enhance your bike care"
             count={addons.filter((addon) => selectedAddons.has(addon.id)).length}
             isCollapsible={true}
@@ -164,7 +164,7 @@ export function ConfirmedOrderView({
         {bundles.filter((bundle) => selectedBundles.has(bundle.id)).length > 0 && (
           <CategorySection
             title="Confirmed Service Bundles"
-            emoji="??"
+            emoji="📦"
             description="Comprehensive packages with multiple services"
             count={bundles.filter((bundle) => selectedBundles.has(bundle.id)).length}
             isCollapsible={true}
@@ -256,7 +256,7 @@ export function ConfirmedOrderView({
 
         <CategorySection
           title="Order Summary"
-          emoji="??"
+          emoji="📋"
           description="Complete breakdown of confirmed services"
           isCollapsible={false}
         >

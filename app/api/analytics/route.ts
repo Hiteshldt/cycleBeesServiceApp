@@ -110,20 +110,113 @@ export async function GET(request: NextRequest) {
       endDateObj
     )
 
-    // 6. Get addons performance (mock data since addons might not be fully implemented)
+    // 6. Get addons performance with REAL data
     const { data: addons } = await supabase
       .from('addons')
-      .select('name, price_paise')
+      .select('id, name, price_paise')
       .eq('is_active', true)
 
-    // For now, generate mock addon performance data
-    const addonsPerformance = (addons || []).map((addon) => ({
-      name: addon.name,
-      adoptionRate: Math.random() * 30 + 5, // 5-35% adoption rate
-      revenue: Math.round((addon.price_paise || 0) * (Math.random() * 10 + 2)), // 2-12 purchases
-    }))
+    // Get real addon selections from confirmed orders
+    const { data: confirmedAddonsList } = await supabase
+      .from('confirmed_order_addons')
+      .select(
+        `
+        addon_id,
+        addons!inner (
+          id,
+          name,
+          price_paise
+        ),
+        requests!inner (
+          created_at,
+          status
+        )
+      `
+      )
+      .gte('requests.created_at', `${startDate}T00:00:00.000Z`)
+      .lte('requests.created_at', `${endDate}T23:59:59.999Z`)
 
-    // 7. Generate daily trends for limited range (max 90 days)
+    // Calculate real addon statistics
+    const addonStats: Record<string, { count: number; revenue: number }> = {}
+
+    confirmedAddonsList?.forEach((item: any) => {
+      const addonId = item.addon_id
+      if (!addonStats[addonId]) {
+        addonStats[addonId] = {
+          count: 0,
+          revenue: 0,
+        }
+      }
+      addonStats[addonId].count++
+      addonStats[addonId].revenue += item.addons?.price_paise || 0
+    })
+
+    // Map to addon performance with real data
+    const addonsPerformance = (addons || []).map((addon) => {
+      const stats = addonStats[addon.id] || { count: 0, revenue: 0 }
+      const adoptionRate = totalOrders > 0 ? (stats.count / totalOrders) * 100 : 0
+
+      return {
+        name: addon.name,
+        adoptionRate,
+        revenue: stats.revenue,
+      }
+    })
+
+    // 7. Get bundles performance with REAL data
+    const { data: bundles } = await supabase
+      .from('service_bundles')
+      .select('id, name, price_paise')
+      .eq('is_active', true)
+
+    // Get real bundle selections from confirmed orders
+    const { data: confirmedBundlesList } = await supabase
+      .from('confirmed_order_bundles')
+      .select(
+        `
+        bundle_id,
+        service_bundles!inner (
+          id,
+          name,
+          price_paise
+        ),
+        requests!inner (
+          created_at,
+          status
+        )
+      `
+      )
+      .gte('requests.created_at', `${startDate}T00:00:00.000Z`)
+      .lte('requests.created_at', `${endDate}T23:59:59.999Z`)
+
+    // Calculate real bundle statistics
+    const bundleStats: Record<string, { count: number; revenue: number }> = {}
+
+    confirmedBundlesList?.forEach((item: any) => {
+      const bundleId = item.bundle_id
+      if (!bundleStats[bundleId]) {
+        bundleStats[bundleId] = {
+          count: 0,
+          revenue: 0,
+        }
+      }
+      bundleStats[bundleId].count++
+      bundleStats[bundleId].revenue += item.service_bundles?.price_paise || 0
+    })
+
+    // Map to bundle performance with real data
+    const bundlesPerformance = (bundles || []).map((bundle) => {
+      const stats = bundleStats[bundle.id] || { count: 0, revenue: 0 }
+      const adoptionRate = totalOrders > 0 ? (stats.count / totalOrders) * 100 : 0
+
+      return {
+        name: bundle.name,
+        adoptionRate,
+        revenue: stats.revenue,
+      }
+    })
+
+    // 8. Generate daily trends for limited range (max 90 days)
     const trendsEndDate = new Date(endDateObj)
     const trendsStartDate = new Date(
       Math.max(
@@ -142,6 +235,7 @@ export async function GET(request: NextRequest) {
       ordersByStatus,
       revenueByPeriod,
       addonsPerformance,
+      bundlesPerformance,
       dailyTrends,
     }
 
@@ -155,8 +249,8 @@ export async function GET(request: NextRequest) {
 function generatePeriodData(
   requests: any[],
   periodFormat: 'daily' | 'weekly' | 'monthly',
-  startDate: Date,
-  endDate: Date
+  _startDate: Date,
+  _endDate: Date
 ) {
   const periods: Record<string, { revenue: number; orders: number }> = {}
 
