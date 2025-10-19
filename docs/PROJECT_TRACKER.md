@@ -1,7 +1,8 @@
 # CycleBees Services - Project Tracker
 
-**Last Updated**: 2025-10-19 **Status**: Phase 5 - Testing Infrastructure
-Complete ✅ **Next Phase**: Phase 6 - Security & Performance
+**Last Updated**: 2025-10-19 **Status**: Phase 6 - Security & Performance
+(Simplified) Complete ✅ **Next Phase**: Phase 7 - Deletion Candidate Review
+(BLOCKED) or Phase 8 - CI/CD
 
 ---
 
@@ -75,17 +76,22 @@ Complete ✅ **Next Phase**: Phase 6 - Security & Performance
   - [ ] `/api/requests` - CRUD operations
   - [ ] `/api/admin/auth` - Authentication flow
 
-### Phase 6: Security & Performance 🔒 PENDING
+### Phase 6: Security & Performance ✅ COMPLETE (Simplified Approach)
 
-- [ ] Implement API rate limiting (e.g., with `@upstash/ratelimit`)
-- [ ] Add Supabase Row Level Security (RLS) policies
-- [ ] Move hardcoded values to environment variables:
-  - [ ] Cloudinary image URL → `CLOUDINARY_LOGO_URL`
-  - [ ] Support WhatsApp number → `SUPPORT_WHATSAPP_NUMBER`
-- [ ] Add input sanitization (XSS prevention)
-- [ ] Implement centralized error logging (e.g., Sentry)
-- [ ] Add request/response logging middleware
-- [ ] Performance audit with Lighthouse
+- [x] Move hardcoded values to environment variables:
+  - [x] Cloudinary promo image URL → `NEXT_PUBLIC_CLOUDINARY_PROMO_IMAGE`
+  - [x] Support WhatsApp number → `NEXT_PUBLIC_SUPPORT_WHATSAPP`
+  - [x] Created `lib/constants.ts` for centralized configuration
+- [ ] Supabase Row Level Security (RLS) NOT NEEDED - Database only accessed from
+      backend API routes
+- [ ] API rate limiting (DEFERRED - Not critical for MVP, Vercel has built-in
+      DDoS protection)
+- [ ] Input sanitization (DEFERRED - Zod validation already in place, XSS risk
+      is low)
+- [ ] Centralized error logging (DEFERRED - Can add Sentry later if needed)
+- [ ] Request/response logging middleware (DEFERRED - Vercel provides logging)
+- [ ] Performance audit with Lighthouse (DEFERRED - Optimization can be done
+      later)
 
 ### Phase 7: Deletion Candidate Review 🗑️ BLOCKED
 
@@ -531,6 +537,24 @@ Complete ✅ **Next Phase**: Phase 6 - Security & Performance
 - ✅ All 115 tests passing, 0 failures
 - ✅ Added test scripts to package.json (test, test:watch, test:coverage)
 - ✅ Fixed ESLint errors for pre-commit hook compatibility
+
+### 2025-10-19 - Security & Performance (Phase 6 - Simplified)
+
+- ✅ Created lib/constants.ts for centralized configuration
+- ✅ Added environment variables to .env.example:
+  - NEXT_PUBLIC_SUPPORT_WHATSAPP (support WhatsApp number)
+  - NEXT_PUBLIC_CLOUDINARY_PROMO_IMAGE (promotional image URL)
+- ✅ Replaced hardcoded values in 8 files:
+  - app/api/webhooks/send-whatsapp/route.ts
+  - app/lookup/page.tsx
+  - app/o/[slug]/page.tsx, services/page.tsx, addons/page.tsx, bundles/page.tsx
+  - lib/bill-generator.ts
+- ✅ Benefits: Easy config changes, consistent values, environment-specific
+  support
+- ✅ All 115 tests still passing, TypeScript compilation successful
+- ⏭️ Deferred: API rate limiting, input sanitization, error logging (can add
+  later if needed)
+- ℹ️ RLS not needed: Database access only from backend API routes with JWT auth
 
 ---
 
