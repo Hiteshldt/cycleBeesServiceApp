@@ -1,0 +1,173 @@
+
+> cyclebees-whatsapp-service@0.1.0 test
+> jest --coverage --passWithNoTests
+
+FAIL tests/unit/lib/auth.test.ts
+  ● Test suite failed to run
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    E:\CycleBees\App_Test_Local\CycleBees_Services_1.0(Refactor_Cleanup)\node_modules\jose\dist\webapi\index.js:1
+    export { compactDecrypt } from './jwe/compact/decrypt.js';
+    ^^^^^^
+
+    SyntaxError: Unexpected token 'export'
+
+    [0m[0m
+
+      at Runtime.createScriptFromCode (E:\CycleBees\App_Test_Local\CycleBees_Services_1.0(Refactor_Cleanup)../../../node_modules/jest-runtime/build/index.js:1318:40)
+      at Object.<anonymous> (E:\CycleBees\App_Test_Local\CycleBees_Services_1.0(Refactor_Cleanup)../../../lib/auth.ts:805:27)
+      at Object.<anonymous> (E:\CycleBees\App_Test_Local\CycleBees_Services_1.0(Refactor_Cleanup)../../../tests/unit/lib/auth.test.ts:5:15)
+
+PASS tests/unit/lib/validations.test.ts
+FAIL tests/unit/lib/utils.test.ts
+  ● lib/utils › formatCurrency() - Currency formatting › should handle decimal values correctly
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "₹1,500.50"
+    Received: "₹1,500.5"
+
+    [0m [90m 41 |[39m
+     [90m 42 |[39m     it([32m'should handle decimal values correctly'[39m[33m,[39m () [33m=>[39m {
+    [31m[1m>[22m[39m[90m 43 |[39m       expect(formatCurrency([35m150050[39m))[33m.[39mtoBe([32m'₹1,500.50'[39m)
+     [90m    |[39m                                      [31m[1m^[22m[39m
+     [90m 44 |[39m     })
+     [90m 45 |[39m
+     [90m 46 |[39m     it([32m'should handle large amounts'[39m[33m,[39m () [33m=>[39m {[0m
+
+      at Object.toBe (E:\CycleBees\App_Test_Local\CycleBees_Services_1.0(Refactor_Cleanup)../../../tests/unit/lib/utils.test.ts:43:38)
+
+----------------------------------------------|---------|----------|---------|---------|-------------------
+File                                          | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+----------------------------------------------|---------|----------|---------|---------|-------------------
+All files                                     |    1.98 |     1.08 |    2.24 |    1.87 |                   
+ app                                          |       0 |      100 |       0 |       0 |                   
+  layout.tsx                                  |       0 |      100 |       0 |       0 | 2-10              
+  page.tsx                                    |       0 |      100 |       0 |       0 | 3-8               
+ app/admin                                    |       0 |        0 |       0 |       0 |                   
+  layout.tsx                                  |       0 |        0 |       0 |       0 | 3-122             
+  page.tsx                                    |       0 |        0 |       0 |       0 | 3-1328            
+ app/admin/addons                             |       0 |        0 |       0 |       0 |                   
+  page.tsx                                    |       0 |        0 |       0 |       0 | 3-285             
+ app/admin/analytics                          |       0 |        0 |       0 |       0 |                   
+  page.tsx                                    |       0 |        0 |       0 |       0 | 3-418             
+ app/admin/login                              |       0 |        0 |       0 |       0 |                   
+  page.tsx                                    |       0 |        0 |       0 |       0 | 3-111             
+ app/admin/new                                |       0 |        0 |       0 |       0 |                   
+  page.tsx                                    |       0 |        0 |       0 |       0 | 3-826             
+ app/admin/settings                           |       0 |        0 |       0 |       0 |                   
+  page.tsx                                    |       0 |        0 |       0 |       0 | 3-897             
+ app/api/addons                               |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-21              
+ app/api/admin/addons                         |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-64              
+ app/api/admin/addons/[id]                    |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-47              
+ app/api/admin/auth                           |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-49              
+ app/api/admin/bundles                        |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-74              
+ app/api/admin/bundles/[id]                   |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-118             
+ app/api/admin/lacarte                        |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-88              
+ app/api/admin/verify-token                   |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-35              
+ app/api/analytics                            |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-220             
+ app/api/bundles                              |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-20              
+ app/api/public/lookup                        |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-62              
+ app/api/public/orders/[slug]                 |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-48              
+ app/api/public/orders/[slug]/view            |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-219             
+ app/api/requests                             |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-224             
+ app/api/requests/[id]                        |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-159             
+ app/api/requests/[id]/confirmed              |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-48              
+ app/api/requests/[id]/items                  |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-96              
+ app/api/requests/[id]/items/[itemId]         |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-142             
+ app/api/requests/[id]/notes                  |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-81              
+ app/api/requests/[id]/notes/[noteId]         |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-77              
+ app/api/requests/[id]/pdf                    |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-137             
+ app/api/requests/[id]/update-whatsapp-status |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-53              
+ app/api/webhooks/send-whatsapp               |       0 |        0 |       0 |       0 |                   
+  route.ts                                    |       0 |        0 |       0 |       0 | 1-257             
+ app/lookup                                   |       0 |        0 |       0 |       0 |                   
+  page.tsx                                    |       0 |        0 |       0 |       0 | 3-125             
+ app/o/[slug]                                 |       0 |        0 |       0 |       0 |                   
+  page.tsx                                    |       0 |        0 |       0 |       0 | 3-1254            
+ app/o/[slug]/addons                          |       0 |        0 |       0 |       0 |                   
+  page.tsx                                    |       0 |        0 |       0 |       0 | 3-344             
+ app/o/[slug]/bundles                         |       0 |        0 |       0 |       0 |                   
+  page.tsx                                    |       0 |        0 |       0 |       0 | 3-334             
+ app/o/[slug]/services                        |       0 |        0 |       0 |       0 |                   
+  page.tsx                                    |       0 |        0 |       0 |       0 | 3-321             
+ components                                   |       0 |        0 |       0 |       0 |                   
+  BillPreview.tsx                             |       0 |        0 |       0 |       0 | 3-188             
+  DownloadModal.tsx                           |       0 |        0 |       0 |       0 | 3-191             
+  NotesManager.tsx                            |       0 |        0 |       0 |       0 | 3-248             
+ components/mobile                            |       0 |        0 |       0 |       0 |                   
+  AppHeader.tsx                               |       0 |        0 |       0 |       0 | 3-97              
+  CategorySection.tsx                         |       0 |        0 |       0 |       0 | 3-82              
+  SelectionCard.tsx                           |       0 |        0 |       0 |       0 | 3-275             
+  StickyActionBar.tsx                         |       0 |        0 |       0 |       0 | 3-188             
+  Toast.tsx                                   |       0 |        0 |       0 |       0 | 3-54              
+ components/ui                                |       0 |        0 |       0 |       0 |                   
+  badge.tsx                                   |       0 |        0 |       0 |       0 | 1-28              
+  button.tsx                                  |       0 |        0 |       0 |       0 | 1-42              
+  card.tsx                                    |       0 |        0 |       0 |       0 | 1-39              
+  input.tsx                                   |       0 |      100 |       0 |       0 | 1-23              
+  label.tsx                                   |       0 |      100 |     100 |       0 | 1-18              
+  modal.tsx                                   |       0 |        0 |       0 |       0 | 3-17              
+  pagination.tsx                              |       0 |        0 |       0 |       0 | 3-129             
+ lib                                          |   22.47 |    15.78 |   23.63 |   21.82 |                   
+  auth-edge.ts                                |       0 |        0 |       0 |       0 | 6-42              
+  auth.ts                                     |       0 |        0 |       0 |       0 | 7-54              
+  bill-generator.ts                           |       0 |        0 |       0 |       0 | 2-532             
+  lacarte.ts                                  |       0 |        0 |       0 |       0 | 11-150            
+  notification.ts                             |       0 |        0 |       0 |       0 | 2-133             
+  supabase.ts                                 |       0 |      100 |     100 |       0 | 1-6               
+  utils.ts                                    |   94.11 |      100 |    92.3 |      94 | 57-59             
+  validations.ts                              |     100 |      100 |     100 |     100 |                   
+----------------------------------------------|---------|----------|---------|---------|-------------------
+Jest: "global" coverage threshold for statements (60%) not met: 1.98%
+Jest: "global" coverage threshold for branches (60%) not met: 1.08%
+Jest: "global" coverage threshold for lines (60%) not met: 1.87%
+Jest: "global" coverage threshold for functions (60%) not met: 2.24%
+Test Suites: 2 failed, 1 passed, 3 total
+Tests:       1 failed, 87 passed, 88 total
+Snapshots:   0 total
+Time:        11.501 s
+Ran all test suites.
