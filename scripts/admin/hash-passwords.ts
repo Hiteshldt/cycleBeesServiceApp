@@ -10,7 +10,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
-import { hashPassword } from '../lib/auth'
+import { hashPassword } from '../../lib/auth'
 import * as dotenv from 'dotenv'
 
 // Load environment variables from .env.local

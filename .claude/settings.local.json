@@ -15,7 +15,10 @@
       "Bash(git add -f .env.example)",
       "Bash(git commit -m \"docs: add comprehensive refactor documentation and tooling\n\n- Add PROJECT_TRACKER.md with 8-phase refactor plan\n- Add DELETION_CANDIDATES.md for safe file removal tracking\n- Update README.md with complete setup and deployment guide (786 lines)\n- Add .env.example with detailed documentation and security notes\n- Add .editorconfig for cross-editor consistency\n- Add Prettier configuration (.prettierrc.json, .prettierignore)\n- Add utility scripts (verify-env, sanity-check, restructure, deletion management)\n\nPhase 1 (Analysis & Planning) complete ✅\nReady for Phase 2 (Non-Destructive Restructure)\")",
       "Bash(git add .claude/settings.local.json)",
-      "Bash(git commit -m \"chore: remove Claude Code editor settings\")"
+      "Bash(git commit -m \"chore: remove Claude Code editor settings\")",
+      "Bash(npx tsc --noEmit)",
+      "Bash(npm run lint)",
+      "Bash(git add scripts/admin/hash-passwords.ts .claude/settings.local.json)"
     ],
     "deny": [],
     "ask": []
