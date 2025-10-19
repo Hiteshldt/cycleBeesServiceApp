@@ -17,6 +17,7 @@ import { AppHeader } from '@/components/mobile/AppHeader'
 import { SelectionCard } from '@/components/mobile/SelectionCard'
 import { CategorySection } from '@/components/mobile/CategorySection'
 import { StickyActionBar } from '@/components/mobile/StickyActionBar'
+import { SUPPORT_WHATSAPP_NUMBER } from '@/lib/constants'
 
 type OrderData = {
   request: Request
@@ -182,7 +183,7 @@ export default function ServiceSelectionPage() {
   const handleNeedHelp = () => {
     if (!orderData) return
     // Support contact number: +91 95973 12212 (international digits only for wa.me)
-    const supportNumberIntl = '919597312212'
+    const supportNumberIntl = SUPPORT_WHATSAPP_NUMBER
     const message = `Hi, I need help with my service estimate for ${orderData.request.bike_name} (Order ${orderData.request.order_id}). Can you please assist me?`
     openWhatsApp(supportNumberIntl, message)
   }

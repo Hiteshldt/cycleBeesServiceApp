@@ -1,5 +1,6 @@
 // Bill/Receipt generator utilities
 import { formatCurrency, formatDate } from './utils'
+import { SUPPORT_WHATSAPP_NUMBER } from './constants'
 
 // Base64 encoded logo (will be replaced with actual logo data)
 const _LOGO_BASE64 =
@@ -443,7 +444,7 @@ export function generateBillHTML(data: BillData): string {
         <div class="footer">
             <p>Thank you for choosing CycleBees!</p>
             <p>For any queries, contact us via WhatsApp</p>
-            <p style="margin-top: 6px;"><a href="https://wa.me/919597312212" target="_blank" style="color: #2563eb; text-decoration: none;">Chat with us: +91 95973 12212</a></p>
+            <p style="margin-top: 6px;"><a href="https://wa.me/${SUPPORT_WHATSAPP_NUMBER}" target="_blank" style="color: #2563eb; text-decoration: none;">Chat with us: +${SUPPORT_WHATSAPP_NUMBER.slice(0, 2)} ${SUPPORT_WHATSAPP_NUMBER.slice(2)}</a></p>
             <p style="margin-top: 10px; font-size: 12px;">Generated on ${new Date().toLocaleString('en-IN')}</p>
         </div>
     </div>

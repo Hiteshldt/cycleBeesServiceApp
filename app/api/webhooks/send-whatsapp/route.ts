@@ -24,8 +24,7 @@ export async function POST(request: NextRequest) {
       bike_name: bikeName,
       order_id: orderId,
       order_key: orderKey,
-      image_url:
-        'https://res.cloudinary.com/djoqfvphw/image/upload/v1760277275/whatsapp_request_promo_image_sqgzil.jpg',
+      image_url: process.env.NEXT_PUBLIC_CLOUDINARY_PROMO_IMAGE || '',
     }
 
     // Get n8n webhook URL from environment

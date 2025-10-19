@@ -15,6 +15,7 @@ import { CategorySection } from '@/components/mobile/CategorySection'
 import { SelectionCard } from '@/components/mobile/SelectionCard'
 import { StickyActionBar } from '@/components/mobile/StickyActionBar'
 import { showToast } from '@/components/mobile/Toast'
+import { SUPPORT_WHATSAPP_NUMBER } from '@/lib/constants'
 
 type OrderData = {
   request: Request
@@ -356,7 +357,7 @@ export default function PublicOrderPage() {
   const handleNeedHelp = () => {
     if (!orderData) return
     // Support contact number: +91 95973 12212
-    const supportNumberIntl = '919597312212'
+    const supportNumberIntl = SUPPORT_WHATSAPP_NUMBER
     const message = `Hi, I need help with my service estimate for ${orderData.request.bike_name} (Order ${orderData.request.order_id}). Can you please assist me?`
     openWhatsApp(supportNumberIntl, message)
   }

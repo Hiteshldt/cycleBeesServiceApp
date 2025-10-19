@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { AlertCircle, Search, MessageCircle } from 'lucide-react'
 import { AppHeader } from '@/components/mobile/AppHeader'
 import { openWhatsApp } from '@/lib/utils'
+import { SUPPORT_WHATSAPP_NUMBER } from '@/lib/constants'
 
 export default function RequestLookup() {
   const [orderId, setOrderId] = useState('')
@@ -122,7 +123,7 @@ export default function RequestLookup() {
             <button
               className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-gray-700"
               onClick={() =>
-                openWhatsApp('919597312212', 'Hi, I need help finding my CycleBees order.')
+                openWhatsApp(SUPPORT_WHATSAPP_NUMBER, 'Hi, I need help finding my CycleBees order.')
               }
             >
               <MessageCircle className="h-3.5 w-3.5" /> Need help?
