@@ -7,10 +7,7 @@ export async function POST(request: NextRequest) {
     const { username, password } = await request.json()
 
     if (!username || !password) {
-      return NextResponse.json(
-        { error: 'Username and password are required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Username and password are required' }, { status: 400 })
     }
 
     // Fetch admin credentials (including hashed password)
@@ -22,26 +19,20 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error || !adminData) {
-      return NextResponse.json(
-        { error: 'Invalid username or password' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 })
     }
 
     // Verify password using bcrypt
     const isValidPassword = await verifyPassword(password, adminData.password)
 
     if (!isValidPassword) {
-      return NextResponse.json(
-        { error: 'Invalid username or password' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 })
     }
 
     // Generate JWT token
     const token = await generateToken({
       userId: adminData.id,
-      username: adminData.username
+      username: adminData.username,
     })
 
     // Return success response with JWT token
@@ -49,15 +40,12 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         message: 'Authentication successful',
-        token
+        token,
       },
       { status: 200 }
     )
   } catch (error) {
     console.error('Auth error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

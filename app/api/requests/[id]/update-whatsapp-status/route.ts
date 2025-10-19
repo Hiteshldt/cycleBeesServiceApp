@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
 // PATCH /api/requests/[id]/update-whatsapp-status - Update request status after WhatsApp send
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
     const body = await request.json()
@@ -41,10 +38,7 @@ export async function PATCH(
 
     if (error) {
       console.error('Error updating request WhatsApp status:', error)
-      return NextResponse.json(
-        { error: 'Failed to update request status' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to update request status' }, { status: 500 })
     }
 
     return NextResponse.json({
@@ -52,15 +46,14 @@ export async function PATCH(
       data,
       message: success
         ? 'Request marked as sent with WhatsApp confirmation'
-        : 'Request kept as pending due to WhatsApp failure'
+        : 'Request kept as pending due to WhatsApp failure',
     })
-
   } catch (error) {
     console.error('Error updating WhatsApp status:', error)
     return NextResponse.json(
       {
         error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     )

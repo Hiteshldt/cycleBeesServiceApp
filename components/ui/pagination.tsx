@@ -25,7 +25,7 @@ export function Pagination({
   endIndex,
   onPageChange,
   className = '',
-  disabled = false
+  disabled = false,
 }: PaginationProps) {
   // Generate page numbers to show
   const getPageNumbers = () => {
@@ -110,7 +110,7 @@ export function Pagination({
                 key={pageNum}
                 onClick={() => onPageChange(pageNum as number)}
                 disabled={disabled}
-                variant={isCurrentPage ? "default" : "outline"}
+                variant={isCurrentPage ? 'default' : 'outline'}
                 size="sm"
                 className={`h-8 w-8 p-0 text-xs rounded-xl transition-all duration-200 ${
                   isCurrentPage

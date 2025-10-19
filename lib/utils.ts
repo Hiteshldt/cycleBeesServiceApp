@@ -1,5 +1,5 @@
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -67,7 +67,7 @@ export function generateWhatsAppMessage(
   orderUrl: string
 ): string {
   const firstName = customerName.split(' ')[0]
-  
+
   return ` *CycleBees* - Professional Bike Service
 
 Hello *${firstName}*! 
@@ -121,7 +121,6 @@ export function getStatusColor(status: string): string {
   }
 }
 
-
 // Generate unique order ID
 export function generateOrderID(): string {
   const now = new Date()
@@ -130,7 +129,9 @@ export function generateOrderID(): string {
   const day = now.getDate().toString().padStart(2, '0')
   const hours = now.getHours().toString().padStart(2, '0')
   const minutes = now.getMinutes().toString().padStart(2, '0')
-  const random = Math.floor(Math.random() * 100).toString().padStart(2, '0')
-  
+  const random = Math.floor(Math.random() * 100)
+    .toString()
+    .padStart(2, '0')
+
   return `CB${year}${month}${day}${hours}${minutes}${random}`
 }

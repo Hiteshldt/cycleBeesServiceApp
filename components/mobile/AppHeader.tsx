@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import React from "react"
-import Image from "next/image"
-import { ArrowLeft, HeadphonesIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import React from 'react'
+import Image from 'next/image'
+import { ArrowLeft, HeadphonesIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 type Props = {
   title?: string
@@ -24,7 +24,7 @@ export function AppHeader({
   onBack,
   onHelp,
   progress,
-  step
+  step,
 }: Props) {
   return (
     <header className="sticky top-0 z-40 w-full bg-white border-b border-gray-200">
@@ -76,12 +76,8 @@ export function AppHeader({
 
         {/* Row 2: Page Info */}
         <div className="px-4 py-2 bg-white/95">
-          {title && (
-            <div className="text-sm font-semibold text-gray-900 truncate">{title}</div>
-          )}
-          {subtitle && (
-            <div className="text-xs text-gray-600 truncate mt-0.5">{subtitle}</div>
-          )}
+          {title && <div className="text-sm font-semibold text-gray-900 truncate">{title}</div>}
+          {subtitle && <div className="text-xs text-gray-600 truncate mt-0.5">{subtitle}</div>}
         </div>
 
         {/* Progress Bar */}
@@ -99,4 +95,3 @@ export function AppHeader({
 }
 
 export default AppHeader
-

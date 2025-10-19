@@ -32,8 +32,10 @@ export default function RequestLookup() {
 
     try {
       // Call API to find request by order ID and phone number
-      const response = await fetch(`/api/public/lookup?orderId=${encodeURIComponent(orderId.trim())}&phone=${encodeURIComponent(phoneNumber.trim())}`)
-      
+      const response = await fetch(
+        `/api/public/lookup?orderId=${encodeURIComponent(orderId.trim())}&phone=${encodeURIComponent(phoneNumber.trim())}`
+      )
+
       if (response.ok) {
         const data = await response.json()
         // Redirect to the order page using the short slug
@@ -80,13 +82,17 @@ export default function RequestLookup() {
                 placeholder="CBYYMMDDHHMMXX"
                 className="h-12 text-center font-mono text-base"
               />
-              <p className="mt-1 text-[12px] text-gray-500">Starts with CB and includes date/time code</p>
+              <p className="mt-1 text-[12px] text-gray-500">
+                Starts with CB and includes date/time code
+              </p>
             </div>
 
             <div>
               <Label htmlFor="phoneNumber">Phone Number</Label>
               <div className="relative">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">+</span>
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                  +
+                </span>
                 <Input
                   id="phoneNumber"
                   type="tel"
@@ -97,10 +103,16 @@ export default function RequestLookup() {
                   maxLength={15}
                 />
               </div>
-              <p className="mt-1 text-[12px] text-gray-500">10 digits; 91 will be added automatically</p>
+              <p className="mt-1 text-[12px] text-gray-500">
+                10 digits; 91 will be added automatically
+              </p>
             </div>
 
-            <Button type="submit" className="h-12 w-full bg-[#FFD11E] text-gray-900 hover:bg-[#ffd633]" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="h-12 w-full bg-[#FFD11E] text-gray-900 hover:bg-[#ffd633]"
+              disabled={isLoading}
+            >
               <Search className="mr-2 h-4 w-4" />
               {isLoading ? 'Searching…' : 'Find My Order'}
             </Button>
@@ -109,7 +121,9 @@ export default function RequestLookup() {
           <div className="mt-6 flex items-center justify-center gap-2 text-[12px] text-gray-500">
             <button
               className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-gray-700"
-              onClick={() => openWhatsApp('919597312212', 'Hi, I need help finding my CycleBees order.')}
+              onClick={() =>
+                openWhatsApp('919597312212', 'Hi, I need help finding my CycleBees order.')
+              }
             >
               <MessageCircle className="h-3.5 w-3.5" /> Need help?
             </button>

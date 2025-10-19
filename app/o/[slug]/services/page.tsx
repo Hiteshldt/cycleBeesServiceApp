@@ -7,7 +7,12 @@ import { Badge } from '@/components/ui/badge'
 import { Request, RequestItem } from '@/lib/supabase'
 import { openWhatsApp, formatCurrency } from '@/lib/utils'
 import { MessageCircle, AlertCircle, Check } from 'lucide-react'
-import { getLaCarteSettings, getLaCartePrice, formatLaCarteDisplay, type LaCarteSettings } from '@/lib/lacarte'
+import {
+  getLaCarteSettings,
+  getLaCartePrice,
+  formatLaCarteDisplay,
+  type LaCarteSettings,
+} from '@/lib/lacarte'
 import { AppHeader } from '@/components/mobile/AppHeader'
 import { SelectionCard } from '@/components/mobile/SelectionCard'
 import { CategorySection } from '@/components/mobile/CategorySection'
@@ -43,7 +48,12 @@ export default function ServiceSelectionPage() {
         const settings = await getLaCarteSettings()
         setLaCarte(settings)
       } catch (e) {
-        setLaCarte({ id: 'lacarte', real_price_paise: 9900, current_price_paise: 9900, discount_note: '' })
+        setLaCarte({
+          id: 'lacarte',
+          real_price_paise: 9900,
+          current_price_paise: 9900,
+          discount_note: '',
+        })
       }
     }
     loadLaCarte()
@@ -65,7 +75,7 @@ export default function ServiceSelectionPage() {
       setOrderData(data)
 
       // Set La Carte price - use request-specific price if set, otherwise global settings
-      const laCarteCharge = data.request.lacarte_paise ?? await getLaCartePrice()
+      const laCarteCharge = data.request.lacarte_paise ?? (await getLaCartePrice())
       setLaCartePaise(laCarteCharge)
 
       // If already confirmed, redirect to main page
@@ -87,7 +97,9 @@ export default function ServiceSelectionPage() {
         }
       } else {
         const suggestedItemIds = new Set<string>(
-          data.items.filter((item: RequestItem) => item.is_suggested).map((item: RequestItem) => item.id)
+          data.items
+            .filter((item: RequestItem) => item.is_suggested)
+            .map((item: RequestItem) => item.id)
         )
         setSelectedItems(suggestedItemIds)
       }
@@ -95,15 +107,24 @@ export default function ServiceSelectionPage() {
       // Mark as viewed if status is 'pending' or 'sent'
       if (data.request.status === 'pending' || data.request.status === 'sent') {
         try {
-          const suggestedItems = data.items.filter((item: RequestItem) => item.is_suggested).map((item: RequestItem) => item.id)
-          console.log('Marking as viewed. Slug:', slug, 'Status:', data.request.status, 'Suggested items:', suggestedItems.length)
+          const suggestedItems = data.items
+            .filter((item: RequestItem) => item.is_suggested)
+            .map((item: RequestItem) => item.id)
+          console.log(
+            'Marking as viewed. Slug:',
+            slug,
+            'Status:',
+            data.request.status,
+            'Suggested items:',
+            suggestedItems.length
+          )
 
           const response = await fetch(`/api/public/orders/${slug}/view`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               selected_items: suggestedItems,
-              status: 'viewed'
+              status: 'viewed',
             }),
           })
 
@@ -111,11 +132,16 @@ export default function ServiceSelectionPage() {
             console.log('Successfully marked as viewed')
             setOrderData({
               ...data,
-              request: { ...data.request, status: 'viewed' }
+              request: { ...data.request, status: 'viewed' },
             })
           } else {
             const errorData = await response.json().catch(() => ({}))
-            console.error('Failed to mark as viewed:', response.status, response.statusText, errorData)
+            console.error(
+              'Failed to mark as viewed:',
+              response.status,
+              response.statusText,
+              errorData
+            )
           }
         } catch (error) {
           console.error('Error marking as viewed:', error)
@@ -143,7 +169,7 @@ export default function ServiceSelectionPage() {
     if (!orderData) return 0
 
     return orderData.items
-      .filter(item => selectedItems.has(item.id))
+      .filter((item) => selectedItems.has(item.id))
       .reduce((sum, item) => sum + item.price_paise, 0)
   }
 
@@ -200,17 +226,15 @@ export default function ServiceSelectionPage() {
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Oops!</h1>
           <p className="text-gray-600 mb-4">{error || 'Something went wrong'}</p>
-          <Button onClick={() => window.location.reload()}>
-            Try Again
-          </Button>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </div>
     )
   }
 
   const { request, items } = orderData
-  const repairItems = items.filter(item => item.section === 'repair')
-  const replacementItems = items.filter(item => item.section === 'replacement')
+  const repairItems = items.filter((item) => item.section === 'repair')
+  const replacementItems = items.filter((item) => item.section === 'replacement')
   const servicesTotal = calculateServicesTotal()
 
   // Use La Carte price from state (already set in fetchOrderData)
@@ -259,7 +283,6 @@ export default function ServiceSelectionPage() {
       />
 
       <div className="max-w-md mx-auto px-4 py-4 space-y-4">
-
         {/* Repair Services */}
         {repairItems.length > 0 && (
           <CategorySection
@@ -341,7 +364,12 @@ export default function ServiceSelectionPage() {
 
                   {/* Percentage Off - Below MRP */}
                   <div className="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold inline-block">
-                    {Math.round(((laCarte.real_price_paise - laCartePaise) / Math.max(laCarte.real_price_paise, 1)) * 100)}% off
+                    {Math.round(
+                      ((laCarte.real_price_paise - laCartePaise) /
+                        Math.max(laCarte.real_price_paise, 1)) *
+                        100
+                    )}
+                    % off
                   </div>
 
                   {/* Savings Amount */}
@@ -414,7 +442,7 @@ export default function ServiceSelectionPage() {
           selectedServicesPaise: servicesTotal,
           selectedCount: selectedItems.size,
           laCartePaise: laCartePrice,
-          laCarteDisplay: laCarteDisplay
+          laCarteDisplay: laCarteDisplay,
         }}
       />
 

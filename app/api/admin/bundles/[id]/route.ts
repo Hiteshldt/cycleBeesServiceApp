@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const body = await request.json()
     const resolvedParams = await params
@@ -16,39 +13,34 @@ export async function PATCH(
       .single()
 
     if (fetchError || !existingBundle) {
-      return NextResponse.json(
-        { error: 'Bundle not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Bundle not found' }, { status: 404 })
     }
 
-    const allowedFields = ['name', 'description', 'price_paise', 'bullet_points', 'display_order', 'is_active']
+    const allowedFields = [
+      'name',
+      'description',
+      'price_paise',
+      'bullet_points',
+      'display_order',
+      'is_active',
+    ]
     const updateData: Record<string, unknown> = {}
 
     for (const field of allowedFields) {
       if (body[field] !== undefined) {
         if (field === 'name') {
           if (!body[field] || typeof body[field] !== 'string' || body[field].trim().length === 0) {
-            return NextResponse.json(
-              { error: 'Bundle name is required' },
-              { status: 400 }
-            )
+            return NextResponse.json({ error: 'Bundle name is required' }, { status: 400 })
           }
           updateData[field] = body[field].trim()
         } else if (field === 'price_paise') {
           if (typeof body[field] !== 'number' || body[field] <= 0) {
-            return NextResponse.json(
-              { error: 'Valid price is required' },
-              { status: 400 }
-            )
+            return NextResponse.json({ error: 'Valid price is required' }, { status: 400 })
           }
           updateData[field] = body[field]
         } else if (field === 'bullet_points') {
           if (!Array.isArray(body[field])) {
-            return NextResponse.json(
-              { error: 'Bullet points must be an array' },
-              { status: 400 }
-            )
+            return NextResponse.json({ error: 'Bullet points must be an array' }, { status: 400 })
           }
           const validBulletPoints = body[field].filter(
             (point: any) => typeof point === 'string' && point.trim().length > 0
@@ -69,10 +61,7 @@ export async function PATCH(
     }
 
     if (Object.keys(updateData).length === 0) {
-      return NextResponse.json(
-        { error: 'No valid fields to update' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
     }
 
     const { data: updatedBundle, error: updateError } = await supabase
@@ -84,19 +73,13 @@ export async function PATCH(
 
     if (updateError) {
       console.error('Database error:', updateError)
-      return NextResponse.json(
-        { error: 'Failed to update bundle' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to update bundle' }, { status: 500 })
     }
 
     return NextResponse.json(updatedBundle)
   } catch (error) {
     console.error('API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -114,10 +97,7 @@ export async function DELETE(
       .single()
 
     if (fetchError || !existingBundle) {
-      return NextResponse.json(
-        { error: 'Bundle not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Bundle not found' }, { status: 404 })
     }
 
     const { error: deleteError } = await supabase
@@ -127,20 +107,14 @@ export async function DELETE(
 
     if (deleteError) {
       console.error('Database error:', deleteError)
-      return NextResponse.json(
-        { error: 'Failed to delete bundle' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to delete bundle' }, { status: 500 })
     }
 
     return NextResponse.json({
-      message: 'Bundle deleted successfully'
+      message: 'Bundle deleted successfully',
     })
   } catch (error) {
     console.error('API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

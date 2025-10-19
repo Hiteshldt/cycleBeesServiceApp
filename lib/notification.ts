@@ -2,7 +2,8 @@
 export class NotificationManager {
   private audio: HTMLAudioElement | null = null
   private originalFavicon: string = '/favicon.ico'
-  private notificationFavicon: string = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23ff4444"/><text x="50" y="65" text-anchor="middle" font-size="40" fill="white">!</text></svg>'
+  private notificationFavicon: string =
+    'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="%23ff4444"/><text x="50" y="65" text-anchor="middle" font-size="40" fill="white">!</text></svg>'
   private hasNotification: boolean = false
 
   constructor() {
@@ -10,7 +11,7 @@ export class NotificationManager {
       // Create audio element for notifications
       this.audio = new Audio('/notification-sound.mp3')
       this.audio.volume = 0.5
-      
+
       // Store original favicon
       const faviconLink = document.querySelector('link[rel="icon"]') as HTMLLinkElement
       if (faviconLink) {
@@ -29,10 +30,10 @@ export class NotificationManager {
   // Show notification indicator on favicon
   showNotificationIndicator() {
     if (this.hasNotification) return
-    
+
     this.hasNotification = true
     this.updateFavicon(this.notificationFavicon)
-    
+
     // Also update page title
     if (!document.title.startsWith('🔔')) {
       document.title = '🔔 ' + document.title
@@ -42,23 +43,23 @@ export class NotificationManager {
   // Clear notification indicator
   clearNotificationIndicator() {
     if (!this.hasNotification) return
-    
+
     this.hasNotification = false
     this.updateFavicon(this.originalFavicon)
-    
+
     // Remove notification from title
     document.title = document.title.replace('🔔 ', '')
   }
 
   private updateFavicon(href: string) {
     let faviconLink = document.querySelector('link[rel="icon"]') as HTMLLinkElement
-    
+
     if (!faviconLink) {
       faviconLink = document.createElement('link')
       faviconLink.rel = 'icon'
       document.head.appendChild(faviconLink)
     }
-    
+
     faviconLink.href = href
   }
 
@@ -68,19 +69,19 @@ export class NotificationManager {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
     const oscillator = audioContext.createOscillator()
     const gainNode = audioContext.createGain()
-    
+
     oscillator.connect(gainNode)
     gainNode.connect(audioContext.destination)
-    
+
     oscillator.frequency.value = 800
     oscillator.type = 'sine'
     gainNode.gain.setValueAtTime(0, audioContext.currentTime)
     gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01)
     gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3)
-    
+
     oscillator.start(audioContext.currentTime)
     oscillator.stop(audioContext.currentTime + 0.3)
-    
+
     return ''
   }
 }
@@ -106,14 +107,14 @@ export class StatusChangeDetector {
 
     for (const request of currentRequests) {
       const lastStatus = this.lastKnownStatuses.get(request.id)
-      
+
       if (lastStatus && lastStatus !== request.status) {
         // Status changed - trigger notification
         this.notificationManager.playNotificationSound()
         this.notificationManager.showNotificationIndicator()
         hasChanges = true
       }
-      
+
       this.lastKnownStatuses.set(request.id, request.status)
     }
 

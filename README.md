@@ -30,18 +30,30 @@
 
 ## 📋 Overview
 
-**CycleBees** is a Next.js application that streamlines bike service requests by automatically sending WhatsApp messages to customers with order details, service estimates, and order tracking. The system provides an admin dashboard for creating and managing service requests, and a customer portal for viewing estimates, selecting services, and confirming orders.
+**CycleBees** is a Next.js application that streamlines bike service requests by
+automatically sending WhatsApp messages to customers with order details, service
+estimates, and order tracking. The system provides an admin dashboard for
+creating and managing service requests, and a customer portal for viewing
+estimates, selecting services, and confirming orders.
 
 ### Key Features
 
-- **Automated WhatsApp Messaging** - Sends personalized service estimates via n8n workflow integration with WhatsApp Business API
-- **Admin Dashboard** - Complete service request management with real-time status tracking
-- **Customer Portal** - Mobile-optimized order viewing, service selection, and confirmation
-- **Dynamic Pricing** - La Carte pricing with configurable discounts, addons, and service bundles
-- **PDF Generation** - Automatic bill generation and download for confirmed orders
-- **Real-time Tracking** - Status tracking: `pending` → `sent` → `viewed` → `confirmed`
-- **Error Handling** - Comprehensive error detection and retry logic for WhatsApp delivery
-- **Mobile-First Design** - Responsive UI optimized for mobile customer experience
+- **Automated WhatsApp Messaging** - Sends personalized service estimates via
+  n8n workflow integration with WhatsApp Business API
+- **Admin Dashboard** - Complete service request management with real-time
+  status tracking
+- **Customer Portal** - Mobile-optimized order viewing, service selection, and
+  confirmation
+- **Dynamic Pricing** - La Carte pricing with configurable discounts, addons,
+  and service bundles
+- **PDF Generation** - Automatic bill generation and download for confirmed
+  orders
+- **Real-time Tracking** - Status tracking: `pending` → `sent` → `viewed` →
+  `confirmed`
+- **Error Handling** - Comprehensive error detection and retry logic for
+  WhatsApp delivery
+- **Mobile-First Design** - Responsive UI optimized for mobile customer
+  experience
 
 ---
 
@@ -78,7 +90,8 @@
 - **Node.js** 18 or higher ([Download](https://nodejs.org/))
 - **npm** or **yarn** package manager
 - **Supabase** account ([Sign up free](https://supabase.com/))
-- **n8n** instance with WhatsApp Business API configured ([n8n Cloud](https://n8n.io/) or self-hosted)
+- **n8n** instance with WhatsApp Business API configured
+  ([n8n Cloud](https://n8n.io/) or self-hosted)
 
 ### Installation
 
@@ -309,6 +322,7 @@ NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
 
 **Security Notes:**
+
 - **NEVER** commit `.env.local` to git (it's in `.gitignore`)
 - **NEVER** share your `JWT_SECRET` or Supabase service role key
 - Use different secrets for development and production
@@ -326,7 +340,8 @@ openssl rand -hex 64
 
 ### Verifying Environment Variables
 
-Run the verification script to check if all required environment variables are set:
+Run the verification script to check if all required environment variables are
+set:
 
 ```bash
 # When created (see scripts section)
@@ -350,6 +365,7 @@ bash scripts/verify-env.sh
 3. Run the SQL script
 
 This creates:
+
 - All tables (`requests`, `request_items`, `addons`, `service_bundles`, etc.)
 - Indexes for performance
 - Triggers for auto-generated slugs and totals
@@ -378,6 +394,7 @@ npx tsx hash-passwords.ts
 ### Database Schema Overview
 
 **Main Tables:**
+
 - `requests` - Service requests with WhatsApp tracking
 - `request_items` - Line items (repairs/replacements)
 - `addons` - Add-on services catalog
@@ -387,6 +404,7 @@ npx tsx hash-passwords.ts
 - `confirmed_order_addons` - Customer addon selections (junction)
 
 **Key Features:**
+
 - Auto-generated `short_slug` (8-character unique ID)
 - Auto-calculated totals via PostgreSQL triggers
 - Status tracking: `pending` | `sent` | `viewed` | `confirmed` | `cancelled`
@@ -474,6 +492,7 @@ npm run dev
 See `docs/TESTING_GUIDE.md` for complete manual test procedures.
 
 **Quick Test Checklist:**
+
 - [ ] Admin can login
 - [ ] Admin can create request
 - [ ] WhatsApp notification sends successfully
@@ -492,6 +511,7 @@ npm run test:coverage # Coverage report
 ```
 
 **Test Infrastructure To-Do:**
+
 - [ ] Set up Jest + React Testing Library
 - [ ] Unit tests for utilities and validation
 - [ ] Integration tests for API endpoints
@@ -504,6 +524,7 @@ npm run test:coverage # Coverage report
 ### Production Deployment (Vercel - Recommended)
 
 #### Prerequisites
+
 - Vercel account ([Sign up free](https://vercel.com/))
 - Production Supabase project
 - n8n workflow configured for production
@@ -511,6 +532,7 @@ npm run test:coverage # Coverage report
 #### Steps
 
 1. **Prepare Supabase Production Database**
+
    ```bash
    # 1. Create production Supabase project
    # 2. Run db/schema.sql in production SQL Editor
@@ -519,6 +541,7 @@ npm run test:coverage # Coverage report
    ```
 
 2. **Configure Vercel**
+
    ```bash
    # Install Vercel CLI (optional)
    npm i -g vercel
@@ -536,6 +559,7 @@ npm run test:coverage # Coverage report
    ```
 
 3. **Deploy**
+
    ```bash
    # Option 1: Git push (auto-deploy)
    git push origin main
@@ -570,6 +594,7 @@ See `docs/DEPLOYMENT_GUIDE.md` for comprehensive deployment documentation.
 **Symptoms:** All requests stuck in `pending` status
 
 **Solutions:**
+
 ```bash
 # Check environment variable
 echo $N8N_WEBHOOK_URL
@@ -586,6 +611,7 @@ echo $N8N_WEBHOOK_URL
 **Symptoms:** `Error connecting to database` on page load
 
 **Solutions:**
+
 ```bash
 # Verify Supabase credentials
 bash scripts/verify-env.sh
@@ -602,6 +628,7 @@ curl -I $NEXT_PUBLIC_SUPABASE_URL
 **Symptoms:** "Invalid credentials" error
 
 **Solutions:**
+
 ```bash
 # Verify admin user exists in database
 # Run in Supabase SQL Editor:
@@ -619,6 +646,7 @@ UPDATE admin_credentials SET password='new-hash' WHERE username='admin';
 **Symptoms:** `npm run build` fails with TypeScript errors
 
 **Solutions:**
+
 ```bash
 # Clear build cache
 rm -rf .next
@@ -639,6 +667,7 @@ node --version  # Should be 18+
 **Symptoms:** `undefined` when accessing `process.env.NEXT_PUBLIC_*`
 
 **Solutions:**
+
 ```bash
 # Verify .env.local exists
 ls -la .env.local
@@ -672,10 +701,13 @@ cat .env.local | grep NEXT_PUBLIC
 
 ### Core Documentation
 
-- **[PROJECT_TRACKER.md](docs/PROJECT_TRACKER.md)** - Refactor progress and project management
-- **[DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md)** - Complete deployment instructions
+- **[PROJECT_TRACKER.md](docs/PROJECT_TRACKER.md)** - Refactor progress and
+  project management
+- **[DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md)** - Complete deployment
+  instructions
 - **[TESTING_GUIDE.md](docs/TESTING_GUIDE.md)** - Manual testing procedures
-- **[WEBHOOK_DOCUMENTATION.md](docs/WEBHOOK_DOCUMENTATION.md)** - n8n webhook integration
+- **[WEBHOOK_DOCUMENTATION.md](docs/WEBHOOK_DOCUMENTATION.md)** - n8n webhook
+  integration
 - **[BUILD_PLAN.md](docs/BUILD_PLAN.md)** - Original build specifications
 - **[DELETION_CANDIDATES.md](docs/DELETION_CANDIDATES.md)** - Cleanup tracking
 
@@ -686,6 +718,7 @@ cat .env.local | grep NEXT_PUBLIC
 **Base URL**: `http://localhost:3000/api`
 
 **Admin Endpoints** (Require JWT):
+
 - `POST /api/admin/auth` - Login
 - `GET /api/requests` - List requests
 - `POST /api/requests` - Create request
@@ -693,6 +726,7 @@ cat .env.local | grep NEXT_PUBLIC
 - `GET /api/admin/bundles` - Manage bundles
 
 **Public Endpoints**:
+
 - `GET /api/public/lookup` - Order lookup
 - `GET /api/public/orders/{slug}` - Order details
 - `POST /api/public/orders/{slug}/view` - Mark viewed/confirmed
@@ -758,7 +792,8 @@ See full API documentation in `docs/API.md` (when created).
 
 **Proprietary** - CycleBees
 
-All rights reserved. Unauthorized copying, modification, distribution, or use of this software is strictly prohibited.
+All rights reserved. Unauthorized copying, modification, distribution, or use of
+this software is strictly prohibited.
 
 ---
 

@@ -13,11 +13,11 @@ export interface Request {
   bike_name: string
   customer_name: string
   phone_digits_intl: string
-  status: 'pending' | 'sent' | 'viewed' | 'confirmed' | 'cancelled'  // All 5 statuses supported
+  status: 'pending' | 'sent' | 'viewed' | 'confirmed' | 'cancelled' // All 5 statuses supported
   subtotal_paise: number
   tax_paise: number
   total_paise: number
-  lacarte_paise: number | null  // Custom La Carte price for this request (null = use global settings)
+  lacarte_paise: number | null // Custom La Carte price for this request (null = use global settings)
   created_at: string
   sent_at: string | null
   whatsapp_message_id: string | null

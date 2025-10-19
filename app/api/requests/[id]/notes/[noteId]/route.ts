@@ -13,10 +13,7 @@ export async function PUT(
 
     // Validate input
     if (!note_text || typeof note_text !== 'string' || note_text.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'Note text is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Note text is required' }, { status: 400 })
     }
 
     if (note_text.length > 1000) {
@@ -31,7 +28,7 @@ export async function PUT(
       .from('request_notes')
       .update({
         note_text: note_text.trim(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq('id', resolvedParams.noteId)
       .eq('request_id', resolvedParams.id) // Ensure note belongs to the request
@@ -40,26 +37,17 @@ export async function PUT(
 
     if (error) {
       console.error('Database error:', error)
-      return NextResponse.json(
-        { error: 'Failed to update note' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to update note' }, { status: 500 })
     }
 
     if (!updatedNote) {
-      return NextResponse.json(
-        { error: 'Note not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Note not found' }, { status: 404 })
     }
 
     return NextResponse.json(updatedNote)
   } catch (error) {
     console.error('API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -80,18 +68,12 @@ export async function DELETE(
 
     if (error) {
       console.error('Database error:', error)
-      return NextResponse.json(
-        { error: 'Failed to delete note' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to delete note' }, { status: 500 })
     }
 
     return NextResponse.json({ message: 'Note deleted successfully' })
   } catch (error) {
     console.error('API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -74,7 +74,6 @@ async function migratePasswords() {
     }
 
     console.log('✨ Password migration completed successfully!')
-
   } catch (error) {
     console.error('❌ Migration failed:', error)
     process.exit(1)

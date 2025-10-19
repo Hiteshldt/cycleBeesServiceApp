@@ -14,7 +14,7 @@ import {
   PieChart,
   Calendar,
   RefreshCw,
-  Activity
+  Activity,
 } from 'lucide-react'
 
 interface AnalyticsData {
@@ -42,7 +42,7 @@ export default function AnalyticsPage() {
       // Set to September 1, 2025 to show actual data
       return '2025-09-01'
     })(),
-    endDate: new Date().toISOString().split('T')[0]
+    endDate: new Date().toISOString().split('T')[0],
   })
 
   const fetchAnalytics = async () => {
@@ -50,7 +50,7 @@ export default function AnalyticsPage() {
       setIsLoading(true)
       const params = new URLSearchParams({
         start_date: dateRange.startDate,
-        end_date: dateRange.endDate
+        end_date: dateRange.endDate,
       })
 
       const response = await fetch(`/api/analytics?${params}`)
@@ -71,7 +71,7 @@ export default function AnalyticsPage() {
           ordersByStatus: [],
           revenueByPeriod: [],
           addonsPerformance: [],
-          dailyTrends: []
+          dailyTrends: [],
         })
       }
     } catch (error) {
@@ -96,7 +96,7 @@ export default function AnalyticsPage() {
 
     setDateRange({
       startDate: startDate.toISOString().split('T')[0],
-      endDate: today
+      endDate: today,
     })
   }
 
@@ -149,22 +149,26 @@ export default function AnalyticsPage() {
 
             <div className="flex gap-2">
               <div>
-                <Label htmlFor="startDate" className="text-xs text-gray-600">From</Label>
+                <Label htmlFor="startDate" className="text-xs text-gray-600">
+                  From
+                </Label>
                 <Input
                   id="startDate"
                   type="date"
                   value={dateRange.startDate}
-                  onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                  onChange={(e) => setDateRange((prev) => ({ ...prev, startDate: e.target.value }))}
                   className="h-8 text-sm"
                 />
               </div>
               <div>
-                <Label htmlFor="endDate" className="text-xs text-gray-600">To</Label>
+                <Label htmlFor="endDate" className="text-xs text-gray-600">
+                  To
+                </Label>
                 <Input
                   id="endDate"
                   type="date"
                   value={dateRange.endDate}
-                  onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                  onChange={(e) => setDateRange((prev) => ({ ...prev, endDate: e.target.value }))}
                   className="h-8 text-sm"
                 />
               </div>
@@ -272,28 +276,31 @@ export default function AnalyticsPage() {
                 {analyticsData.ordersByStatus.length > 0 ? (
                   <div className="space-y-3">
                     {analyticsData.ordersByStatus.map((status, index) => (
-                    <div key={status.status} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{
-                            backgroundColor: ['#10B981', '#3B82F6', '#F59E0B', '#EF4444'][index] || '#6B7280'
-                          }}
-                        />
-                        <span className="text-sm capitalize">{status.status}</span>
+                      <div key={status.status} className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{
+                              backgroundColor:
+                                ['#10B981', '#3B82F6', '#F59E0B', '#EF4444'][index] || '#6B7280',
+                            }}
+                          />
+                          <span className="text-sm capitalize">{status.status}</span>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium">{status.count}</p>
+                          <p className="text-xs text-gray-500">{status.percentage.toFixed(1)}%</p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium">{status.count}</p>
-                        <p className="text-xs text-gray-500">{status.percentage.toFixed(1)}%</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                   </div>
                 ) : (
                   <div className="text-center py-8">
                     <PieChart className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                     <p className="text-sm text-gray-500">No order data available</p>
-                    <p className="text-xs text-gray-400">Create some service requests to see status distribution</p>
+                    <p className="text-xs text-gray-400">
+                      Create some service requests to see status distribution
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -326,7 +333,9 @@ export default function AnalyticsPage() {
                   <div className="text-center py-8">
                     <BarChart3 className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                     <p className="text-sm text-gray-500">No service data available</p>
-                    <p className="text-xs text-gray-400">Process some service requests to see popular services</p>
+                    <p className="text-xs text-gray-400">
+                      Process some service requests to see popular services
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -346,11 +355,16 @@ export default function AnalyticsPage() {
                 <>
                   <div className="h-64 flex items-end justify-between gap-2">
                     {analyticsData.revenueByPeriod.map((period) => {
-                      const maxRevenue = Math.max(...analyticsData.revenueByPeriod.map(p => p.revenue))
+                      const maxRevenue = Math.max(
+                        ...analyticsData.revenueByPeriod.map((p) => p.revenue)
+                      )
                       const height = maxRevenue > 0 ? (period.revenue / maxRevenue) * 200 : 0
 
                       return (
-                        <div key={period.period} className="flex flex-col items-center gap-2 flex-1">
+                        <div
+                          key={period.period}
+                          className="flex flex-col items-center gap-2 flex-1"
+                        >
                           <div className="w-full flex flex-col items-center">
                             <div
                               className="bg-blue-500 rounded-t min-h-[4px] w-full max-w-12 transition-all duration-300 hover:bg-blue-600"
@@ -369,7 +383,11 @@ export default function AnalyticsPage() {
                   </div>
                   <div className="mt-4 flex justify-between text-xs text-gray-500">
                     <span>0</span>
-                    <span>{formatCurrency(Math.max(...analyticsData.revenueByPeriod.map(p => p.revenue)))}</span>
+                    <span>
+                      {formatCurrency(
+                        Math.max(...analyticsData.revenueByPeriod.map((p) => p.revenue))
+                      )}
+                    </span>
                   </div>
                 </>
               ) : (
@@ -377,7 +395,9 @@ export default function AnalyticsPage() {
                   <div className="text-center">
                     <Activity className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                     <p className="text-sm text-gray-500">No revenue data available</p>
-                    <p className="text-xs text-gray-400">Complete some service orders to see revenue trends</p>
+                    <p className="text-xs text-gray-400">
+                      Complete some service orders to see revenue trends
+                    </p>
                   </div>
                 </div>
               )}
@@ -399,10 +419,12 @@ export default function AnalyticsPage() {
                     <h4 className="font-medium text-sm mb-2">{addon.name}</h4>
                     <div className="space-y-1">
                       <p className="text-xs text-gray-600">
-                        Adoption Rate: <span className="font-medium">{addon.adoptionRate.toFixed(1)}%</span>
+                        Adoption Rate:{' '}
+                        <span className="font-medium">{addon.adoptionRate.toFixed(1)}%</span>
                       </p>
                       <p className="text-xs text-gray-600">
-                        Revenue: <span className="font-medium">{formatCurrency(addon.revenue)}</span>
+                        Revenue:{' '}
+                        <span className="font-medium">{formatCurrency(addon.revenue)}</span>
                       </p>
                     </div>
                   </div>

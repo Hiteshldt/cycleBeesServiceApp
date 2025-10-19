@@ -46,7 +46,7 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
     if (payload && typeof payload.userId === 'string' && typeof payload.username === 'string') {
       return {
         userId: payload.userId,
-        username: payload.username
+        username: payload.username,
       }
     }
     return null

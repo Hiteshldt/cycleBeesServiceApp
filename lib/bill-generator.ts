@@ -2,7 +2,8 @@
 import { formatCurrency, formatDate } from './utils'
 
 // Base64 encoded logo (will be replaced with actual logo data)
-const _LOGO_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+const _LOGO_BASE64 =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
 
 export interface BillData {
   order_id: string
@@ -37,8 +38,8 @@ export interface BillData {
 
 // Generate HTML for the bill/estimate
 export function generateBillHTML(data: BillData): string {
-  const repairItems = data.items.filter(item => item.section === 'repair')
-  const replacementItems = data.items.filter(item => item.section === 'replacement')
+  const repairItems = data.items.filter((item) => item.section === 'repair')
+  const replacementItems = data.items.filter((item) => item.section === 'replacement')
 
   return `
 <!DOCTYPE html>
@@ -237,7 +238,7 @@ export function generateBillHTML(data: BillData): string {
             </div>
             <div class="info-item">
                 <div class="info-label">${data.status === 'confirmed' ? 'Confirmed Date' : 'Sent Date'}</div>
-                <div class="info-value">${data.confirmed_at ? formatDate(data.confirmed_at) : (data.sent_at ? formatDate(data.sent_at) : 'Not sent')}</div>
+                <div class="info-value">${data.confirmed_at ? formatDate(data.confirmed_at) : data.sent_at ? formatDate(data.sent_at) : 'Not sent'}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Customer</div>
@@ -249,7 +250,9 @@ export function generateBillHTML(data: BillData): string {
             </div>
         </div>
 
-        ${repairItems.length > 0 ? `
+        ${
+          repairItems.length > 0
+            ? `
         <div class="section">
             <div class="section-title">🔧 Repair Services</div>
             <table class="items-table">
@@ -260,18 +263,26 @@ export function generateBillHTML(data: BillData): string {
                     </tr>
                 </thead>
                 <tbody>
-                    ${repairItems.map(item => `
+                    ${repairItems
+                      .map(
+                        (item) => `
                     <tr>
                         <td>${item.label}</td>
                         <td class="price-cell">${formatCurrency(item.price_paise)}</td>
                     </tr>
-                    `).join('')}
+                    `
+                      )
+                      .join('')}
                 </tbody>
             </table>
         </div>
-        ` : ''}
+        `
+            : ''
+        }
 
-        ${data.bundles && data.bundles.length > 0 ? `
+        ${
+          data.bundles && data.bundles.length > 0
+            ? `
         <div class="section">
             <div class="section-title">Service Bundles</div>
             <table class="items-table">
@@ -282,7 +293,9 @@ export function generateBillHTML(data: BillData): string {
                     </tr>
                 </thead>
                 <tbody>
-                    ${data.bundles.map(bundle => `
+                    ${data.bundles
+                      .map(
+                        (bundle) => `
                     <tr>
                         <td>
                             <strong>${bundle.name}</strong>
@@ -290,13 +303,19 @@ export function generateBillHTML(data: BillData): string {
                         </td>
                         <td class="price-cell">${formatCurrency(bundle.price_paise)}</td>
                     </tr>
-                    `).join('')}
+                    `
+                      )
+                      .join('')}
                 </tbody>
             </table>
         </div>
-        ` : ''}
+        `
+            : ''
+        }
 
-        ${replacementItems.length > 0 ? `
+        ${
+          replacementItems.length > 0
+            ? `
         <div class="section">
             <div class="section-title">🔩 Replacement Parts</div>
             <table class="items-table">
@@ -307,18 +326,26 @@ export function generateBillHTML(data: BillData): string {
                     </tr>
                 </thead>
                 <tbody>
-                    ${replacementItems.map(item => `
+                    ${replacementItems
+                      .map(
+                        (item) => `
                     <tr>
                         <td>${item.label}</td>
                         <td class="price-cell">${formatCurrency(item.price_paise)}</td>
                     </tr>
-                    `).join('')}
+                    `
+                      )
+                      .join('')}
                 </tbody>
             </table>
         </div>
-        ` : ''}
+        `
+            : ''
+        }
 
-        ${data.addons && data.addons.length > 0 ? `
+        ${
+          data.addons && data.addons.length > 0
+            ? `
         <div class="section">
             <div class="section-title">✨ Add-on Services</div>
             <table class="items-table">
@@ -329,7 +356,9 @@ export function generateBillHTML(data: BillData): string {
                     </tr>
                 </thead>
                 <tbody>
-                    ${data.addons.map(addon => `
+                    ${data.addons
+                      .map(
+                        (addon) => `
                     <tr>
                         <td>
                             <strong>${addon.name}</strong>
@@ -337,11 +366,15 @@ export function generateBillHTML(data: BillData): string {
                         </td>
                         <td class="price-cell">${formatCurrency(addon.price_paise)}</td>
                     </tr>
-                    `).join('')}
+                    `
+                      )
+                      .join('')}
                 </tbody>
             </table>
         </div>
-        ` : ''}
+        `
+            : ''
+        }
 
         <div class="section">
             <div class="section-title">🛠️ La Carte Services (Fixed charges - Free Services included below)</div>
@@ -369,18 +402,26 @@ export function generateBillHTML(data: BillData): string {
                 <span>Selected Services:</span>
                 <span>${formatCurrency(data.subtotal_paise)}</span>
             </div>
-            ${data.addons_paise ? `
+            ${
+              data.addons_paise
+                ? `
             <div class="total-row tax">
                 <span>Add-on Services:</span>
                 <span>${formatCurrency(data.addons_paise)}</span>
             </div>
-            ` : ''}
-            ${data.bundles_paise ? `
+            `
+                : ''
+            }
+            ${
+              data.bundles_paise
+                ? `
             <div class="total-row tax">
                 <span>Service Bundles:</span>
                 <span>${formatCurrency(data.bundles_paise)}</span>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
             <div class="total-row tax">
                 <span>La Carte Services (Fixed):</span>
                 <span>${formatCurrency(data.lacarte_paise)}</span>
@@ -392,9 +433,11 @@ export function generateBillHTML(data: BillData): string {
         </div>
 
         <div class="note">
-            <strong>Note:</strong> ${data.status === 'confirmed' 
-              ? 'This order has been confirmed by the customer. These are the agreed services and approximate charges. Final charges may vary based on actual work required.' 
-              : 'This is an estimate for your bike service. Please show this to our mechanic to proceed with the selected services. Final charges may vary based on actual work required.'}
+            <strong>Note:</strong> ${
+              data.status === 'confirmed'
+                ? 'This order has been confirmed by the customer. These are the agreed services and approximate charges. Final charges may vary based on actual work required.'
+                : 'This is an estimate for your bike service. Please show this to our mechanic to proceed with the selected services. Final charges may vary based on actual work required.'
+            }
         </div>
 
         <div class="footer">
@@ -423,52 +466,60 @@ export function createBillDownload(html: string, filename: string) {
   tempDiv.style.width = '210mm' // A4 width
   tempDiv.style.minHeight = '297mm' // A4 height
   document.body.appendChild(tempDiv)
-  
+
   // Import html2pdf dynamically
-  import('html2pdf.js').then((html2pdf) => {
-    const element = tempDiv.querySelector('.bill-container')
-    if (element) {
-      const opt = {
-        margin: [10, 10, 10, 10],
-        filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
-          orientation: 'portrait',
-          compress: true
+  import('html2pdf.js')
+    .then((html2pdf) => {
+      const element = tempDiv.querySelector('.bill-container')
+      if (element) {
+        const opt = {
+          margin: [10, 10, 10, 10],
+          filename: filename,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: {
+            unit: 'mm',
+            format: 'a4',
+            orientation: 'portrait',
+            compress: true,
+          },
         }
-      }
-      
-      html2pdf.default().set(opt).from(element).save().then(() => {
-        // Clean up
-        document.body.removeChild(tempDiv)
-      }).catch((error: unknown) => {
-        console.error('PDF generation error:', error)
+
+        html2pdf
+          .default()
+          .set(opt)
+          .from(element)
+          .save()
+          .then(() => {
+            // Clean up
+            document.body.removeChild(tempDiv)
+          })
+          .catch((error: unknown) => {
+            console.error('PDF generation error:', error)
+            // Fallback to HTML download
+            createHtmlDownload(html, filename.replace('.pdf', '.html'))
+            document.body.removeChild(tempDiv)
+          })
+      } else {
+        console.error('Bill container not found')
         // Fallback to HTML download
         createHtmlDownload(html, filename.replace('.pdf', '.html'))
         document.body.removeChild(tempDiv)
-      })
-    } else {
-      console.error('Bill container not found')
+      }
+    })
+    .catch((error) => {
+      console.error('html2pdf import error:', error)
       // Fallback to HTML download
       createHtmlDownload(html, filename.replace('.pdf', '.html'))
       document.body.removeChild(tempDiv)
-    }
-  }).catch((error) => {
-    console.error('html2pdf import error:', error)
-    // Fallback to HTML download
-    createHtmlDownload(html, filename.replace('.pdf', '.html'))
-    document.body.removeChild(tempDiv)
-  })
+    })
 }
 
 // Fallback HTML download function
 function createHtmlDownload(html: string, filename: string) {
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
   const url = URL.createObjectURL(blob)
-  
+
   // Create temporary download link
   const link = document.createElement('a')
   link.href = url
@@ -476,7 +527,7 @@ function createHtmlDownload(html: string, filename: string) {
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
-  
+
   // Clean up
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }

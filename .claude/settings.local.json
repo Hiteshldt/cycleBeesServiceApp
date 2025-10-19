@@ -18,7 +18,21 @@
       "Bash(git commit -m \"chore: remove Claude Code editor settings\")",
       "Bash(npx tsc --noEmit)",
       "Bash(npm run lint)",
-      "Bash(git add scripts/admin/hash-passwords.ts .claude/settings.local.json)"
+      "Bash(git add scripts/admin/hash-passwords.ts .claude/settings.local.json)",
+      "Bash(git commit -m \"refactor: restructure project directories (Phase 2)\n\n- Rename database/ → db/ for conventional naming\n- Move documentation files to docs/ directory\n  - BUILD_PLAN.md → docs/\n  - DEPLOYMENT_GUIDE.md → docs/\n  - TESTING_GUIDE.md → docs/\n  - WEBHOOK_DOCUMENTATION.md → docs/\n  - database/COPY_DATA_TO_TEST.md → docs/database/\n- Reorganize scripts into subdirectories\n  - scripts/check-database.ts → scripts/db/\n  - scripts/hash-passwords.ts → scripts/admin/\n- Move deletion candidate to _archive/\n  - app/o/[slug]/page.tsx.bak_dup_prop → _archive/\n- Fix import paths in moved files\n  - scripts/admin/hash-passwords.ts: ../lib/auth → ../../lib/auth\n\nAll git mv operations preserve file history.\nNon-destructive restructure complete.\nPhase 2 complete ✅\")",
+      "Bash(git add docs/PROJECT_TRACKER.md)",
+      "Bash(git commit -m \"docs: update PROJECT_TRACKER.md - Phase 2 complete ✅\")",
+      "Bash(npm run build)",
+      "Bash(tee build.log)",
+      "Bash(git add .eslintignore)",
+      "Bash(git commit -m \"chore: add .eslintignore to exclude build artifacts from linting\")",
+      "Bash(find . -type d -maxdepth 1 ( -name \"docs\" -o -name \"db\" -o -name \"scripts\" -o -name \"_archive\" ) -exec ls -ld {} ;)",
+      "Bash(npm install --save-dev husky lint-staged)",
+      "Bash(npx husky init)",
+      "Bash(npm install --save-dev prettier)",
+      "Bash(npx prettier --write \"app/**/*.{ts,tsx,js,jsx}\" \"components/**/*.{ts,tsx}\" \"lib/**/*.{ts,tsx}\" \"middleware.ts\" --log-level warn)",
+      "Bash(npx prettier --write \"*.{json,md}\" \"scripts/**/*.{ts,sh}\" --log-level warn)",
+      "Bash(git add -A)"
     ],
     "deny": [],
     "ask": []

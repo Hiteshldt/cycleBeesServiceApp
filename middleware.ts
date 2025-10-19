@@ -4,8 +4,8 @@ import { verifyTokenEdge } from '@/lib/auth-edge'
 
 // Define which API routes require authentication (admin only)
 const protectedApiRoutes = [
-  '/api/requests',    // Admin only - request management
-  '/api/analytics'    // Admin only - business analytics
+  '/api/requests', // Admin only - request management
+  '/api/analytics', // Admin only - business analytics
   // Note: /api/addons, /api/bundles, /api/pricing are PUBLIC (customers need these)
 ]
 
@@ -26,7 +26,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // 2. Protect API routes with JWT verification
-  const isProtectedApi = protectedApiRoutes.some(route => pathname.startsWith(route))
+  const isProtectedApi = protectedApiRoutes.some((route) => pathname.startsWith(route))
 
   if (isProtectedApi) {
     // Try to get token from Authorization header first
@@ -39,10 +39,7 @@ export async function middleware(request: NextRequest) {
 
     // If still no token, return unauthorized
     if (!token) {
-      return NextResponse.json(
-        { error: 'Unauthorized - No token provided' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized - No token provided' }, { status: 401 })
     }
 
     // Verify the token
@@ -71,8 +68,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/admin/:path*',
-    '/api/:path*'
-  ]
+  matcher: ['/admin/:path*', '/api/:path*'],
 }

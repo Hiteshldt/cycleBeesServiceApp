@@ -8,7 +8,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createRequestSchema, type CreateRequestData } from '@/lib/validations'
 import { formatCurrency, rupeesToPaise, generateOrderID } from '@/lib/utils'
-import { getLaCarteSettings, type LaCarteSettings, calculateDiscountPercentage } from '@/lib/lacarte'
+import {
+  getLaCarteSettings,
+  type LaCarteSettings,
+  calculateDiscountPercentage,
+} from '@/lib/lacarte'
 import { Trash2, Plus, Send, Edit2 } from 'lucide-react'
 
 export default function NewRequestPage() {
@@ -132,14 +136,14 @@ export default function NewRequestPage() {
 
         // If not the last attempt, wait before retrying (exponential backoff)
         if (attempt < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+          await new Promise((resolve) => setTimeout(resolve, 1000 * attempt))
         }
       } catch (error) {
         console.error(`Status update attempt ${attempt} failed:`, error)
 
         // If not the last attempt, wait before retrying
         if (attempt < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+          await new Promise((resolve) => setTimeout(resolve, 1000 * attempt))
         } else {
           throw error
         }
@@ -170,8 +174,10 @@ export default function NewRequestPage() {
           ...data.request,
           lacarte_paise: laCartePaise, // Include custom La Carte price
         },
-        repair_items: data.repair_items.filter(item => item.label.trim() && item.price_paise > 0),
-        replacement_items: data.replacement_items.filter(item => item.label.trim() && item.price_paise > 0),
+        repair_items: data.repair_items.filter((item) => item.label.trim() && item.price_paise > 0),
+        replacement_items: data.replacement_items.filter(
+          (item) => item.label.trim() && item.price_paise > 0
+        ),
       }
 
       // Step 1: Save request to database
@@ -210,9 +216,15 @@ export default function NewRequestPage() {
         let errorMessage = 'Unknown error'
         if (errorData.details) {
           // Check for common WhatsApp errors
-          if (errorData.details.includes('not a WhatsApp user') || errorData.details.includes('1006')) {
+          if (
+            errorData.details.includes('not a WhatsApp user') ||
+            errorData.details.includes('1006')
+          ) {
             errorMessage = 'This phone number is not registered on WhatsApp'
-          } else if (errorData.details.includes('invalid number') || errorData.details.includes('1008')) {
+          } else if (
+            errorData.details.includes('invalid number') ||
+            errorData.details.includes('1008')
+          ) {
             errorMessage = 'Invalid phone number format'
           } else if (errorData.details.includes('rate limit')) {
             errorMessage = 'Too many messages sent. Please wait a few minutes.'
@@ -227,14 +239,16 @@ export default function NewRequestPage() {
         try {
           await updateStatusWithRetry(result.id, {
             success: false,
-            whatsappError: errorMessage
+            whatsappError: errorMessage,
           })
         } catch (statusUpdateError) {
           console.error('Failed to update request status after retries:', statusUpdateError)
           // Continue anyway - the request is already saved as pending by default
         }
 
-        alert(`⚠️ Request saved as PENDING (not sent yet):\n\n${errorMessage}\n\nThe request is saved but WhatsApp was not sent. You can retry from the admin dashboard or contact the customer directly.`)
+        alert(
+          `⚠️ Request saved as PENDING (not sent yet):\n\n${errorMessage}\n\nThe request is saved but WhatsApp was not sent. You can retry from the admin dashboard or contact the customer directly.`
+        )
       } else {
         const successData = await webhookResponse.json().catch(() => ({}))
         console.log('WhatsApp sent successfully:', successData)
@@ -246,22 +260,25 @@ export default function NewRequestPage() {
         try {
           await updateStatusWithRetry(result.id, {
             success: true,
-            whatsappMessageId: messageId
+            whatsappMessageId: messageId,
           })
         } catch (statusUpdateError) {
           console.error('Failed to update request status after retries:', statusUpdateError)
           // WhatsApp was sent, so we'll show success but mention status update issue
-          alert(`✅ WhatsApp message sent successfully!\n\n${messageId ? `Message ID: ${messageId.slice(0, 20)}...` : ''}\n\n⚠️ Note: Status update failed after multiple attempts. Please refresh the dashboard.`)
+          alert(
+            `✅ WhatsApp message sent successfully!\n\n${messageId ? `Message ID: ${messageId.slice(0, 20)}...` : ''}\n\n⚠️ Note: Status update failed after multiple attempts. Please refresh the dashboard.`
+          )
           return
         }
 
         if (messageId) {
-          alert(`✅ Request created and WhatsApp message sent successfully!\n\nMessage ID: ${messageId.slice(0, 20)}...\n\nStatus: SENT ✅`)
+          alert(
+            `✅ Request created and WhatsApp message sent successfully!\n\nMessage ID: ${messageId.slice(0, 20)}...\n\nStatus: SENT ✅`
+          )
         } else {
           alert('✅ Request created and WhatsApp message sent successfully!\n\nStatus: SENT ✅')
         }
       }
-
     } catch (error) {
       console.error('Error creating request:', error)
       alert('Failed to create request. Please try again.')
@@ -296,27 +313,39 @@ export default function NewRequestPage() {
                 <Send className="h-8 w-8 text-green-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900">Confirm WhatsApp Send</h3>
-              <p className="text-sm text-gray-600 mt-1">Please verify the phone number before sending</p>
+              <p className="text-sm text-gray-600 mt-1">
+                Please verify the phone number before sending
+              </p>
             </div>
 
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 mb-4">
               <div className="space-y-2">
                 <div>
                   <p className="text-xs text-gray-600 font-medium">Customer Name</p>
-                  <p className="text-sm font-semibold text-gray-900">{pendingData.request.customer_name}</p>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {pendingData.request.customer_name}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-600 font-medium">Bike</p>
-                  <p className="text-sm font-semibold text-gray-900">{pendingData.request.bike_name}</p>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {pendingData.request.bike_name}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-600 font-medium">Order ID</p>
-                  <p className="text-sm font-semibold text-gray-900">{pendingData.request.order_id}</p>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {pendingData.request.order_id}
+                  </p>
                 </div>
                 <div className="pt-2 border-t border-indigo-200">
                   <p className="text-xs text-gray-600 font-medium mb-1">WhatsApp Number</p>
-                  <p className="text-lg font-bold text-green-600">{formatPhoneDisplay(pendingData.request.phone_digits_intl)}</p>
-                  <p className="text-xs text-gray-500 mt-1">⚠️ Please verify this number is correct</p>
+                  <p className="text-lg font-bold text-green-600">
+                    {formatPhoneDisplay(pendingData.request.phone_digits_intl)}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    ⚠️ Please verify this number is correct
+                  </p>
                 </div>
               </div>
             </div>
@@ -361,10 +390,14 @@ export default function NewRequestPage() {
                   <div>
                     <p className="text-xs text-gray-600 font-medium">Default Global Price</p>
                     <div className="flex items-baseline gap-2">
-                      <p className="text-lg font-bold text-gray-900">{formatCurrency(laCarteSettings.current_price_paise)}</p>
+                      <p className="text-lg font-bold text-gray-900">
+                        {formatCurrency(laCarteSettings.current_price_paise)}
+                      </p>
                       {laCarteSettings.real_price_paise > laCarteSettings.current_price_paise && (
                         <>
-                          <p className="text-sm line-through text-gray-500">{formatCurrency(laCarteSettings.real_price_paise)}</p>
+                          <p className="text-sm line-through text-gray-500">
+                            {formatCurrency(laCarteSettings.real_price_paise)}
+                          </p>
                           <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-semibold">
                             {calculateDiscountPercentage(laCarteSettings)}% OFF
                           </span>
@@ -372,7 +405,9 @@ export default function NewRequestPage() {
                       )}
                     </div>
                     {laCarteSettings.discount_note && (
-                      <p className="text-xs text-gray-600 mt-1">Note: {laCarteSettings.discount_note}</p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        Note: {laCarteSettings.discount_note}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -465,7 +500,6 @@ export default function NewRequestPage() {
       </div>
 
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20">
-
         <form onSubmit={handleSubmit(onSubmit)} className="p-3 space-y-3">
           {/* Compact Basic Information Section */}
           <div className="space-y-2">
@@ -477,7 +511,10 @@ export default function NewRequestPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
               <div className="space-y-1">
-                <Label htmlFor="order_id" className="text-gray-700 text-sm font-medium flex items-center gap-1">
+                <Label
+                  htmlFor="order_id"
+                  className="text-gray-700 text-sm font-medium flex items-center gap-1"
+                >
                   <span>🆔</span>
                   Order ID
                 </Label>
@@ -489,14 +526,15 @@ export default function NewRequestPage() {
                   className="bg-gray-100/80 border-gray-300 h-9 text-sm rounded-xl"
                 />
                 {errors.request?.order_id && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.request.order_id.message}
-                  </p>
+                  <p className="text-red-500 text-sm mt-1">{errors.request.order_id.message}</p>
                 )}
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="bike_name" className="text-gray-700 text-sm font-medium flex items-center gap-1">
+                <Label
+                  htmlFor="bike_name"
+                  className="text-gray-700 text-sm font-medium flex items-center gap-1"
+                >
                   <span>🚴‍♂️</span>
                   Bike Name *
                 </Label>
@@ -507,14 +545,15 @@ export default function NewRequestPage() {
                   className="border-gray-300 h-9 text-sm rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-200 transition-all"
                 />
                 {errors.request?.bike_name && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.request.bike_name.message}
-                  </p>
+                  <p className="text-red-500 text-sm mt-1">{errors.request.bike_name.message}</p>
                 )}
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="customer_name" className="text-gray-700 text-sm font-medium flex items-center gap-1">
+                <Label
+                  htmlFor="customer_name"
+                  className="text-gray-700 text-sm font-medium flex items-center gap-1"
+                >
                   <span>👤</span>
                   Customer Name *
                 </Label>
@@ -532,12 +571,17 @@ export default function NewRequestPage() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="phone" className="text-gray-700 text-sm font-medium flex items-center gap-1">
+                <Label
+                  htmlFor="phone"
+                  className="text-gray-700 text-sm font-medium flex items-center gap-1"
+                >
                   <span>📱</span>
                   WhatsApp Number *
                 </Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">+</span>
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
+                    +
+                  </span>
                   <Input
                     id="phone"
                     {...register('request.phone_digits_intl')}
@@ -593,10 +637,16 @@ export default function NewRequestPage() {
 
               <div className="space-y-2">
                 {repairFields.map((field, index) => (
-                  <div key={field.id} className="bg-red-50/50 border border-red-200/50 rounded-xl p-2">
+                  <div
+                    key={field.id}
+                    className="bg-red-50/50 border border-red-200/50 rounded-xl p-2"
+                  >
                     <div className="flex gap-2 items-end">
                       <div className="flex-1 space-y-1">
-                        <Label htmlFor={`repair_${index}_label`} className="text-gray-700 text-sm font-medium flex items-center gap-1">
+                        <Label
+                          htmlFor={`repair_${index}_label`}
+                          className="text-gray-700 text-sm font-medium flex items-center gap-1"
+                        >
                           <span>🔧</span>
                           Service Name
                         </Label>
@@ -608,9 +658,11 @@ export default function NewRequestPage() {
                         />
                       </div>
                       <div className="w-20 space-y-1">
-                        <Label htmlFor={`repair_${index}_price`} className="text-gray-700 text-sm font-medium flex items-center gap-1">
-                          <span>💰</span>
-                          ₹
+                        <Label
+                          htmlFor={`repair_${index}_price`}
+                          className="text-gray-700 text-sm font-medium flex items-center gap-1"
+                        >
+                          <span>💰</span>₹
                         </Label>
                         <Controller
                           name={`repair_items.${index}.price_paise` as const}
@@ -663,7 +715,9 @@ export default function NewRequestPage() {
                 <div className="ml-auto">
                   <Button
                     type="button"
-                    onClick={() => appendReplacement({ label: '', price_paise: 0, is_suggested: true })}
+                    onClick={() =>
+                      appendReplacement({ label: '', price_paise: 0, is_suggested: true })
+                    }
                     size="sm"
                     className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white h-7 px-2 text-xs rounded-xl shadow-lg transition-all duration-200"
                   >
@@ -675,10 +729,16 @@ export default function NewRequestPage() {
 
               <div className="space-y-2">
                 {replacementFields.map((field, index) => (
-                  <div key={field.id} className="bg-purple-50/50 border border-purple-200/50 rounded-xl p-2">
+                  <div
+                    key={field.id}
+                    className="bg-purple-50/50 border border-purple-200/50 rounded-xl p-2"
+                  >
                     <div className="flex gap-2 items-end">
                       <div className="flex-1 space-y-1">
-                        <Label htmlFor={`replacement_${index}_label`} className="text-gray-700 text-sm font-medium flex items-center gap-1">
+                        <Label
+                          htmlFor={`replacement_${index}_label`}
+                          className="text-gray-700 text-sm font-medium flex items-center gap-1"
+                        >
                           <span>⚙️</span>
                           Part Name
                         </Label>
@@ -690,9 +750,11 @@ export default function NewRequestPage() {
                         />
                       </div>
                       <div className="w-20 space-y-1">
-                        <Label htmlFor={`replacement_${index}_price`} className="text-gray-700 text-sm font-medium flex items-center gap-1">
-                          <span>💰</span>
-                          ₹
+                        <Label
+                          htmlFor={`replacement_${index}_price`}
+                          className="text-gray-700 text-sm font-medium flex items-center gap-1"
+                        >
+                          <span>💰</span>₹
                         </Label>
                         <Controller
                           name={`replacement_items.${index}.price_paise` as const}
@@ -808,9 +870,15 @@ export default function NewRequestPage() {
                     <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-green-200/50">
                       <p className="text-xs font-medium text-green-800 mb-1">📋 Order Details:</p>
                       <div className="space-y-0.5 text-xs text-green-700">
-                        <p><strong>ID:</strong> {orderId}</p>
-                        <p><strong>Customer:</strong> {customerName}</p>
-                        <p><strong>Bike:</strong> {bikeName}</p>
+                        <p>
+                          <strong>ID:</strong> {orderId}
+                        </p>
+                        <p>
+                          <strong>Customer:</strong> {customerName}
+                        </p>
+                        <p>
+                          <strong>Bike:</strong> {bikeName}
+                        </p>
                       </div>
                     </div>
                     <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-green-200/50">

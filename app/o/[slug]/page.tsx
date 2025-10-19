@@ -71,32 +71,36 @@ export default function PublicOrderPage() {
         setLaCarte(settings)
       } catch (e) {
         // Fallback silently; UI will render defaults
-        setLaCarte({ id: 'lacarte', real_price_paise: 9900, current_price_paise: 9900, discount_note: '', is_active: true })
+        setLaCarte({
+          id: 'lacarte',
+          real_price_paise: 9900,
+          current_price_paise: 9900,
+          discount_note: '',
+          is_active: true,
+        })
       }
     }
     loadLaCarte()
   }, [])
-
 
   const loadSelections = () => {
     // Load selections from session storage
     const savedItems = sessionStorage.getItem(`selectedItems_${slug}`)
     const savedAddons = sessionStorage.getItem(`selectedAddons_${slug}`)
     const savedBundles = sessionStorage.getItem(`selectedBundles_${slug}`)
-    
+
     if (savedItems) {
       setSelectedItems(new Set(JSON.parse(savedItems)))
     }
-    
+
     if (savedAddons) {
       setSelectedAddons(new Set(JSON.parse(savedAddons)))
     }
-    
+
     if (savedBundles) {
       setSelectedBundles(new Set(JSON.parse(savedBundles)))
     }
   }
-
 
   const fetchOrderData = async () => {
     try {
@@ -132,16 +136,16 @@ export default function PublicOrderPage() {
             setSelectedItems(new Set(confirmedData.selectedItems))
             setSelectedAddons(new Set(confirmedData.selectedAddons))
             setSelectedBundles(new Set(confirmedData.selectedBundles || []))
-            
+
             // Calculate totals directly from confirmed data (not from state which hasn't updated yet)
-            const confirmedItems = data.items.filter((item: RequestItem & { selected?: boolean }) => 
+            const confirmedItems = data.items.filter((item: RequestItem & { selected?: boolean }) =>
               confirmedData.selectedItems.includes(item.id)
             )
-            
+
             // We need to fetch addons and bundles to calculate totals
             let addonsTotal = 0
             let bundlesTotal = 0
-            
+
             if (confirmedData.selectedAddons.length > 0) {
               try {
                 const addonsResponse = await fetch('/api/addons')
@@ -150,13 +154,16 @@ export default function PublicOrderPage() {
                   const confirmedAddons = addonsData.filter((addon: Addon) =>
                     confirmedData.selectedAddons.includes(addon.id)
                   )
-                  addonsTotal = confirmedAddons.reduce((sum: number, addon: Addon) => sum + addon.price_paise, 0)
+                  addonsTotal = confirmedAddons.reduce(
+                    (sum: number, addon: Addon) => sum + addon.price_paise,
+                    0
+                  )
                 }
               } catch (error) {
                 console.error('Error fetching addons for total calculation:', error)
               }
             }
-            
+
             if (confirmedData.selectedBundles && confirmedData.selectedBundles.length > 0) {
               try {
                 const bundlesResponse = await fetch('/api/bundles')
@@ -165,24 +172,30 @@ export default function PublicOrderPage() {
                   const confirmedBundles = bundlesData.filter((bundle: ServiceBundle) =>
                     confirmedData.selectedBundles.includes(bundle.id)
                   )
-                  bundlesTotal = confirmedBundles.reduce((sum: number, bundle: ServiceBundle) => sum + bundle.price_paise, 0)
+                  bundlesTotal = confirmedBundles.reduce(
+                    (sum: number, bundle: ServiceBundle) => sum + bundle.price_paise,
+                    0
+                  )
                 }
               } catch (error) {
                 console.error('Error fetching bundles for total calculation:', error)
               }
             }
-            
-            const subtotal = confirmedItems.reduce((sum: number, item: RequestItem & { selected?: boolean }) => sum + item.price_paise, 0)
+
+            const subtotal = confirmedItems.reduce(
+              (sum: number, item: RequestItem & { selected?: boolean }) => sum + item.price_paise,
+              0
+            )
             // Use request-specific La Carte price if set, otherwise global settings
-            const laCarteCharge = data.request.lacarte_paise ?? await getLaCartePrice()
+            const laCarteCharge = data.request.lacarte_paise ?? (await getLaCartePrice())
             setLaCartePaise(laCarteCharge) // Update state with the price being used
             const total = subtotal + addonsTotal + bundlesTotal + laCarteCharge
-            
+
             setConfirmedData({
               selectedItems: confirmedData.selectedItems,
               selectedAddons: confirmedData.selectedAddons,
               selectedBundles: confirmedData.selectedBundles || [],
-              totals: { subtotal, addonsTotal, bundlesTotal, laCarteCharge, total }
+              totals: { subtotal, addonsTotal, bundlesTotal, laCarteCharge, total },
             })
           }
         } catch (error) {
@@ -194,7 +207,9 @@ export default function PublicOrderPage() {
         if (!savedItems) {
           // No saved selections, use suggested items
           const suggestedItemIds = new Set<string>(
-            data.items.filter((item: RequestItem) => item.is_suggested).map((item: RequestItem) => item.id)
+            data.items
+              .filter((item: RequestItem) => item.is_suggested)
+              .map((item: RequestItem) => item.id)
           )
           setSelectedItems(suggestedItemIds)
         }
@@ -207,16 +222,25 @@ export default function PublicOrderPage() {
           const savedItems = sessionStorage.getItem(`selectedItems_${slug}`)
           const itemsToMark = savedItems
             ? JSON.parse(savedItems)
-            : data.items.filter((item: RequestItem) => item.is_suggested).map((item: RequestItem) => item.id)
+            : data.items
+                .filter((item: RequestItem) => item.is_suggested)
+                .map((item: RequestItem) => item.id)
 
-          console.log('[Main] Marking as viewed. Slug:', slug, 'Status:', data.request.status, 'Items count:', itemsToMark.length)
+          console.log(
+            '[Main] Marking as viewed. Slug:',
+            slug,
+            'Status:',
+            data.request.status,
+            'Items count:',
+            itemsToMark.length
+          )
 
           const response = await fetch(`/api/public/orders/${slug}/view`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               selected_items: itemsToMark,
-              status: 'viewed'
+              status: 'viewed',
             }),
           })
 
@@ -226,11 +250,16 @@ export default function PublicOrderPage() {
             // Update local status
             setOrderData({
               ...data,
-              request: { ...data.request, status: 'viewed' }
+              request: { ...data.request, status: 'viewed' },
             })
           } else {
             const errorData = await response.json().catch(() => ({}))
-            console.error('[Main] Failed to mark as viewed:', response.status, response.statusText, errorData)
+            console.error(
+              '[Main] Failed to mark as viewed:',
+              response.status,
+              response.statusText,
+              errorData
+            )
           }
         } catch (error) {
           console.error('[Main] Error marking as viewed:', error)
@@ -289,20 +318,21 @@ export default function PublicOrderPage() {
   }
 
   const calculateTotal = () => {
-    if (!orderData) return { subtotal: 0, addonsTotal: 0, bundlesTotal: 0, laCarteCharge: 0, total: 0 }
+    if (!orderData)
+      return { subtotal: 0, addonsTotal: 0, bundlesTotal: 0, laCarteCharge: 0, total: 0 }
 
     const subtotal = orderData.items
-      .filter(item => selectedItems.has(item.id))
+      .filter((item) => selectedItems.has(item.id))
       .reduce((sum, item) => sum + item.price_paise, 0)
-    
+
     // Calculate selected addons total
     const addonsTotal = addons
-      .filter(addon => selectedAddons.has(addon.id))
+      .filter((addon) => selectedAddons.has(addon.id))
       .reduce((sum, addon) => sum + addon.price_paise, 0)
-    
+
     // Calculate selected bundles total
     const bundlesTotal = bundles
-      .filter(bundle => selectedBundles.has(bundle.id))
+      .filter((bundle) => selectedBundles.has(bundle.id))
       .reduce((sum, bundle) => sum + bundle.price_paise, 0)
 
     // Use request-specific La Carte price (set from order data)
@@ -318,7 +348,7 @@ export default function PublicOrderPage() {
       showToast('Please select at least one service (La Carte included).', 'error')
       return
     }
-    
+
     // Show confirmation dialog
     setShowConfirmation(true)
   }
@@ -333,9 +363,9 @@ export default function PublicOrderPage() {
 
   const handleFinalConfirmation = async () => {
     if (!orderData) return
-    
+
     setIsConfirming(true)
-    
+
     try {
       // Mark as viewed and confirmed
       await fetch(`/api/public/orders/${slug}/view`, {
@@ -345,35 +375,38 @@ export default function PublicOrderPage() {
           selected_items: Array.from(selectedItems),
           selected_addons: Array.from(selectedAddons),
           selected_bundles: Array.from(selectedBundles),
-          status: 'confirmed'
+          status: 'confirmed',
         }),
       })
-      
+
       // Update local state
       setHasViewedEstimate(true)
       setShowConfirmation(false)
       // Mark request as confirmed locally so UI updates without refresh
-      setOrderData(prev => prev ? ({
-        ...prev,
-        request: { ...prev.request, status: 'confirmed' }
-      }) : prev)
-      
+      setOrderData((prev) =>
+        prev
+          ? {
+              ...prev,
+              request: { ...prev.request, status: 'confirmed' },
+            }
+          : prev
+      )
+
       // Store confirmed data for PDF download
       const totals = calculateTotal()
       setConfirmedData({
         selectedItems: Array.from(selectedItems),
         selectedAddons: Array.from(selectedAddons),
         selectedBundles: Array.from(selectedBundles),
-        totals
+        totals,
       })
       // Persist selections to sessionStorage for consistency
       sessionStorage.setItem(`selectedItems_${slug}`, JSON.stringify(Array.from(selectedItems)))
       sessionStorage.setItem(`selectedAddons_${slug}`, JSON.stringify(Array.from(selectedAddons)))
       sessionStorage.setItem(`selectedBundles_${slug}`, JSON.stringify(Array.from(selectedBundles)))
-      
+
       // Show success message
       showToast('Order confirmed successfully!', 'success')
-      
     } catch (error) {
       console.error('Error confirming order:', error)
       showToast('Failed to confirm order. Please try again.', 'error')
@@ -386,16 +419,16 @@ export default function PublicOrderPage() {
     if (!orderData || !confirmedData) return
 
     // Get confirmed items data
-    const confirmedItems = orderData.items.filter(item => 
+    const confirmedItems = orderData.items.filter((item) =>
       confirmedData.selectedItems.includes(item.id)
     )
-    
-    // Get confirmed addons data  
-    const confirmedAddons = addons.filter(addon =>
+
+    // Get confirmed addons data
+    const confirmedAddons = addons.filter((addon) =>
       confirmedData.selectedAddons.includes(addon.id)
     )
     // Get confirmed bundles data
-    const confirmedBundles = bundles.filter(bundle =>
+    const confirmedBundles = bundles.filter((bundle) =>
       (confirmedData.selectedBundles || []).includes(bundle.id)
     )
 
@@ -408,29 +441,28 @@ export default function PublicOrderPage() {
 
     // Generate confirmed order PDF
     const billData = {
-
       order_id: orderData.request.order_id,
       customer_name: orderData.request.customer_name,
       bike_name: orderData.request.bike_name,
       created_at: orderData.request.created_at,
       confirmed_at: new Date().toISOString(),
       items: confirmedItems,
-      addons: confirmedAddons.map(addon => ({
+      addons: confirmedAddons.map((addon) => ({
         name: addon.name,
         description: addon.description ?? undefined,
-        price_paise: addon.price_paise
+        price_paise: addon.price_paise,
       })),
-      bundles: confirmedBundles.map(bundle => ({
+      bundles: confirmedBundles.map((bundle) => ({
         name: bundle.name,
         description: bundle.description ?? undefined,
-        price_paise: bundle.price_paise
+        price_paise: bundle.price_paise,
       })),
       subtotal_paise: subtotal,
       addons_paise: addonsTotal,
       bundles_paise: bundlesTotal,
       lacarte_paise: laCarteCharge,
       total_paise: total,
-      status: 'confirmed'
+      status: 'confirmed',
     }
 
     const html = generateBillHTML(billData)
@@ -447,7 +479,9 @@ export default function PublicOrderPage() {
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-green-600 border-r-emerald-500 mx-auto absolute top-0 left-1/2 transform -translate-x-1/2"></div>
           </div>
           <div className="mt-6 space-y-2">
-            <p className="text-lg font-medium text-gray-800 animate-pulse">Loading Order Summary...</p>
+            <p className="text-lg font-medium text-gray-800 animate-pulse">
+              Loading Order Summary...
+            </p>
             <p className="text-sm text-gray-600">📝 Preparing your complete order details</p>
           </div>
           {/* Loading skeleton cards */}
@@ -470,7 +504,6 @@ export default function PublicOrderPage() {
     )
   }
 
-
   if (error || !orderData) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -478,17 +511,15 @@ export default function PublicOrderPage() {
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Oops!</h1>
           <p className="text-gray-600 mb-4">{error || 'Something went wrong'}</p>
-          <Button onClick={() => window.location.reload()}>
-            Try Again
-          </Button>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </div>
     )
   }
 
   const { request, items } = orderData
-  const repairItems = items.filter(item => item.section === 'repair')
-  const replacementItems = items.filter(item => item.section === 'replacement')
+  const repairItems = items.filter((item) => item.section === 'repair')
+  const replacementItems = items.filter((item) => item.section === 'replacement')
   const totals = calculateTotal()
 
   // Check if order is already confirmed - show enhanced confirmed status page
@@ -523,117 +554,126 @@ export default function PublicOrderPage() {
               <h1 className="text-xl font-bold text-white mb-2">Order Confirmed!</h1>
               <p className="text-white/90 text-sm">
                 Thank you! Your service order is confirmed.
-                <br />Our team will contact you shortly.
+                <br />
+                Our team will contact you shortly.
               </p>
             </div>
           </div>
 
           {/* Detailed Service Breakdown */}
-          {repairItems.filter(item => selectedItems.has(item.id)).length > 0 && (
+          {repairItems.filter((item) => selectedItems.has(item.id)).length > 0 && (
             <CategorySection
               title="Confirmed Repair Services"
               emoji="🔧"
               description="Essential fixes for your bike"
-              count={repairItems.filter(item => selectedItems.has(item.id)).length}
+              count={repairItems.filter((item) => selectedItems.has(item.id)).length}
               isCollapsible={true}
               defaultExpanded={false}
             >
               <div className="space-y-3">
-                {repairItems.filter(item => selectedItems.has(item.id)).map((item) => (
-                  <SelectionCard
-                    key={item.id}
-                    id={item.id}
-                    title={item.label}
-                    price={item.price_paise}
-                    isSelected={true}
-                    isRecommended={item.is_suggested}
-                    isRequired={true}
-                    type="repair"
-                    onToggle={() => {}} // No-op for confirmed page
-                  />
-                ))}
+                {repairItems
+                  .filter((item) => selectedItems.has(item.id))
+                  .map((item) => (
+                    <SelectionCard
+                      key={item.id}
+                      id={item.id}
+                      title={item.label}
+                      price={item.price_paise}
+                      isSelected={true}
+                      isRecommended={item.is_suggested}
+                      isRequired={true}
+                      type="repair"
+                      onToggle={() => {}} // No-op for confirmed page
+                    />
+                  ))}
               </div>
             </CategorySection>
           )}
 
-          {replacementItems.filter(item => selectedItems.has(item.id)).length > 0 && (
+          {replacementItems.filter((item) => selectedItems.has(item.id)).length > 0 && (
             <CategorySection
               title="Confirmed Replacement Parts"
               emoji="⚙️"
               description="New parts for better performance"
-              count={replacementItems.filter(item => selectedItems.has(item.id)).length}
+              count={replacementItems.filter((item) => selectedItems.has(item.id)).length}
               isCollapsible={true}
               defaultExpanded={false}
             >
               <div className="space-y-3">
-                {replacementItems.filter(item => selectedItems.has(item.id)).map((item) => (
-                  <SelectionCard
-                    key={item.id}
-                    id={item.id}
-                    title={item.label}
-                    price={item.price_paise}
-                    isSelected={true}
-                    isRecommended={item.is_suggested}
-                    isRequired={true}
-                    type="replacement"
-                    onToggle={() => {}} // No-op for confirmed page
-                  />
-                ))}
+                {replacementItems
+                  .filter((item) => selectedItems.has(item.id))
+                  .map((item) => (
+                    <SelectionCard
+                      key={item.id}
+                      id={item.id}
+                      title={item.label}
+                      price={item.price_paise}
+                      isSelected={true}
+                      isRecommended={item.is_suggested}
+                      isRequired={true}
+                      type="replacement"
+                      onToggle={() => {}} // No-op for confirmed page
+                    />
+                  ))}
               </div>
             </CategorySection>
           )}
 
-          {addons.filter(addon => selectedAddons.has(addon.id)).length > 0 && (
+          {addons.filter((addon) => selectedAddons.has(addon.id)).length > 0 && (
             <CategorySection
               title="Confirmed Add-on Services"
               emoji="✨"
               description="Premium services to enhance your bike care"
-              count={addons.filter(addon => selectedAddons.has(addon.id)).length}
+              count={addons.filter((addon) => selectedAddons.has(addon.id)).length}
               isCollapsible={true}
               defaultExpanded={false}
             >
               <div className="space-y-3">
-                {addons.filter(addon => selectedAddons.has(addon.id)).map((addon) => (
-                  <SelectionCard
-                    key={addon.id}
-                    id={addon.id}
-                    title={addon.name}
-                    description={addon.description || undefined}
-                    price={addon.price_paise}
-                    isSelected={true}
-                    isRequired={true}
-                    type="addon"
-                    onToggle={() => {}} // No-op for confirmed page
-                  />
-                ))}
+                {addons
+                  .filter((addon) => selectedAddons.has(addon.id))
+                  .map((addon) => (
+                    <SelectionCard
+                      key={addon.id}
+                      id={addon.id}
+                      title={addon.name}
+                      description={addon.description || undefined}
+                      price={addon.price_paise}
+                      isSelected={true}
+                      isRequired={true}
+                      type="addon"
+                      onToggle={() => {}} // No-op for confirmed page
+                    />
+                  ))}
               </div>
             </CategorySection>
           )}
 
-          {bundles.filter(bundle => selectedBundles.has(bundle.id)).length > 0 && (
+          {bundles.filter((bundle) => selectedBundles.has(bundle.id)).length > 0 && (
             <CategorySection
               title="Confirmed Service Bundles"
               emoji="🎁"
               description="Comprehensive packages with multiple services"
-              count={bundles.filter(bundle => selectedBundles.has(bundle.id)).length}
+              count={bundles.filter((bundle) => selectedBundles.has(bundle.id)).length}
               isCollapsible={true}
               defaultExpanded={false}
             >
               <div className="space-y-3">
-                {bundles.filter(bundle => selectedBundles.has(bundle.id)).map((bundle) => (
-                  <SelectionCard
-                    key={bundle.id}
-                    id={bundle.id}
-                    title={bundle.name}
-                    description={bundle.description || undefined}
-                    price={bundle.price_paise}
-                    isSelected={true}
-                    isRequired={true}
-                    type="bundle"
-                    bulletPoints={bundle.bullet_points}
-                    onToggle={() => {}} // No-op for confirmed page
-                  />
-                ))}
+                {bundles
+                  .filter((bundle) => selectedBundles.has(bundle.id))
+                  .map((bundle) => (
+                    <SelectionCard
+                      key={bundle.id}
+                      id={bundle.id}
+                      title={bundle.name}
+                      description={bundle.description || undefined}
+                      price={bundle.price_paise}
+                      isSelected={true}
+                      isRequired={true}
+                      type="bundle"
+                      bulletPoints={bundle.bullet_points}
+                      onToggle={() => {}} // No-op for confirmed page
+                    />
+                  ))}
               </div>
             </CategorySection>
           )}
@@ -676,7 +716,9 @@ export default function PublicOrderPage() {
               <div className="grid grid-cols-1 gap-2">
                 <div className="flex items-start gap-2">
                   <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
-                  <span className="text-sm text-green-800">General service & inspection report</span>
+                  <span className="text-sm text-green-800">
+                    General service & inspection report
+                  </span>
                 </div>
                 <div className="flex items-start gap-2">
                   <div className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
@@ -750,7 +792,7 @@ export default function PublicOrderPage() {
             selectedServicesPaise: totals.subtotal + totals.addonsTotal + totals.bundlesTotal,
             selectedCount: selectedItems.size + selectedAddons.size + selectedBundles.size,
             laCartePaise: laCartePaise,
-            laCarteDisplay: laCarte ? formatLaCarteDisplay(laCarte) : undefined
+            laCarteDisplay: laCarte ? formatLaCarteDisplay(laCarte) : undefined,
           }}
         />
 
@@ -773,8 +815,9 @@ export default function PublicOrderPage() {
 
   // If order is in active state and no selections in session storage, redirect to services page
   if (request.status === 'pending' || request.status === 'sent' || request.status === 'viewed') {
-    const hasSelections = sessionStorage.getItem(`selectedItems_${slug}`) ||
-                         sessionStorage.getItem(`selectedAddons_${slug}`)
+    const hasSelections =
+      sessionStorage.getItem(`selectedItems_${slug}`) ||
+      sessionStorage.getItem(`selectedAddons_${slug}`)
 
     if (!hasSelections) {
       router.replace(`/o/${slug}/services`)
@@ -801,7 +844,6 @@ export default function PublicOrderPage() {
     )
   }
 
-
   return (
     <div className="min-h-screen bg-gray-50 pb-32">
       {/* Enhanced App Header */}
@@ -821,7 +863,6 @@ export default function PublicOrderPage() {
       />
 
       <div className="max-w-md mx-auto px-4 py-4 space-y-4">
-
         {/* Order Summary Card */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 p-4">
           <div className="flex items-center gap-3 mb-3">
@@ -829,12 +870,8 @@ export default function PublicOrderPage() {
               <Check className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1">
-              <h2 className="text-base font-medium text-blue-900 mb-1">
-                Service Estimate Ready
-              </h2>
-              <p className="text-sm text-blue-700">
-                Review your selections below
-              </p>
+              <h2 className="text-base font-medium text-blue-900 mb-1">Service Estimate Ready</h2>
+              <p className="text-sm text-blue-700">Review your selections below</p>
             </div>
           </div>
 
@@ -853,110 +890,118 @@ export default function PublicOrderPage() {
         </div>
 
         {/* Selected Repair Services */}
-        {repairItems.filter(item => selectedItems.has(item.id)).length > 0 && (
+        {repairItems.filter((item) => selectedItems.has(item.id)).length > 0 && (
           <CategorySection
             title="Repair Services"
             emoji="🔧"
             description="Selected essential fixes for your bike"
-            count={repairItems.filter(item => selectedItems.has(item.id)).length}
+            count={repairItems.filter((item) => selectedItems.has(item.id)).length}
             isCollapsible={false}
           >
             <div className="space-y-3">
-              {repairItems.filter(item => selectedItems.has(item.id)).map((item) => (
-                <SelectionCard
-                  key={item.id}
-                  id={item.id}
-                  title={item.label}
-                  price={item.price_paise}
-                  isSelected={true}
-                  isRecommended={item.is_suggested}
-                  isRequired={true}
-                  type="repair"
-                  onToggle={() => {}} // No-op for review page
-                />
-              ))}
+              {repairItems
+                .filter((item) => selectedItems.has(item.id))
+                .map((item) => (
+                  <SelectionCard
+                    key={item.id}
+                    id={item.id}
+                    title={item.label}
+                    price={item.price_paise}
+                    isSelected={true}
+                    isRecommended={item.is_suggested}
+                    isRequired={true}
+                    type="repair"
+                    onToggle={() => {}} // No-op for review page
+                  />
+                ))}
             </div>
           </CategorySection>
         )}
 
         {/* Selected Replacement Parts */}
-        {replacementItems.filter(item => selectedItems.has(item.id)).length > 0 && (
+        {replacementItems.filter((item) => selectedItems.has(item.id)).length > 0 && (
           <CategorySection
             title="Replacement Parts"
             emoji="⚙️"
             description="Selected new parts for better performance"
-            count={replacementItems.filter(item => selectedItems.has(item.id)).length}
+            count={replacementItems.filter((item) => selectedItems.has(item.id)).length}
             isCollapsible={false}
           >
             <div className="space-y-3">
-              {replacementItems.filter(item => selectedItems.has(item.id)).map((item) => (
-                <SelectionCard
-                  key={item.id}
-                  id={item.id}
-                  title={item.label}
-                  price={item.price_paise}
-                  isSelected={true}
-                  isRecommended={item.is_suggested}
-                  isRequired={true}
-                  type="replacement"
-                  onToggle={() => {}} // No-op for review page
-                />
-              ))}
+              {replacementItems
+                .filter((item) => selectedItems.has(item.id))
+                .map((item) => (
+                  <SelectionCard
+                    key={item.id}
+                    id={item.id}
+                    title={item.label}
+                    price={item.price_paise}
+                    isSelected={true}
+                    isRecommended={item.is_suggested}
+                    isRequired={true}
+                    type="replacement"
+                    onToggle={() => {}} // No-op for review page
+                  />
+                ))}
             </div>
           </CategorySection>
         )}
 
         {/* Selected Add-on Services */}
-        {addons.filter(addon => selectedAddons.has(addon.id)).length > 0 && (
+        {addons.filter((addon) => selectedAddons.has(addon.id)).length > 0 && (
           <CategorySection
             title="Add-on Services"
             emoji="✨"
             description="Selected premium services to enhance your bike care"
-            count={addons.filter(addon => selectedAddons.has(addon.id)).length}
+            count={addons.filter((addon) => selectedAddons.has(addon.id)).length}
             isCollapsible={false}
           >
             <div className="space-y-3">
-              {addons.filter(addon => selectedAddons.has(addon.id)).map((addon) => (
-                <SelectionCard
-                  key={addon.id}
-                  id={addon.id}
-                  title={addon.name}
-                  description={addon.description || undefined}
-                  price={addon.price_paise}
-                  isSelected={true}
-                  isRequired={true}
-                  type="addon"
-                  onToggle={() => {}} // No-op for review page
-                />
-              ))}
+              {addons
+                .filter((addon) => selectedAddons.has(addon.id))
+                .map((addon) => (
+                  <SelectionCard
+                    key={addon.id}
+                    id={addon.id}
+                    title={addon.name}
+                    description={addon.description || undefined}
+                    price={addon.price_paise}
+                    isSelected={true}
+                    isRequired={true}
+                    type="addon"
+                    onToggle={() => {}} // No-op for review page
+                  />
+                ))}
             </div>
           </CategorySection>
         )}
 
         {/* Selected Service Bundles */}
-        {bundles.filter(bundle => selectedBundles.has(bundle.id)).length > 0 && (
+        {bundles.filter((bundle) => selectedBundles.has(bundle.id)).length > 0 && (
           <CategorySection
             title="Service Bundles"
             emoji="🎁"
             description="Selected comprehensive packages with multiple services"
-            count={bundles.filter(bundle => selectedBundles.has(bundle.id)).length}
+            count={bundles.filter((bundle) => selectedBundles.has(bundle.id)).length}
             isCollapsible={false}
           >
             <div className="space-y-3">
-              {bundles.filter(bundle => selectedBundles.has(bundle.id)).map((bundle) => (
-                <SelectionCard
-                  key={bundle.id}
-                  id={bundle.id}
-                  title={bundle.name}
-                  description={bundle.description || undefined}
-                  price={bundle.price_paise}
-                  isSelected={true}
-                  isRequired={true}
-                  type="bundle"
-                  bulletPoints={bundle.bullet_points}
-                  onToggle={() => {}} // No-op for review page
-                />
-              ))}
+              {bundles
+                .filter((bundle) => selectedBundles.has(bundle.id))
+                .map((bundle) => (
+                  <SelectionCard
+                    key={bundle.id}
+                    id={bundle.id}
+                    title={bundle.name}
+                    description={bundle.description || undefined}
+                    price={bundle.price_paise}
+                    isSelected={true}
+                    isRequired={true}
+                    type="bundle"
+                    bulletPoints={bundle.bullet_points}
+                    onToggle={() => {}} // No-op for review page
+                  />
+                ))}
             </div>
           </CategorySection>
         )}
@@ -987,7 +1032,12 @@ export default function PublicOrderPage() {
                     </span>
                   </div>
                   <div className="bg-green-600 text-white px-2 py-1 rounded text-xs font-bold inline-block">
-                    {Math.round(((laCarte.real_price_paise - laCartePaise) / Math.max(laCarte.real_price_paise, 1)) * 100)}% off
+                    {Math.round(
+                      ((laCarte.real_price_paise - laCartePaise) /
+                        Math.max(laCarte.real_price_paise, 1)) *
+                        100
+                    )}
+                    % off
                   </div>
                 </div>
               ) : (
@@ -1037,7 +1087,7 @@ export default function PublicOrderPage() {
           selectedServicesPaise: totals.subtotal + totals.addonsTotal + totals.bundlesTotal,
           selectedCount: selectedItems.size + selectedAddons.size + selectedBundles.size,
           laCartePaise: laCartePaise,
-          laCarteDisplay: laCarte ? formatLaCarteDisplay(laCarte) : undefined
+          laCarteDisplay: laCarte ? formatLaCarteDisplay(laCarte) : undefined,
         }}
       />
 
@@ -1057,157 +1107,179 @@ export default function PublicOrderPage() {
 
       {/* Enhanced Confirmation Modal */}
       {showConfirmation && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
-              {/* Header with Gradient */}
-              <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 px-6 py-6 relative overflow-hidden">
-                {/* Decorative Elements */}
-                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-6 translate-x-6"></div>
-                <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-3 -translate-x-3"></div>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
+            {/* Header with Gradient */}
+            <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 px-6 py-6 relative overflow-hidden">
+              {/* Decorative Elements */}
+              <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-6 translate-x-6"></div>
+              <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-3 -translate-x-3"></div>
 
-                <div className="relative z-10 flex items-center gap-3">
-                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                    <span className="text-2xl">🎯</span>
+              <div className="relative z-10 flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                  <span className="text-2xl">🎯</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-1">Confirm Your Order</h3>
+                  <p className="text-white/80 text-sm">Review and finalize your service package</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6">
+              {/* Order Summary with Enhanced Design */}
+              <div className="mb-6">
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 overflow-hidden">
+                  {/* Header */}
+                  <div className="bg-white/80 backdrop-blur-sm px-4 py-3 border-b border-gray-200">
+                    <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      Order Summary
+                    </h4>
+                  </div>
+
+                  {/* Line Items */}
+                  <div className="p-4 space-y-3">
+                    {/* Services */}
+                    <div className="flex justify-between items-center py-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                        <span className="text-sm text-gray-700">
+                          Selected Services ({selectedItems.size} items)
+                        </span>
+                      </div>
+                      <span className="font-semibold text-gray-900">
+                        {formatCurrency(totals.subtotal)}
+                      </span>
+                    </div>
+
+                    {/* Add-ons */}
+                    {selectedAddons.size > 0 && (
+                      <div className="flex justify-between items-center py-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+                          <span className="text-sm text-gray-700">
+                            Add-on Services ({selectedAddons.size} items)
+                          </span>
+                        </div>
+                        <span className="font-semibold text-gray-900">
+                          {formatCurrency(totals.addonsTotal)}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Bundles */}
+                    {selectedBundles.size > 0 && (
+                      <div className="flex justify-between items-center py-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
+                          <span className="text-sm text-gray-700">
+                            Service Bundles ({selectedBundles.size} items)
+                          </span>
+                        </div>
+                        <span className="font-semibold text-gray-900">
+                          {formatCurrency(totals.bundlesTotal)}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* La Carte */}
+                    <div className="flex justify-between items-start py-2">
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                          <span className="text-sm text-gray-700">La Carte Services</span>
+                        </div>
+                        {laCarte && laCarte.real_price_paise > laCarte.current_price_paise && (
+                          <div className="ml-3.5 mt-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs line-through text-gray-400">
+                                {formatCurrency(laCarte.real_price_paise)}
+                              </span>
+                              <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-semibold">
+                                -
+                                {Math.round(
+                                  ((laCarte.real_price_paise - laCarte.current_price_paise) /
+                                    Math.max(laCarte.real_price_paise, 1)) *
+                                    100
+                                )}
+                                % OFF
+                              </span>
+                            </div>
+                            {laCarte.discount_note && (
+                              <div className="text-xs text-green-600 mt-0.5">
+                                {laCarte.discount_note}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <span className="font-semibold text-gray-900">
+                        {formatCurrency(laCartePaise)}
+                      </span>
+                    </div>
+
+                    {/* Total */}
+                    <div className="border-t border-gray-300 pt-3 mt-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-base font-bold text-gray-900">Total Amount</span>
+                        <span className="text-xl font-bold text-green-600">
+                          {formatCurrency(totals.total)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Enhanced Important Notice */}
+              <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-l-4 border-amber-400 rounded-lg p-4 mb-6">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-amber-600 text-sm">⚠️</span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-white mb-1">
-                      Confirm Your Order
-                    </h3>
-                    <p className="text-white/80 text-sm">
-                      Review and finalize your service package
+                    <h5 className="font-semibold text-amber-800 mb-1">Important Notice</h5>
+                    <p className="text-sm text-amber-700 leading-relaxed">
+                      This is the estimated amount for your service. Final charges may vary slightly
+                      due to additional services or parts required during the service.
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-6">
-                {/* Order Summary with Enhanced Design */}
-                <div className="mb-6">
-                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 overflow-hidden">
-                    {/* Header */}
-                    <div className="bg-white/80 backdrop-blur-sm px-4 py-3 border-b border-gray-200">
-                      <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                        Order Summary
-                      </h4>
+              {/* Enhanced Action Buttons */}
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => setShowConfirmation(false)}
+                  variant="outline"
+                  className="flex-1 h-12 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all duration-300"
+                  disabled={isConfirming}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleFinalConfirmation}
+                  className="flex-1 h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-200/50 transition-all duration-300 transform hover:scale-105"
+                  disabled={isConfirming}
+                >
+                  {isConfirming ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Confirming...
                     </div>
-
-                    {/* Line Items */}
-                    <div className="p-4 space-y-3">
-                      {/* Services */}
-                      <div className="flex justify-between items-center py-2">
-                        <div className="flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-                          <span className="text-sm text-gray-700">Selected Services ({selectedItems.size} items)</span>
-                        </div>
-                        <span className="font-semibold text-gray-900">{formatCurrency(totals.subtotal)}</span>
-                      </div>
-
-                      {/* Add-ons */}
-                      {selectedAddons.size > 0 && (
-                        <div className="flex justify-between items-center py-2">
-                          <div className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
-                            <span className="text-sm text-gray-700">Add-on Services ({selectedAddons.size} items)</span>
-                          </div>
-                          <span className="font-semibold text-gray-900">{formatCurrency(totals.addonsTotal)}</span>
-                        </div>
-                      )}
-
-                      {/* Bundles */}
-                      {selectedBundles.size > 0 && (
-                        <div className="flex justify-between items-center py-2">
-                          <div className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
-                            <span className="text-sm text-gray-700">Service Bundles ({selectedBundles.size} items)</span>
-                          </div>
-                          <span className="font-semibold text-gray-900">{formatCurrency(totals.bundlesTotal)}</span>
-                        </div>
-                      )}
-
-                      {/* La Carte */}
-                      <div className="flex justify-between items-start py-2">
-                        <div className="flex flex-col">
-                          <div className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                            <span className="text-sm text-gray-700">La Carte Services</span>
-                          </div>
-                          {laCarte && laCarte.real_price_paise > laCarte.current_price_paise && (
-                            <div className="ml-3.5 mt-1">
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-xs line-through text-gray-400">{formatCurrency(laCarte.real_price_paise)}</span>
-                                <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-semibold">
-                                  -{Math.round(((laCarte.real_price_paise - laCarte.current_price_paise) / Math.max(laCarte.real_price_paise, 1)) * 100)}% OFF
-                                </span>
-                              </div>
-                              {laCarte.discount_note && (
-                                <div className="text-xs text-green-600 mt-0.5">{laCarte.discount_note}</div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                        <span className="font-semibold text-gray-900">{formatCurrency(laCartePaise)}</span>
-                      </div>
-
-                      {/* Total */}
-                      <div className="border-t border-gray-300 pt-3 mt-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-base font-bold text-gray-900">Total Amount</span>
-                          <span className="text-xl font-bold text-green-600">{formatCurrency(totals.total)}</span>
-                        </div>
-                      </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span>✓</span>
+                      Confirm Order
                     </div>
-                  </div>
-                </div>
-
-                {/* Enhanced Important Notice */}
-                <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-l-4 border-amber-400 rounded-lg p-4 mb-6">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-amber-600 text-sm">⚠️</span>
-                    </div>
-                    <div>
-                      <h5 className="font-semibold text-amber-800 mb-1">Important Notice</h5>
-                      <p className="text-sm text-amber-700 leading-relaxed">
-                        This is the estimated amount for your service. Final charges may vary slightly due to additional services or parts required during the service.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Enhanced Action Buttons */}
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => setShowConfirmation(false)}
-                    variant="outline"
-                    className="flex-1 h-12 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all duration-300"
-                    disabled={isConfirming}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleFinalConfirmation}
-                    className="flex-1 h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-200/50 transition-all duration-300 transform hover:scale-105"
-                    disabled={isConfirming}
-                  >
-                    {isConfirming ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        Confirming...
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span>✓</span>
-                        Confirm Order
-                      </div>
-                    )}
-                  </Button>
-                </div>
+                  )}
+                </Button>
               </div>
             </div>
+          </div>
         </div>
       )}
-
     </div>
   )
 }

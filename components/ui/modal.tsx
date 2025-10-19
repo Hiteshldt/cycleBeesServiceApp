@@ -16,21 +16,20 @@ export function Modal({ isOpen, onClose, title, children, size = 'lg' }: ModalPr
 
   const sizeClasses = {
     sm: 'max-w-md',
-    md: 'max-w-lg', 
+    md: 'max-w-lg',
     lg: 'max-w-2xl',
-    xl: 'max-w-4xl'
+    xl: 'max-w-4xl',
   }
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+
       {/* Modal */}
-      <div className={`relative z-10 bg-white rounded-lg shadow-xl mx-4 w-full ${sizeClasses[size]} max-h-[90vh] overflow-hidden`}>
+      <div
+        className={`relative z-10 bg-white rounded-lg shadow-xl mx-4 w-full ${sizeClasses[size]} max-h-[90vh] overflow-hidden`}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
@@ -42,11 +41,9 @@ export function Modal({ isOpen, onClose, title, children, size = 'lg' }: ModalPr
             <X className="h-5 w-5 text-gray-500" />
           </button>
         </div>
-        
+
         {/* Content */}
-        <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
-          {children}
-        </div>
+        <div className="overflow-y-auto max-h-[calc(90vh-80px)]">{children}</div>
       </div>
     </div>
   )

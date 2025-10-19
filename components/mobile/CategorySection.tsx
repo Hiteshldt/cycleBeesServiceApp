@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
-import React, { useState } from "react"
-import { ChevronDown, ChevronUp } from "lucide-react"
+import React, { useState } from 'react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 type Props = {
   title: string
@@ -22,7 +22,7 @@ export function CategorySection({
   defaultExpanded = true,
   isCollapsible = true,
   count,
-  className = ""
+  className = '',
 }: Props) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
 
@@ -33,7 +33,9 @@ export function CategorySection({
   }
 
   return (
-    <div className={`bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm ${className}`}>
+    <div
+      className={`bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm ${className}`}
+    >
       {/* Header - 20% smaller */}
       <div
         className={`
@@ -45,9 +47,7 @@ export function CategorySection({
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            {emoji && (
-              <span className="text-base">{emoji}</span>
-            )}
+            {emoji && <span className="text-base">{emoji}</span>}
             <div>
               <div className="flex items-center gap-1.5">
                 <h3 className="text-sm font-bold text-gray-900">{title}</h3>
@@ -57,9 +57,7 @@ export function CategorySection({
                   </span>
                 )}
               </div>
-              {description && (
-                <p className="text-xs text-gray-600 mt-0.5">{description}</p>
-              )}
+              {description && <p className="text-xs text-gray-600 mt-0.5">{description}</p>}
             </div>
           </div>
 
@@ -76,11 +74,7 @@ export function CategorySection({
       </div>
 
       {/* Content - reduced padding */}
-      {isExpanded && (
-        <div className="p-3">
-          {children}
-        </div>
-      )}
+      {isExpanded && <div className="p-3">{children}</div>}
     </div>
   )
 }

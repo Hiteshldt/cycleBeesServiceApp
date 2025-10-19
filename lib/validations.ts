@@ -5,7 +5,8 @@ export const requestSchema = z.object({
   order_id: z.string().min(1, 'Order ID is required').max(100, 'Order ID too long'),
   bike_name: z.string().min(1, 'Bike name is required').max(200, 'Bike name too long'),
   customer_name: z.string().min(1, 'Customer name is required').max(200, 'Customer name too long'),
-  phone_digits_intl: z.string()
+  phone_digits_intl: z
+    .string()
     .regex(/^\d{10,15}$/, 'Phone number must be 10-15 digits without + or spaces')
     .transform((phone) => {
       // Auto-add 91 prefix for 10-digit Indian numbers
@@ -15,14 +16,21 @@ export const requestSchema = z.object({
       return phone
     }),
   status: z.enum(['pending', 'sent', 'viewed', 'confirmed', 'cancelled']),
-  lacarte_paise: z.number().int('La Carte price must be a whole number').min(0, 'La Carte price cannot be negative').max(10000000, 'La Carte price too high').optional().nullable(),
+  lacarte_paise: z
+    .number()
+    .int('La Carte price must be a whole number')
+    .min(0, 'La Carte price cannot be negative')
+    .max(10000000, 'La Carte price too high')
+    .optional()
+    .nullable(),
 })
 
 // Request item validation schema
 export const requestItemSchema = z.object({
   section: z.enum(['repair', 'replacement']),
   label: z.string().min(1, 'Item name is required').max(500, 'Item name too long'),
-  price_paise: z.number()
+  price_paise: z
+    .number()
     .int('Price must be a whole number')
     .min(1, 'Price must be greater than 0')
     .max(10000000, 'Price too high'), // Max ₹1,00,000

@@ -21,12 +21,12 @@ export async function getLaCartePrice(): Promise<number> {
 // Get full La Carte settings
 export async function getLaCarteSettings(): Promise<LaCarteSettings> {
   const now = Date.now()
-  
+
   // Return cached data if still valid
-  if (laCarteCache && (now - cacheTimestamp) < CACHE_DURATION) {
+  if (laCarteCache && now - cacheTimestamp < CACHE_DURATION) {
     return laCarteCache
   }
-  
+
   try {
     // For server-side, use direct API call
     if (typeof window === 'undefined') {
@@ -36,12 +36,12 @@ export async function getLaCarteSettings(): Promise<LaCarteSettings> {
         .select('*')
         .eq('id', 'lacarte')
         .single()
-        
+
       if (error) {
         console.warn('La Carte settings not found, using defaults:', error)
         return getDefaultSettings()
       }
-      
+
       laCarteCache = data
       cacheTimestamp = now
       return data
@@ -93,7 +93,7 @@ function getDefaultSettings(): LaCarteSettings {
     real_price_paise: 9900,
     current_price_paise: 9900,
     discount_note: '',
-    is_active: true
+    is_active: true,
   }
 }
 
@@ -106,7 +106,9 @@ export function clearLaCarteCache() {
 // Calculate discount percentage
 export function calculateDiscountPercentage(settings: LaCarteSettings): number {
   if (settings.real_price_paise <= settings.current_price_paise) return 0
-  return Math.round(((settings.real_price_paise - settings.current_price_paise) / settings.real_price_paise) * 100)
+  return Math.round(
+    ((settings.real_price_paise - settings.current_price_paise) / settings.real_price_paise) * 100
+  )
 }
 
 // Format La Carte display with discount info
@@ -124,7 +126,7 @@ export function formatLaCarteDisplay(settings: LaCarteSettings): {
     originalPrice: hasDiscount ? settings.real_price_paise : undefined,
     discountPercentage: hasDiscount ? calculateDiscountPercentage(settings) : undefined,
     discountNote: settings.discount_note || undefined,
-    hasDiscount
+    hasDiscount,
   }
 }
 

@@ -72,16 +72,25 @@ export default function AddonsSelectionPage() {
           const savedItems = sessionStorage.getItem(`selectedItems_${slug}`)
           const itemsToMark = savedItems
             ? JSON.parse(savedItems)
-            : data.items.filter((item: RequestItem) => item.is_suggested).map((item: RequestItem) => item.id)
+            : data.items
+                .filter((item: RequestItem) => item.is_suggested)
+                .map((item: RequestItem) => item.id)
 
-          console.log('[Addons] Marking as viewed. Slug:', slug, 'Status:', data.request.status, 'Items count:', itemsToMark.length)
+          console.log(
+            '[Addons] Marking as viewed. Slug:',
+            slug,
+            'Status:',
+            data.request.status,
+            'Items count:',
+            itemsToMark.length
+          )
 
           const response = await fetch(`/api/public/orders/${slug}/view`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               selected_items: itemsToMark,
-              status: 'viewed'
+              status: 'viewed',
             }),
           })
 
@@ -89,11 +98,16 @@ export default function AddonsSelectionPage() {
             console.log('[Addons] Successfully marked as viewed')
             setOrderData({
               ...data,
-              request: { ...data.request, status: 'viewed' }
+              request: { ...data.request, status: 'viewed' },
             })
           } else {
             const errorData = await response.json().catch(() => ({}))
-            console.error('[Addons] Failed to mark as viewed:', response.status, response.statusText, errorData)
+            console.error(
+              '[Addons] Failed to mark as viewed:',
+              response.status,
+              response.statusText,
+              errorData
+            )
           }
         } catch (error) {
           console.error('[Addons] Error marking as viewed:', error)
@@ -147,7 +161,12 @@ export default function AddonsSelectionPage() {
         const settings = await getLaCarteSettings()
         setLaCarte(settings)
       } catch (e) {
-        setLaCarte({ id: 'lacarte', real_price_paise: 9900, current_price_paise: 9900, discount_note: '' })
+        setLaCarte({
+          id: 'lacarte',
+          real_price_paise: 9900,
+          current_price_paise: 9900,
+          discount_note: '',
+        })
       }
     }
     loadLaCarte()
@@ -175,18 +194,19 @@ export default function AddonsSelectionPage() {
   }
 
   const calculateTotals = () => {
-    if (!orderData) return { servicesTotal: 0, addonsTotal: 0, bundlesTotal: 0, laCarteCharge: 0, grandTotal: 0 }
+    if (!orderData)
+      return { servicesTotal: 0, addonsTotal: 0, bundlesTotal: 0, laCarteCharge: 0, grandTotal: 0 }
 
     const servicesTotal = orderData.items
-      .filter(item => selectedItems.has(item.id))
+      .filter((item) => selectedItems.has(item.id))
       .reduce((sum, item) => sum + item.price_paise, 0)
 
     const addonsTotal = addons
-      .filter(addon => selectedAddons.has(addon.id))
+      .filter((addon) => selectedAddons.has(addon.id))
       .reduce((sum, addon) => sum + addon.price_paise, 0)
 
     const bundlesTotal = bundles
-      .filter(bundle => selectedBundles.has(bundle.id))
+      .filter((bundle) => selectedBundles.has(bundle.id))
       .reduce((sum, bundle) => sum + bundle.price_paise, 0)
 
     // Use request-specific La Carte price if set, otherwise global settings
@@ -231,7 +251,9 @@ export default function AddonsSelectionPage() {
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-purple-600 border-r-pink-500 mx-auto absolute top-0 left-1/2 transform -translate-x-1/2"></div>
           </div>
           <div className="mt-6 space-y-2">
-            <p className="text-lg font-medium text-gray-800 animate-pulse">Loading Add-on Services...</p>
+            <p className="text-lg font-medium text-gray-800 animate-pulse">
+              Loading Add-on Services...
+            </p>
             <p className="text-sm text-gray-600">✨ Preparing premium options for your bike</p>
           </div>
           {/* Loading skeleton cards */}
@@ -261,9 +283,7 @@ export default function AddonsSelectionPage() {
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Oops!</h1>
           <p className="text-gray-600 mb-4">{error || 'Something went wrong'}</p>
-          <Button onClick={() => window.location.reload()}>
-            Try Again
-          </Button>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </div>
     )
@@ -310,7 +330,6 @@ export default function AddonsSelectionPage() {
       />
 
       <div className="max-w-md mx-auto px-4 py-4 space-y-4">
-
         {/* Add-ons Section */}
         {addons.length > 0 ? (
           <div className="animate-fade-in-up">
@@ -326,7 +345,7 @@ export default function AddonsSelectionPage() {
                     key={addon.id}
                     className="animate-fade-in-up"
                     style={{
-                      animationDelay: `${index * 100}ms`
+                      animationDelay: `${index * 100}ms`,
                     }}
                   >
                     <SelectionCard
@@ -350,13 +369,15 @@ export default function AddonsSelectionPage() {
                 <span className="text-2xl">📦</span>
               </div>
             </div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">No Add-on Services Available</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">
+              No Add-on Services Available
+            </h2>
             <p className="text-gray-600 mb-4">
-              All add-on services are currently unavailable. You can proceed with your selected services.
+              All add-on services are currently unavailable. You can proceed with your selected
+              services.
             </p>
           </div>
         )}
-
 
         {/* Additional spacing for bottom action bar and support button */}
         <div className="h-32" />
@@ -374,7 +395,7 @@ export default function AddonsSelectionPage() {
           selectedServicesPaise: totals.servicesTotal + totals.addonsTotal,
           selectedCount: selectedItems.size + selectedAddons.size,
           laCartePaise: totals.laCarteCharge,
-          laCarteDisplay: laCarte ? formatLaCarteDisplay(laCarte) : undefined
+          laCarteDisplay: laCarte ? formatLaCarteDisplay(laCarte) : undefined,
         }}
       />
 

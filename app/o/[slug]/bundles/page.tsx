@@ -79,16 +79,25 @@ export default function BundlesSelectionPage() {
           const savedItems = sessionStorage.getItem(`selectedItems_${slug}`)
           const itemsToMark = savedItems
             ? JSON.parse(savedItems)
-            : data.items.filter((item: RequestItem) => item.is_suggested).map((item: RequestItem) => item.id)
+            : data.items
+                .filter((item: RequestItem) => item.is_suggested)
+                .map((item: RequestItem) => item.id)
 
-          console.log('[Bundles] Marking as viewed. Slug:', slug, 'Status:', data.request.status, 'Items count:', itemsToMark.length)
+          console.log(
+            '[Bundles] Marking as viewed. Slug:',
+            slug,
+            'Status:',
+            data.request.status,
+            'Items count:',
+            itemsToMark.length
+          )
 
           const response = await fetch(`/api/public/orders/${slug}/view`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               selected_items: itemsToMark,
-              status: 'viewed'
+              status: 'viewed',
             }),
           })
 
@@ -96,11 +105,16 @@ export default function BundlesSelectionPage() {
             console.log('[Bundles] Successfully marked as viewed')
             setOrderData({
               ...data,
-              request: { ...data.request, status: 'viewed' }
+              request: { ...data.request, status: 'viewed' },
             })
           } else {
             const errorData = await response.json().catch(() => ({}))
-            console.error('[Bundles] Failed to mark as viewed:', response.status, response.statusText, errorData)
+            console.error(
+              '[Bundles] Failed to mark as viewed:',
+              response.status,
+              response.statusText,
+              errorData
+            )
           }
         } catch (error) {
           console.error('[Bundles] Error marking as viewed:', error)
@@ -154,7 +168,12 @@ export default function BundlesSelectionPage() {
         const settings = await getLaCarteSettings()
         setLaCarte(settings)
       } catch (e) {
-        setLaCarte({ id: 'lacarte', real_price_paise: 9900, current_price_paise: 9900, discount_note: '' })
+        setLaCarte({
+          id: 'lacarte',
+          real_price_paise: 9900,
+          current_price_paise: 9900,
+          discount_note: '',
+        })
       }
     }
     loadLaCarte()
@@ -172,18 +191,19 @@ export default function BundlesSelectionPage() {
   }
 
   const calculateTotals = () => {
-    if (!orderData) return { servicesTotal: 0, addonsTotal: 0, bundlesTotal: 0, laCarteCharge: 0, grandTotal: 0 }
+    if (!orderData)
+      return { servicesTotal: 0, addonsTotal: 0, bundlesTotal: 0, laCarteCharge: 0, grandTotal: 0 }
 
     const servicesTotal = orderData.items
-      .filter(item => selectedItems.has(item.id))
+      .filter((item) => selectedItems.has(item.id))
       .reduce((sum, item) => sum + item.price_paise, 0)
 
     const addonsTotal = addons
-      .filter(addon => selectedAddons.has(addon.id))
+      .filter((addon) => selectedAddons.has(addon.id))
       .reduce((sum, addon) => sum + addon.price_paise, 0)
 
     const bundlesTotal = bundles
-      .filter(bundle => selectedBundles.has(bundle.id))
+      .filter((bundle) => selectedBundles.has(bundle.id))
       .reduce((sum, bundle) => sum + bundle.price_paise, 0)
 
     // Use request-specific La Carte price if set, otherwise global settings
@@ -222,7 +242,9 @@ export default function BundlesSelectionPage() {
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-indigo-600 border-r-purple-500 mx-auto absolute top-0 left-1/2 transform -translate-x-1/2"></div>
           </div>
           <div className="mt-6 space-y-2">
-            <p className="text-lg font-medium text-gray-800 animate-pulse">Loading Service Bundles...</p>
+            <p className="text-lg font-medium text-gray-800 animate-pulse">
+              Loading Service Bundles...
+            </p>
             <p className="text-sm text-gray-600">🎁 Preparing premium packages for you</p>
           </div>
           {/* Loading skeleton cards */}
@@ -252,9 +274,7 @@ export default function BundlesSelectionPage() {
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Oops!</h1>
           <p className="text-gray-600 mb-4">{error || 'Something went wrong'}</p>
-          <Button onClick={() => window.location.reload()}>
-            Try Again
-          </Button>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </div>
     )
@@ -301,7 +321,6 @@ export default function BundlesSelectionPage() {
       />
 
       <div className="max-w-md mx-auto px-4 py-4 space-y-4">
-
         {/* Service Bundles Section */}
         {bundles.length > 0 ? (
           <CategorySection
@@ -328,9 +347,12 @@ export default function BundlesSelectionPage() {
           </CategorySection>
         ) : (
           <div className="bg-white rounded-lg shadow-sm p-6 text-center">
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">No Service Bundles Available</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">
+              No Service Bundles Available
+            </h2>
             <p className="text-gray-600 mb-4">
-              All service bundles are currently unavailable. You can proceed with your selected services and add-ons.
+              All service bundles are currently unavailable. You can proceed with your selected
+              services and add-ons.
             </p>
           </div>
         )}
@@ -351,7 +373,7 @@ export default function BundlesSelectionPage() {
           selectedServicesPaise: totals.servicesTotal + totals.addonsTotal + totals.bundlesTotal,
           selectedCount: selectedItems.size + selectedAddons.size + selectedBundles.size,
           laCartePaise: totals.laCarteCharge,
-          laCarteDisplay: laCarte ? formatLaCarteDisplay(laCarte) : undefined
+          laCarteDisplay: laCarte ? formatLaCarteDisplay(laCarte) : undefined,
         }}
       />
 

@@ -7,11 +7,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { LogOut } from 'lucide-react'
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [loadingNewRequest, setLoadingNewRequest] = useState(false)
@@ -45,8 +41,8 @@ export default function AdminLayout({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         })
 
         if (response.ok) {
@@ -251,9 +247,7 @@ export default function AdminLayout({
       </header>
 
       {/* Optimized Main Content */}
-      <main className="max-w-7xl mx-auto py-4 px-2 sm:px-4 lg:px-6">
-        {children}
-      </main>
+      <main className="max-w-7xl mx-auto py-4 px-2 sm:px-4 lg:px-6">{children}</main>
     </div>
   )
 }

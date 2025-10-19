@@ -24,7 +24,8 @@ export async function POST(request: NextRequest) {
       bike_name: bikeName,
       order_id: orderId,
       order_key: orderKey,
-      image_url: 'https://res.cloudinary.com/djoqfvphw/image/upload/v1760277275/whatsapp_request_promo_image_sqgzil.jpg'
+      image_url:
+        'https://res.cloudinary.com/djoqfvphw/image/upload/v1760277275/whatsapp_request_promo_image_sqgzil.jpg',
     }
 
     // Get n8n webhook URL from environment
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             error: 'WhatsApp send timeout',
-            details: 'The WhatsApp service took too long to respond. Please try again.'
+            details: 'The WhatsApp service took too long to respond. Please try again.',
           },
           { status: 504 }
         )
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Network error',
-          details: 'Could not reach WhatsApp service. Please check your connection.'
+          details: 'Could not reach WhatsApp service. Please check your connection.',
         },
         { status: 503 }
       )
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest) {
         status: webhookResponse.status,
         error: errorDetails,
         phone,
-        orderId
+        orderId,
       })
 
       // If errorDetails is an object with error info, extract the message
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
           error: 'Failed to send WhatsApp message',
           details: errorMessage,
           rawError: errorDetails,
-          status: webhookResponse.status
+          status: webhookResponse.status,
         },
         { status: 500 }
       )
@@ -129,7 +130,8 @@ export async function POST(request: NextRequest) {
     // Format 1: Direct error object
     if (webhookResult.error) {
       hasError = true
-      errorMessage = webhookResult.error.message || webhookResult.error.details || 'WhatsApp send failed'
+      errorMessage =
+        webhookResult.error.message || webhookResult.error.details || 'WhatsApp send failed'
     }
     // Format 2: Error in nested structure
     else if (webhookResult.data?.error) {
@@ -142,14 +144,22 @@ export async function POST(request: NextRequest) {
       errorMessage = webhookResult.message || webhookResult.error || 'WhatsApp send failed'
     }
     // Format 4: Check for WhatsApp API error codes in the response
-    else if (webhookResult.code && (webhookResult.code === 131030 || webhookResult.code === 1006 || webhookResult.code === 1008)) {
+    else if (
+      webhookResult.code &&
+      (webhookResult.code === 131030 || webhookResult.code === 1006 || webhookResult.code === 1008)
+    ) {
       hasError = true
       errorMessage = webhookResult.message || webhookResult.error_user_msg || 'WhatsApp API error'
     }
     // Format 5: Check for error_data (WhatsApp Business API format)
-    else if (webhookResult.error_data || webhookResult.error_user_title || webhookResult.error_user_msg) {
+    else if (
+      webhookResult.error_data ||
+      webhookResult.error_user_title ||
+      webhookResult.error_user_msg
+    ) {
       hasError = true
-      errorMessage = webhookResult.error_user_msg || webhookResult.error_user_title || 'Recipient not available'
+      errorMessage =
+        webhookResult.error_user_msg || webhookResult.error_user_title || 'Recipient not available'
     }
 
     if (hasError) {
@@ -157,7 +167,7 @@ export async function POST(request: NextRequest) {
         phone,
         orderId,
         error: errorMessage,
-        fullResponse: webhookResult
+        fullResponse: webhookResult,
       })
 
       // Map to user-friendly messages
@@ -175,7 +185,7 @@ export async function POST(request: NextRequest) {
         {
           error: 'Failed to send WhatsApp message',
           details: errorMessage,
-          rawError: webhookResult
+          rawError: webhookResult,
         },
         { status: 500 }
       )
@@ -211,7 +221,7 @@ export async function POST(request: NextRequest) {
         {
           error: 'Failed to send WhatsApp message',
           details: webhookResult?.message || 'Unknown error from n8n',
-          rawError: webhookResult
+          rawError: webhookResult,
         },
         { status: 500 }
       )
@@ -224,7 +234,7 @@ export async function POST(request: NextRequest) {
       customerName,
       messageId: whatsappMessageId,
       status: whatsappStatus,
-      fullResponse: webhookResult
+      fullResponse: webhookResult,
     })
 
     // Warning if we didn't get a message ID (might indicate incomplete n8n setup)
@@ -239,16 +249,15 @@ export async function POST(request: NextRequest) {
       data: {
         whatsappMessageId,
         whatsappStatus,
-        fullResponse: webhookResult
+        fullResponse: webhookResult,
       },
     })
-
   } catch (error) {
     console.error('Webhook API error:', error)
     return NextResponse.json(
       {
         error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     )

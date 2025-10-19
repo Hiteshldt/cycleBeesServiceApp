@@ -55,7 +55,7 @@ export function NotesManager({ requestId, className = '' }: NotesManagerProps) {
       const response = await fetch(`/api/requests/${requestId}/notes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ note_text: noteText.trim() })
+        body: JSON.stringify({ note_text: noteText.trim() }),
       })
 
       if (response.ok) {
@@ -79,7 +79,7 @@ export function NotesManager({ requestId, className = '' }: NotesManagerProps) {
       const response = await fetch(`/api/requests/${requestId}/notes/${noteId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ note_text: noteText.trim() })
+        body: JSON.stringify({ note_text: noteText.trim() }),
       })
 
       if (response.ok) {
@@ -101,7 +101,7 @@ export function NotesManager({ requestId, className = '' }: NotesManagerProps) {
 
     try {
       const response = await fetch(`/api/requests/${requestId}/notes/${noteId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       })
 
       if (response.ok) {
@@ -182,9 +182,7 @@ export function NotesManager({ requestId, className = '' }: NotesManagerProps) {
                 <X className="h-4 w-4 mr-1" />
                 Cancel
               </Button>
-              <span className="text-xs text-gray-500 ml-auto">
-                {noteText.length}/1000
-              </span>
+              <span className="text-xs text-gray-500 ml-auto">{noteText.length}/1000</span>
             </div>
           </div>
         </div>
@@ -210,7 +208,11 @@ export function NotesManager({ requestId, className = '' }: NotesManagerProps) {
                     maxLength={1000}
                   />
                   <div className="flex items-center gap-2">
-                    <Button onClick={() => handleEditNote(note.id)} size="sm" disabled={!noteText.trim()}>
+                    <Button
+                      onClick={() => handleEditNote(note.id)}
+                      size="sm"
+                      disabled={!noteText.trim()}
+                    >
                       <Save className="h-4 w-4 mr-1" />
                       Save
                     </Button>
@@ -218,9 +220,7 @@ export function NotesManager({ requestId, className = '' }: NotesManagerProps) {
                       <X className="h-4 w-4 mr-1" />
                       Cancel
                     </Button>
-                    <span className="text-xs text-gray-500 ml-auto">
-                      {noteText.length}/1000
-                    </span>
+                    <span className="text-xs text-gray-500 ml-auto">{noteText.length}/1000</span>
                   </div>
                 </div>
               ) : (

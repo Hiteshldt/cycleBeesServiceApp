@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
 // PATCH /api/admin/addons/[id] - Update addon
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
     const body = await request.json()
@@ -19,19 +16,13 @@ export async function PATCH(
 
     if (error) {
       console.error('Database error:', error)
-      return NextResponse.json(
-        { error: 'Failed to update add-on' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to update add-on' }, { status: 500 })
     }
 
     return NextResponse.json(addon)
   } catch (error) {
     console.error('Update addon error:', error)
-    return NextResponse.json(
-      { error: 'Failed to process request' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 })
   }
 }
 
@@ -43,25 +34,16 @@ export async function DELETE(
   try {
     const { id } = await params
 
-    const { error } = await supabase
-      .from('addons')
-      .delete()
-      .eq('id', id)
+    const { error } = await supabase.from('addons').delete().eq('id', id)
 
     if (error) {
       console.error('Database error:', error)
-      return NextResponse.json(
-        { error: 'Failed to delete add-on' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to delete add-on' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Delete addon error:', error)
-    return NextResponse.json(
-      { error: 'Failed to process request' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 })
   }
 }

@@ -45,9 +45,9 @@ interface BillPreviewProps {
 }
 
 export function BillPreview({ billData, title }: BillPreviewProps) {
-  const repairItems = billData.items.filter(item => item.section === 'repair')
-  const replacementItems = billData.items.filter(item => item.section === 'replacement')
-  
+  const repairItems = billData.items.filter((item) => item.section === 'repair')
+  const replacementItems = billData.items.filter((item) => item.section === 'replacement')
+
   return (
     <div className="p-4 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-sm min-h-full">
       {/* Compact Header */}
@@ -63,7 +63,8 @@ export function BillPreview({ billData, title }: BillPreviewProps) {
             CycleBees
           </h1>
           <h2 className="text-sm font-semibold text-gray-700">
-            {title || (billData.status === 'confirmed' ? 'Confirmed Service Order' : 'Service Estimate')}
+            {title ||
+              (billData.status === 'confirmed' ? 'Confirmed Service Order' : 'Service Estimate')}
           </h2>
           <p className="text-xs text-gray-600">🔧 Professional Doorstep Bike Service</p>
         </div>
@@ -111,7 +112,10 @@ export function BillPreview({ billData, title }: BillPreviewProps) {
                   </div>
                 </div>
                 {repairItems.map((item, index) => (
-                  <div key={index} className="px-3 py-2 flex justify-between items-center hover:bg-blue-50/30 transition-colors">
+                  <div
+                    key={index}
+                    className="px-3 py-2 flex justify-between items-center hover:bg-blue-50/30 transition-colors"
+                  >
                     <span className="flex-1 text-gray-800 text-sm">{item.label}</span>
                     <span className="font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full text-xs">
                       {formatCurrency(item.price_paise)}
@@ -131,7 +135,10 @@ export function BillPreview({ billData, title }: BillPreviewProps) {
                   </div>
                 </div>
                 {replacementItems.map((item, index) => (
-                  <div key={index} className="px-3 py-2 flex justify-between items-center hover:bg-blue-50/30 transition-colors">
+                  <div
+                    key={index}
+                    className="px-3 py-2 flex justify-between items-center hover:bg-blue-50/30 transition-colors"
+                  >
                     <span className="flex-1 text-gray-800 text-sm">{item.label}</span>
                     <span className="font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full text-xs">
                       {formatCurrency(item.price_paise)}
@@ -140,7 +147,7 @@ export function BillPreview({ billData, title }: BillPreviewProps) {
                 ))}
               </>
             )}
-            
+
             {/* Add-ons */}
             {billData.addons.length > 0 && (
               <>
@@ -267,7 +274,8 @@ export function BillPreview({ billData, title }: BillPreviewProps) {
       <div className="bg-white/60 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-3 text-center">
         <div className="space-y-2">
           <div className="text-xs text-gray-700">
-            <strong className="text-gray-900">📋 Note:</strong> {billData.status === 'confirmed'
+            <strong className="text-gray-900">📋 Note:</strong>{' '}
+            {billData.status === 'confirmed'
               ? 'Confirmed order - technician will contact you.'
               : 'Estimate only - final pricing may vary.'}
           </div>
@@ -275,9 +283,7 @@ export function BillPreview({ billData, title }: BillPreviewProps) {
             <div className="text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               🚴‍♂️ CycleBees
             </div>
-            <div className="text-xs text-gray-600">
-              Your bike, our care! | www.cyclebees.in
-            </div>
+            <div className="text-xs text-gray-600">Your bike, our care! | www.cyclebees.in</div>
           </div>
         </div>
       </div>

@@ -1,10 +1,10 @@
-"use client"
+'use client'
 
-import React from "react"
-import { Check } from "lucide-react"
-import { formatCurrency } from "@/lib/utils"
+import React from 'react'
+import { Check } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 
-type CardType = "repair" | "replacement" | "addon" | "bundle" | "lacarte"
+type CardType = 'repair' | 'replacement' | 'addon' | 'bundle' | 'lacarte'
 
 type Props = {
   id: string
@@ -36,24 +36,26 @@ export function SelectionCard({
   bulletPoints,
   discount,
   onToggle,
-  className = ""
+  className = '',
 }: Props) {
   return (
     <div
       className={`
         group relative rounded-lg border transition-all duration-300 cursor-pointer bg-white
-        ${bulletPoints && bulletPoints.length > 0
-          ? 'bundle-card'
-          : 'hover:shadow-md hover:shadow-yellow-100/50 hover:-translate-y-0.5'
+        ${
+          bulletPoints && bulletPoints.length > 0
+            ? 'bundle-card'
+            : 'hover:shadow-md hover:shadow-yellow-100/50 hover:-translate-y-0.5'
         }
         active:scale-[0.98]
-        ${isSelected
-          ? bulletPoints && bulletPoints.length > 0
-            ? 'border-purple-400 animate-premium-pulse'
-            : 'border-yellow-400 bg-gradient-to-r from-yellow-50/60 to-orange-50/40 shadow-sm shadow-yellow-100/30 ring-2 ring-yellow-200/50'
-          : bulletPoints && bulletPoints.length > 0
-            ? 'border-purple-200 hover:border-purple-300'
-            : 'border-gray-200 hover:border-yellow-300/60 hover:bg-gradient-to-r hover:from-gray-50/50 hover:to-yellow-50/20'
+        ${
+          isSelected
+            ? bulletPoints && bulletPoints.length > 0
+              ? 'border-purple-400 animate-premium-pulse'
+              : 'border-yellow-400 bg-gradient-to-r from-yellow-50/60 to-orange-50/40 shadow-sm shadow-yellow-100/30 ring-2 ring-yellow-200/50'
+            : bulletPoints && bulletPoints.length > 0
+              ? 'border-purple-200 hover:border-purple-300'
+              : 'border-gray-200 hover:border-yellow-300/60 hover:bg-gradient-to-r hover:from-gray-50/50 hover:to-yellow-50/20'
         }
         ${isRecommended && !isSelected ? 'border-blue-300 bg-gradient-to-r from-blue-50/40 to-indigo-50/20' : ''}
         ${className}
@@ -65,13 +67,16 @@ export function SelectionCard({
         // Premium Bundle Card Design - 20% smaller
         <div className="relative overflow-hidden">
           {/* Premium Header with Gradient Background */}
-          <div className={`
+          <div
+            className={`
             relative px-3 py-3 bg-gradient-to-br
-            ${isSelected
-              ? 'from-purple-600 via-purple-500 to-indigo-600'
-              : 'from-purple-500 via-indigo-500 to-blue-600'
+            ${
+              isSelected
+                ? 'from-purple-600 via-purple-500 to-indigo-600'
+                : 'from-purple-500 via-indigo-500 to-blue-600'
             }
-          `}>
+          `}
+          >
             {/* Decorative Elements - smaller */}
             <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-5 translate-x-5"></div>
             <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/5 rounded-full translate-y-2 -translate-x-2"></div>
@@ -99,14 +104,19 @@ export function SelectionCard({
                     <Check className="w-3 h-3 text-white animate-pulse" />
                   </div>
                 ) : (
-                  <div className={`
+                  <div
+                    className={`
                     w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-12
-                    ${isSelected
-                      ? 'border-white bg-white shadow-lg shadow-white/50 ring-2 ring-white/30'
-                      : 'border-white/50 group-hover:border-white group-hover:bg-white/20 group-hover:shadow-md group-hover:shadow-white/30'
+                    ${
+                      isSelected
+                        ? 'border-white bg-white shadow-lg shadow-white/50 ring-2 ring-white/30'
+                        : 'border-white/50 group-hover:border-white group-hover:bg-white/20 group-hover:shadow-md group-hover:shadow-white/30'
                     }
-                  `}>
-                    {isSelected && <Check className="w-3 h-3 text-purple-600 animate-bounce font-bold" />}
+                  `}
+                  >
+                    {isSelected && (
+                      <Check className="w-3 h-3 text-purple-600 animate-bounce font-bold" />
+                    )}
                   </div>
                 )}
               </div>
@@ -141,9 +151,7 @@ export function SelectionCard({
 
               {/* Description */}
               {description && (
-                <p className="text-white/80 text-xs leading-relaxed">
-                  {description}
-                </p>
+                <p className="text-white/80 text-xs leading-relaxed">{description}</p>
               )}
             </div>
           </div>
@@ -208,16 +216,17 @@ export function SelectionCard({
                     <Check className="w-3 h-3 text-white animate-pulse" />
                   </div>
                 ) : (
-                  <div className={`
+                  <div
+                    className={`
                     w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300 group-hover:scale-105
-                    ${isSelected
-                      ? 'border-yellow-500 bg-gradient-to-r from-yellow-400 to-orange-400 shadow-md shadow-yellow-200/60 animate-pulse'
-                      : 'border-gray-300 group-hover:border-yellow-400/70 group-hover:shadow-sm group-hover:shadow-yellow-100/50'
+                    ${
+                      isSelected
+                        ? 'border-yellow-500 bg-gradient-to-r from-yellow-400 to-orange-400 shadow-md shadow-yellow-200/60 animate-pulse'
+                        : 'border-gray-300 group-hover:border-yellow-400/70 group-hover:shadow-sm group-hover:shadow-yellow-100/50'
                     }
-                  `}>
-                    {isSelected && (
-                      <Check className="w-3 h-3 text-white animate-bounce" />
-                    )}
+                  `}
+                  >
+                    {isSelected && <Check className="w-3 h-3 text-white animate-bounce" />}
                   </div>
                 )}
               </div>
@@ -225,22 +234,16 @@ export function SelectionCard({
               {/* Content */}
               <div className="flex-1">
                 {/* Service Name - smaller */}
-                <h3 className="font-medium text-gray-900 text-sm leading-tight">
-                  {title}
-                </h3>
+                <h3 className="font-medium text-gray-900 text-sm leading-tight">{title}</h3>
 
                 {/* Description */}
                 {description && (
-                  <p className="text-xs text-gray-600 mt-0.5 leading-relaxed">
-                    {description}
-                  </p>
+                  <p className="text-xs text-gray-600 mt-0.5 leading-relaxed">{description}</p>
                 )}
 
                 {/* Recommended text below */}
                 {isRecommended && (
-                  <p className="text-xs text-blue-600 font-medium mt-0.5">
-                    Recommended
-                  </p>
+                  <p className="text-xs text-blue-600 font-medium mt-0.5">Recommended</p>
                 )}
               </div>
             </div>

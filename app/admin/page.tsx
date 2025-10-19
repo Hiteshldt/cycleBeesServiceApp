@@ -7,12 +7,30 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Pagination } from '@/components/ui/pagination'
 import { Request, RequestItem } from '@/lib/supabase'
-import { formatCurrency, formatDate, getStatusColor, openWhatsApp, generateWhatsAppMessage } from '@/lib/utils'
+import {
+  formatCurrency,
+  formatDate,
+  getStatusColor,
+  openWhatsApp,
+  generateWhatsAppMessage,
+} from '@/lib/utils'
 import { NotificationManager, StatusChangeDetector } from '@/lib/notification'
 import { Modal } from '@/components/ui/modal'
 import { BillPreview } from '@/components/BillPreview'
 import { getLaCartePrice } from '@/lib/lacarte'
-import { Eye, Send, Copy, Filter, Download, Bell, BellOff, Trash2, FileText, X, Search } from 'lucide-react'
+import {
+  Eye,
+  Send,
+  Copy,
+  Filter,
+  Download,
+  Bell,
+  BellOff,
+  Trash2,
+  FileText,
+  X,
+  Search,
+} from 'lucide-react'
 import { DownloadModal, type DownloadOptions } from '@/components/DownloadModal'
 
 type RequestWithTotal = Request & {
@@ -41,7 +59,7 @@ export default function AdminDashboard() {
     hasNextPage: false,
     hasPrevPage: false,
     startIndex: 1,
-    endIndex: 0
+    endIndex: 0,
   })
   const [isLoading, setIsLoading] = useState(true)
   const [isPaginationLoading, setIsPaginationLoading] = useState(false)
@@ -60,7 +78,7 @@ export default function AdminDashboard() {
   }>({
     isOpen: false,
     billData: null,
-    title: ''
+    title: '',
   })
 
   const router = useRouter()
@@ -107,16 +125,18 @@ export default function AdminDashboard() {
 
       // Update state with paginated results
       setRequests(data.requests || [])
-      setPagination(data.pagination || {
-        currentPage: 1,
-        totalPages: 1,
-        totalRequests: 0,
-        limit: 30,
-        hasNextPage: false,
-        hasPrevPage: false,
-        startIndex: 1,
-        endIndex: 0
-      })
+      setPagination(
+        data.pagination || {
+          currentPage: 1,
+          totalPages: 1,
+          totalRequests: 0,
+          limit: 30,
+          hasNextPage: false,
+          hasPrevPage: false,
+          startIndex: 1,
+          endIndex: 0,
+        }
+      )
 
       // Initialize status detector with current statuses to prevent false notifications
       if (statusDetector.current && data.requests && data.requests.length > 0) {
@@ -136,7 +156,7 @@ export default function AdminDashboard() {
         hasNextPage: false,
         hasPrevPage: false,
         startIndex: 1,
-        endIndex: 0
+        endIndex: 0,
       })
     } finally {
       setIsLoading(false)
@@ -232,7 +252,7 @@ export default function AdminDashboard() {
 
   const startPolling = () => {
     if (pollingInterval.current) return // Already polling
-    
+
     pollingInterval.current = setInterval(() => {
       if (document.hidden) return // Don't poll when tab is not visible
       fetchRequestsForNotifications()
@@ -323,7 +343,12 @@ export default function AdminDashboard() {
     const stringValue = String(value)
 
     // If the value contains quotes, commas, newlines, or carriage returns, it needs to be quoted
-    if (stringValue.includes('"') || stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('\r')) {
+    if (
+      stringValue.includes('"') ||
+      stringValue.includes(',') ||
+      stringValue.includes('\n') ||
+      stringValue.includes('\r')
+    ) {
       // Escape internal quotes by doubling them and wrap in quotes
       return `"${stringValue.replace(/"/g, '""')}"`
     }
@@ -340,7 +365,7 @@ export default function AdminDashboard() {
       'Status',
       'Created Date',
       'Confirmed Date',
-      'Total Amount (INR)' // Changed from ₹ to INR for better compatibility
+      'Total Amount (INR)', // Changed from ₹ to INR for better compatibility
     ]
 
     if (options.includeDetails) {
@@ -350,17 +375,19 @@ export default function AdminDashboard() {
     // Start with UTF-8 BOM for Excel compatibility
     const csvRows = ['\uFEFF' + headers.map(escapeCSVValue).join(',')]
 
-    requests.forEach(request => {
+    requests.forEach((request) => {
       const formatServiceItems = (items: any[], includePricing: boolean) => {
         if (!items || items.length === 0) return ''
-        return items.map(item => {
-          const itemName = item.label || item.name || 'Unknown Item'
-          if (includePricing) {
-            const price = item.price_paise ? Math.round(item.price_paise / 100) : 0
-            return `${itemName} (INR ${price})` // Changed from ₹ to INR
-          }
-          return itemName
-        }).join('; ') // Changed from comma to semicolon to avoid CSV conflicts
+        return items
+          .map((item) => {
+            const itemName = item.label || item.name || 'Unknown Item'
+            if (includePricing) {
+              const price = item.price_paise ? Math.round(item.price_paise / 100) : 0
+              return `${itemName} (INR ${price})` // Changed from ₹ to INR
+            }
+            return itemName
+          })
+          .join('; ') // Changed from comma to semicolon to avoid CSV conflicts
       }
 
       // Format dates consistently
@@ -369,7 +396,7 @@ export default function AdminDashboard() {
           return new Date(dateString).toLocaleDateString('en-IN', {
             year: 'numeric',
             month: '2-digit',
-            day: '2-digit'
+            day: '2-digit',
           })
         } catch {
           return ''
@@ -381,15 +408,20 @@ export default function AdminDashboard() {
         escapeCSVValue(request.customer_name || ''),
         escapeCSVValue(`+${request.phone_digits_intl || ''}`),
         escapeCSVValue(request.bike_name || ''),
-        escapeCSVValue(request.status ? request.status.charAt(0).toUpperCase() + request.status.slice(1) : ''),
+        escapeCSVValue(
+          request.status ? request.status.charAt(0).toUpperCase() + request.status.slice(1) : ''
+        ),
         escapeCSVValue(formatDate(request.created_at)),
         escapeCSVValue(request.sent_at ? formatDate(request.sent_at) : ''),
-        escapeCSVValue(request.total_paise ? Math.round(request.total_paise / 100).toString() : '0')
+        escapeCSVValue(
+          request.total_paise ? Math.round(request.total_paise / 100).toString() : '0'
+        ),
       ]
 
       if (options.includeDetails) {
-        const repairItems = request.request_items?.filter(item => item.section === 'repair') || []
-        const replacementItems = request.request_items?.filter(item => item.section === 'replacement') || []
+        const repairItems = request.request_items?.filter((item) => item.section === 'repair') || []
+        const replacementItems =
+          request.request_items?.filter((item) => item.section === 'replacement') || []
 
         // For future extensibility - addon and bundle data
         const addons: any[] = []
@@ -443,7 +475,7 @@ export default function AdminDashboard() {
 
       // Create and download file with proper UTF-8 encoding
       const blob = new Blob([csvContent], {
-        type: 'text/csv;charset=utf-8;'
+        type: 'text/csv;charset=utf-8;',
       })
       const link = document.createElement('a')
 
@@ -461,7 +493,6 @@ export default function AdminDashboard() {
       }
 
       setDownloadModal(false)
-
     } catch (error) {
       console.error('Download error:', error)
       alert('Failed to download requests. Please try again.')
@@ -477,12 +508,13 @@ export default function AdminDashboard() {
 
       if (request.status === 'confirmed') {
         // For confirmed requests, get the actual confirmed data
-        const [confirmedResponse, requestResponse, addonsResponse, bundlesResponse] = await Promise.all([
-          fetch(`/api/requests/${request.id}/confirmed`),
-          fetch(`/api/requests/${request.id}`),
-          fetch('/api/admin/addons'),
-          fetch('/api/bundles')
-        ])
+        const [confirmedResponse, requestResponse, addonsResponse, bundlesResponse] =
+          await Promise.all([
+            fetch(`/api/requests/${request.id}/confirmed`),
+            fetch(`/api/requests/${request.id}`),
+            fetch('/api/admin/addons'),
+            fetch('/api/bundles'),
+          ])
 
         if (!confirmedResponse.ok || !requestResponse.ok) {
           alert('Failed to load request data')
@@ -495,21 +527,30 @@ export default function AdminDashboard() {
         const allBundles = bundlesResponse.ok ? await bundlesResponse.json() : []
 
         // Build confirmed selections
-        const selectedItemsDetails = (requestData.request_items || []).filter(
-          (it: any) => selectedItems.includes(it.id)
+        const selectedItemsDetails = (requestData.request_items || []).filter((it: any) =>
+          selectedItems.includes(it.id)
         )
-        const selectedAddonsDetails = (allAddons || []).filter(
-          (ad: any) => selectedAddons.includes(ad.id)
+        const selectedAddonsDetails = (allAddons || []).filter((ad: any) =>
+          selectedAddons.includes(ad.id)
         )
-        const selectedBundlesDetails = (allBundles || []).filter(
-          (bd: any) => (selectedBundles || []).includes(bd.id)
+        const selectedBundlesDetails = (allBundles || []).filter((bd: any) =>
+          (selectedBundles || []).includes(bd.id)
         )
 
-        const subtotal = selectedItemsDetails.reduce((sum: number, it: any) => sum + (it.price_paise || 0), 0)
-        const addonsTotal = selectedAddonsDetails.reduce((sum: number, ad: any) => sum + (ad.price_paise || 0), 0)
-        const bundlesTotal = selectedBundlesDetails.reduce((sum: number, bd: any) => sum + (bd.price_paise || 0), 0)
+        const subtotal = selectedItemsDetails.reduce(
+          (sum: number, it: any) => sum + (it.price_paise || 0),
+          0
+        )
+        const addonsTotal = selectedAddonsDetails.reduce(
+          (sum: number, ad: any) => sum + (ad.price_paise || 0),
+          0
+        )
+        const bundlesTotal = selectedBundlesDetails.reduce(
+          (sum: number, bd: any) => sum + (bd.price_paise || 0),
+          0
+        )
         // Use request-specific La Carte price if set, otherwise use global settings
-        const laCarte = request.lacarte_paise ?? await getLaCartePrice()
+        const laCarte = request.lacarte_paise ?? (await getLaCartePrice())
         const total = subtotal + addonsTotal + bundlesTotal + laCarte
 
         billData = {
@@ -549,9 +590,12 @@ export default function AdminDashboard() {
         }
 
         const requestData = await requestResponse.json()
-        const subtotal = (requestData.request_items || []).reduce((sum: number, item: any) => sum + item.price_paise, 0)
+        const subtotal = (requestData.request_items || []).reduce(
+          (sum: number, item: any) => sum + item.price_paise,
+          0
+        )
         // Use request-specific La Carte price if set, otherwise use global settings
-        const laCarte = request.lacarte_paise ?? await getLaCartePrice()
+        const laCarte = request.lacarte_paise ?? (await getLaCartePrice())
 
         billData = {
           order_id: request.order_id,
@@ -571,7 +615,7 @@ export default function AdminDashboard() {
       setPreviewModal({
         isOpen: true,
         billData,
-        title: `${request.status === 'confirmed' ? 'Confirmed Order Details' : 'Service Request Details'} - ${request.order_id}`
+        title: `${request.status === 'confirmed' ? 'Confirmed Order Details' : 'Service Request Details'} - ${request.order_id}`,
       })
     } catch (error) {
       console.error('Error loading preview data:', error)
@@ -580,7 +624,6 @@ export default function AdminDashboard() {
       setLoadingRequestId(null)
     }
   }
-
 
   const handleCancelRequest = async (requestId: string, orderId: string) => {
     const isConfirmed = confirm(
@@ -660,16 +703,34 @@ export default function AdminDashboard() {
       const allBundles = respBundles.ok ? await respBundles.json() : []
 
       // 4) Build selected items/addons arrays with full details
-      const selectedItemsDetails = (requestData.request_items || []).filter((it: { id: string; price_paise: number; section: string; label: string }) => selectedItems.includes(it.id))
-      const selectedAddonsDetails = (allAddons || []).filter((ad: { id: string; name: string; description: string; price_paise: number }) => selectedAddons.includes(ad.id))
-      const selectedBundlesDetails = (allBundles || []).filter((bd: { id: string; name: string; description: string; price_paise: number }) => (selectedBundles || []).includes(bd.id))
+      const selectedItemsDetails = (requestData.request_items || []).filter(
+        (it: { id: string; price_paise: number; section: string; label: string }) =>
+          selectedItems.includes(it.id)
+      )
+      const selectedAddonsDetails = (allAddons || []).filter(
+        (ad: { id: string; name: string; description: string; price_paise: number }) =>
+          selectedAddons.includes(ad.id)
+      )
+      const selectedBundlesDetails = (allBundles || []).filter(
+        (bd: { id: string; name: string; description: string; price_paise: number }) =>
+          (selectedBundles || []).includes(bd.id)
+      )
 
       // 5) Compute totals
-      const subtotal = selectedItemsDetails.reduce((sum: number, it: { price_paise: number }) => sum + (it.price_paise || 0), 0)
-      const addonsTotal = selectedAddonsDetails.reduce((sum: number, ad: { price_paise: number }) => sum + (ad.price_paise || 0), 0)
-      const bundlesTotal = selectedBundlesDetails.reduce((sum: number, b: { price_paise: number }) => sum + (b.price_paise || 0), 0)
+      const subtotal = selectedItemsDetails.reduce(
+        (sum: number, it: { price_paise: number }) => sum + (it.price_paise || 0),
+        0
+      )
+      const addonsTotal = selectedAddonsDetails.reduce(
+        (sum: number, ad: { price_paise: number }) => sum + (ad.price_paise || 0),
+        0
+      )
+      const bundlesTotal = selectedBundlesDetails.reduce(
+        (sum: number, b: { price_paise: number }) => sum + (b.price_paise || 0),
+        0
+      )
       // Use request-specific La Carte price if set, otherwise use global settings
-      const laCarte = request.lacarte_paise ?? await getLaCartePrice()
+      const laCarte = request.lacarte_paise ?? (await getLaCartePrice())
       const total = subtotal + addonsTotal + bundlesTotal + laCarte
 
       // 6) Create bill data with exact selections
@@ -679,21 +740,27 @@ export default function AdminDashboard() {
         bike_name: request.bike_name,
         created_at: request.created_at,
         confirmed_at: new Date().toISOString(),
-        items: selectedItemsDetails.map((it: { section: string; label: string; price_paise: number }) => ({
-          section: it.section,
-          label: it.label,
-          price_paise: it.price_paise,
-        })),
-        addons: selectedAddonsDetails.map((ad: { name: string; description: string; price_paise: number }) => ({
-          name: ad.name,
-          description: ad.description,
-          price_paise: ad.price_paise,
-        })),
-        bundles: selectedBundlesDetails.map((bd: { name: string; description: string; price_paise: number }) => ({
-          name: bd.name,
-          description: bd.description,
-          price_paise: bd.price_paise,
-        })),
+        items: selectedItemsDetails.map(
+          (it: { section: string; label: string; price_paise: number }) => ({
+            section: it.section,
+            label: it.label,
+            price_paise: it.price_paise,
+          })
+        ),
+        addons: selectedAddonsDetails.map(
+          (ad: { name: string; description: string; price_paise: number }) => ({
+            name: ad.name,
+            description: ad.description,
+            price_paise: ad.price_paise,
+          })
+        ),
+        bundles: selectedBundlesDetails.map(
+          (bd: { name: string; description: string; price_paise: number }) => ({
+            name: bd.name,
+            description: bd.description,
+            price_paise: bd.price_paise,
+          })
+        ),
         subtotal_paise: subtotal,
         addons_paise: addonsTotal,
         bundles_paise: bundlesTotal,
@@ -765,9 +832,21 @@ export default function AdminDashboard() {
               <thead className="bg-gray-50/50">
                 <tr>
                   {/* Table header skeleton */}
-                  {['Order ID', 'Customer', 'Bike', 'Items', 'Amount', 'Status', 'Created', 'Actions'].map((header, i) => (
+                  {[
+                    'Order ID',
+                    'Customer',
+                    'Bike',
+                    'Items',
+                    'Amount',
+                    'Status',
+                    'Created',
+                    'Actions',
+                  ].map((header, i) => (
                     <th key={i} className="px-3 py-2 text-left">
-                      <div className="h-3 bg-gray-200 rounded animate-pulse" style={{ width: `${60 + (i * 10)}px` }}></div>
+                      <div
+                        className="h-3 bg-gray-200 rounded animate-pulse"
+                        style={{ width: `${60 + i * 10}px` }}
+                      ></div>
                     </th>
                   ))}
                 </tr>
@@ -850,13 +929,14 @@ export default function AdminDashboard() {
           <div className="flex flex-col sm:flex-row gap-2">
             <Button
               onClick={toggleNotifications}
-              variant={notificationsEnabled ? "default" : "outline"}
+              variant={notificationsEnabled ? 'default' : 'outline'}
               size="sm"
-              className={`transition-all duration-200 h-8 px-3 text-xs ${notificationsEnabled
-                ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg'
-                : 'border-gray-300 hover:border-green-400 hover:bg-green-50'
+              className={`transition-all duration-200 h-8 px-3 text-xs ${
+                notificationsEnabled
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg'
+                  : 'border-gray-300 hover:border-green-400 hover:bg-green-50'
               }`}
-              title={notificationsEnabled ? "Disable notifications" : "Enable notifications"}
+              title={notificationsEnabled ? 'Disable notifications' : 'Enable notifications'}
             >
               {notificationsEnabled ? (
                 <>
@@ -932,7 +1012,9 @@ export default function AdminDashboard() {
                       : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700'
                   }`}
                 >
-                  {status === 'pending' ? '⏳ Pending' : status.charAt(0).toUpperCase() + status.slice(1)}
+                  {status === 'pending'
+                    ? '⏳ Pending'
+                    : status.charAt(0).toUpperCase() + status.slice(1)}
                 </Button>
               ))}
             </div>
@@ -973,7 +1055,9 @@ export default function AdminDashboard() {
           <div className="p-8 text-center">
             <div className="text-4xl mb-3">📋</div>
             <p className="text-lg font-medium text-gray-700 mb-1">No requests found</p>
-            <p className="text-gray-500 mb-4 text-sm">Get started by creating your first service request</p>
+            <p className="text-gray-500 mb-4 text-sm">
+              Get started by creating your first service request
+            </p>
             <Button
               onClick={handleNewRequestClick}
               disabled={loadingNewRequest}
@@ -1042,147 +1126,167 @@ export default function AdminDashboard() {
                 {requests.map((request) => {
                   const isRequestLoading = loadingRequestId === request.id
                   return (
-                  <tr
-                    key={request.id}
-                    className={`hover:bg-blue-50/30 transition-colors duration-200 cursor-pointer relative ${
-                      isRequestLoading ? 'opacity-60' : ''
-                    }`}
-                    onClick={() => !isRequestLoading && handlePreviewRequest(request)}
-                    title={isRequestLoading ? "Loading request details..." : "Click to view request details"}
-                  >
-                    {/* Loading overlay for individual request */}
-                    {isRequestLoading && (
-                      <td colSpan={8} className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center">
-                        <div className="flex items-center gap-2">
-                          <div className="relative">
-                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-200"></div>
-                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-blue-600 border-r-indigo-500 absolute top-0 left-0"></div>
+                    <tr
+                      key={request.id}
+                      className={`hover:bg-blue-50/30 transition-colors duration-200 cursor-pointer relative ${
+                        isRequestLoading ? 'opacity-60' : ''
+                      }`}
+                      onClick={() => !isRequestLoading && handlePreviewRequest(request)}
+                      title={
+                        isRequestLoading
+                          ? 'Loading request details...'
+                          : 'Click to view request details'
+                      }
+                    >
+                      {/* Loading overlay for individual request */}
+                      {isRequestLoading && (
+                        <td
+                          colSpan={8}
+                          className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="relative">
+                              <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-200"></div>
+                              <div className="animate-spin rounded-full h-5 w-5 border-2 border-t-blue-600 border-r-indigo-500 absolute top-0 left-0"></div>
+                            </div>
+                            <span className="text-sm font-medium text-gray-700">
+                              Loading details...
+                            </span>
                           </div>
-                          <span className="text-sm font-medium text-gray-700">Loading details...</span>
+                        </td>
+                      )}
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <div className="text-xs text-gray-900">
+                          {formatDate(request.created_at)}
                         </div>
                       </td>
-                    )}
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      <div className="text-xs text-gray-900">
-                        {formatDate(request.created_at)}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      <div>
-                        <div className="text-xs font-bold text-gray-900 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                          {request.order_id}
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <div>
+                          <div className="text-xs font-bold text-gray-900 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                            {request.order_id}
+                          </div>
+                          <div className="text-xs text-gray-500 font-mono bg-gray-100 px-1 py-0.5 rounded text-xs mt-0.5 inline-block">
+                            #{request.short_slug}
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-500 font-mono bg-gray-100 px-1 py-0.5 rounded text-xs mt-0.5 inline-block">
-                          #{request.short_slug}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold mr-2">
+                            {request.customer_name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="text-xs font-medium text-gray-900">
+                            {request.customer_name}
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold mr-2">
-                          {request.customer_name.charAt(0).toUpperCase()}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <div className="text-xs text-gray-700 bg-gray-100 px-2 py-0.5 rounded-full inline-block font-mono">
+                          +{request.phone_digits_intl}
                         </div>
-                        <div className="text-xs font-medium text-gray-900">
-                          {request.customer_name}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <div className="text-xs text-gray-900 bg-yellow-50 px-2 py-0.5 rounded-full inline-block">
+                          🚴‍♂️ {request.bike_name}
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      <div className="text-xs text-gray-700 bg-gray-100 px-2 py-0.5 rounded-full inline-block font-mono">
-                        +{request.phone_digits_intl}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      <div className="text-xs text-gray-900 bg-yellow-50 px-2 py-0.5 rounded-full inline-block">
-                        🚴‍♂️ {request.bike_name}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      <Badge className={`${getStatusColor(request.status)} px-2 py-0.5 text-xs font-medium rounded-full`}>
-                        {request.status.toUpperCase()}
-                      </Badge>
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      <div className="text-sm font-bold text-green-700">
-                        {formatCurrency(request.total_paise)}
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-1 flex-nowrap">
-
-                        {/* Copy Link */}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 h-8 w-8 p-0 flex items-center justify-center min-w-[2rem] min-h-[2rem]"
-                          onClick={() => copyOrderLink(request.short_slug)}
-                          title="Copy Order Link"
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <Badge
+                          className={`${getStatusColor(request.status)} px-2 py-0.5 text-xs font-medium rounded-full`}
                         >
-                          <Copy className="h-5 w-5 flex-shrink-0" />
-                        </Button>
-
-
-                        {/* Download Confirmed PDF */}
-                        {request.status === 'confirmed' && (
+                          {request.status.toUpperCase()}
+                        </Badge>
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <div className="text-sm font-bold text-green-700">
+                          {formatCurrency(request.total_paise)}
+                        </div>
+                      </td>
+                      <td
+                        className="px-3 py-2 whitespace-nowrap"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex items-center gap-1 flex-nowrap">
+                          {/* Copy Link */}
                           <Button
                             size="sm"
                             variant="outline"
-                            className="border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400 transition-all duration-200 h-8 w-8 p-0 flex items-center justify-center min-w-[2rem] min-h-[2rem]"
-                            onClick={() => handleDownloadConfirmedPDF(request)}
-                            title="Download Confirmed Order PDF"
+                            className="border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 h-8 w-8 p-0 flex items-center justify-center min-w-[2rem] min-h-[2rem]"
+                            onClick={() => copyOrderLink(request.short_slug)}
+                            title="Copy Order Link"
                           >
-                            <Download className="h-5 w-5 flex-shrink-0" />
+                            <Copy className="h-5 w-5 flex-shrink-0" />
                           </Button>
-                        )}
 
-                        {/* Send/Resend WhatsApp */}
-                        {(request.status === 'pending' || request.status === 'sent' || request.status === 'viewed') && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className={`transition-all duration-200 h-8 w-8 p-0 flex items-center justify-center min-w-[2rem] min-h-[2rem] ${
-                              request.status === 'pending'
-                                ? 'border-amber-400 text-amber-600 hover:bg-amber-50 hover:border-amber-500 animate-pulse'
-                                : 'border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400'
-                            }`}
-                            onClick={() => handleResendWhatsApp(request)}
-                            title={request.status === 'pending' ? 'Send WhatsApp (Failed Initially)' : request.status === 'sent' ? 'Send WhatsApp' : 'Resend WhatsApp'}
-                          >
-                            <Send className="h-5 w-5 flex-shrink-0" />
-                          </Button>
-                        )}
+                          {/* Download Confirmed PDF */}
+                          {request.status === 'confirmed' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400 transition-all duration-200 h-8 w-8 p-0 flex items-center justify-center min-w-[2rem] min-h-[2rem]"
+                              onClick={() => handleDownloadConfirmedPDF(request)}
+                              title="Download Confirmed Order PDF"
+                            >
+                              <Download className="h-5 w-5 flex-shrink-0" />
+                            </Button>
+                          )}
 
-                        {/* Smart Cancel/Delete Button - No button for confirmed orders */}
-                        {request.status !== 'confirmed' && (
-                          <>
-                            {request.status === 'cancelled' ? (
-                              /* Delete button for already cancelled requests */
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 transition-all duration-200 h-8 w-8 p-0 flex items-center justify-center min-w-[2rem] min-h-[2rem]"
-                                onClick={() => handleDeleteRequest(request.id, request.order_id)}
-                                title="Delete cancelled request permanently"
-                              >
-                                <Trash2 className="h-5 w-5 flex-shrink-0" />
-                              </Button>
-                            ) : (
-                              /* Cancel button for active non-confirmed requests */
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-orange-300 text-orange-600 hover:bg-orange-50 hover:border-orange-400 transition-all duration-200 h-8 w-8 p-0 flex items-center justify-center min-w-[2rem] min-h-[2rem]"
-                                onClick={() => handleCancelRequest(request.id, request.order_id)}
-                                title="Cancel request (preserves for records)"
-                              >
-                                <X className="h-5 w-5 flex-shrink-0" />
-                              </Button>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
+                          {/* Send/Resend WhatsApp */}
+                          {(request.status === 'pending' ||
+                            request.status === 'sent' ||
+                            request.status === 'viewed') && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className={`transition-all duration-200 h-8 w-8 p-0 flex items-center justify-center min-w-[2rem] min-h-[2rem] ${
+                                request.status === 'pending'
+                                  ? 'border-amber-400 text-amber-600 hover:bg-amber-50 hover:border-amber-500 animate-pulse'
+                                  : 'border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400'
+                              }`}
+                              onClick={() => handleResendWhatsApp(request)}
+                              title={
+                                request.status === 'pending'
+                                  ? 'Send WhatsApp (Failed Initially)'
+                                  : request.status === 'sent'
+                                    ? 'Send WhatsApp'
+                                    : 'Resend WhatsApp'
+                              }
+                            >
+                              <Send className="h-5 w-5 flex-shrink-0" />
+                            </Button>
+                          )}
+
+                          {/* Smart Cancel/Delete Button - No button for confirmed orders */}
+                          {request.status !== 'confirmed' && (
+                            <>
+                              {request.status === 'cancelled' ? (
+                                /* Delete button for already cancelled requests */
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 transition-all duration-200 h-8 w-8 p-0 flex items-center justify-center min-w-[2rem] min-h-[2rem]"
+                                  onClick={() => handleDeleteRequest(request.id, request.order_id)}
+                                  title="Delete cancelled request permanently"
+                                >
+                                  <Trash2 className="h-5 w-5 flex-shrink-0" />
+                                </Button>
+                              ) : (
+                                /* Cancel button for active non-confirmed requests */
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-orange-300 text-orange-600 hover:bg-orange-50 hover:border-orange-400 transition-all duration-200 h-8 w-8 p-0 flex items-center justify-center min-w-[2rem] min-h-[2rem]"
+                                  onClick={() => handleCancelRequest(request.id, request.order_id)}
+                                  title="Cancel request (preserves for records)"
+                                >
+                                  <X className="h-5 w-5 flex-shrink-0" />
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
                   )
                 })}
               </tbody>
@@ -1215,9 +1319,7 @@ export default function AdminDashboard() {
         title={previewModal.title}
         size="xl"
       >
-        {previewModal.billData && (
-          <BillPreview billData={previewModal.billData} />
-        )}
+        {previewModal.billData && <BillPreview billData={previewModal.billData} />}
       </Modal>
 
       {/* Download Modal */}
@@ -1227,7 +1329,6 @@ export default function AdminDashboard() {
         onDownload={handleDownload}
         isLoading={downloadLoading}
       />
-
     </div>
   )
 }

@@ -86,7 +86,9 @@ export default function AdminLogin() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="username" className="text-gray-700 font-medium">👤 Username</Label>
+            <Label htmlFor="username" className="text-gray-700 font-medium">
+              👤 Username
+            </Label>
             <Input
               id="username"
               type="text"
@@ -99,7 +101,9 @@ export default function AdminLogin() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-gray-700 font-medium">🔑 Password</Label>
+            <Label htmlFor="password" className="text-gray-700 font-medium">
+              🔑 Password
+            </Label>
             <Input
               id="password"
               type="password"
@@ -122,17 +126,13 @@ export default function AdminLogin() {
                 Signing in...
               </div>
             ) : (
-              <div className="flex items-center justify-center gap-2">
-                🚀 Sign In
-              </div>
+              <div className="flex items-center justify-center gap-2">🚀 Sign In</div>
             )}
           </Button>
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500">
-            🔒 Secure admin access • CycleBees Dashboard
-          </p>
+          <p className="text-xs text-gray-500">🔒 Secure admin access • CycleBees Dashboard</p>
         </div>
       </div>
     </div>

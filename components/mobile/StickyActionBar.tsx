@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import React, { useState } from "react"
-import { ArrowRight, ChevronUp, ChevronDown } from "lucide-react"
-import { formatCurrency } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import React, { useState } from 'react'
+import { ArrowRight, ChevronUp, ChevronDown } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
 type ServiceBreakdown = {
   selectedServicesPaise: number
@@ -42,7 +42,7 @@ export function StickyActionBar({
   summaryText,
   rightSlot,
   isExpandable = false,
-  servicesBreakdown
+  servicesBreakdown,
 }: Props) {
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -61,25 +61,22 @@ export function StickyActionBar({
 
       <div className="mx-auto max-w-md px-4 pb-4">
         {/* Summary Info - smaller */}
-        <div
-          className={`mb-2 ${isExpandable ? 'cursor-pointer' : ''}`}
-          onClick={toggleExpanded}
-        >
+        <div className={`mb-2 ${isExpandable ? 'cursor-pointer' : ''}`} onClick={toggleExpanded}>
           <div className="flex items-center justify-between mb-0.5">
             <div className="flex items-center gap-1.5">
-              <span className="text-xs font-medium text-gray-700">
-                Services Total
-              </span>
+              <span className="text-xs font-medium text-gray-700">Services Total</span>
               {isExpandable && (
                 <div className="text-gray-400">
-                  {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+                  {isExpanded ? (
+                    <ChevronDown className="w-3 h-3" />
+                  ) : (
+                    <ChevronUp className="w-3 h-3" />
+                  )}
                 </div>
               )}
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-sm font-bold text-gray-900">
-                {formatCurrency(totalPaise)}
-              </span>
+              <span className="text-sm font-bold text-gray-900">{formatCurrency(totalPaise)}</span>
               {selectedCount !== undefined && selectedCount > 0 && (
                 <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
                   {selectedCount} selected
@@ -98,7 +95,9 @@ export function StickyActionBar({
               {/* Selected Services */}
               <div className="flex justify-between text-gray-700">
                 <span>Selected Services ({servicesBreakdown.selectedCount} items)</span>
-                <span className="font-medium">{formatCurrency(servicesBreakdown.selectedServicesPaise)}</span>
+                <span className="font-medium">
+                  {formatCurrency(servicesBreakdown.selectedServicesPaise)}
+                </span>
               </div>
 
               {/* La Carte Services */}
@@ -155,11 +154,7 @@ export function StickyActionBar({
 
         {/* Action Area - smaller */}
         <div className="flex items-center gap-1.5">
-          {rightSlot && (
-            <div className="flex-shrink-0">
-              {rightSlot}
-            </div>
-          )}
+          {rightSlot && <div className="flex-shrink-0">{rightSlot}</div>}
 
           <Button
             onClick={onPrimary}

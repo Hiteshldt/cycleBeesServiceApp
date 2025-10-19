@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
 
@@ -16,10 +13,7 @@ export async function GET(
 
     if (servicesError) {
       console.error('Error fetching confirmed services:', servicesError)
-      return NextResponse.json(
-        { error: 'Failed to fetch confirmed services' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to fetch confirmed services' }, { status: 500 })
     }
 
     // Get confirmed addon selections
@@ -30,10 +24,7 @@ export async function GET(
 
     if (addonsError) {
       console.error('Error fetching confirmed addons:', addonsError)
-      return NextResponse.json(
-        { error: 'Failed to fetch confirmed addons' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to fetch confirmed addons' }, { status: 500 })
     }
 
     // Get confirmed bundle selections
@@ -44,23 +35,16 @@ export async function GET(
 
     if (bundlesError) {
       console.error('Error fetching confirmed bundles:', bundlesError)
-      return NextResponse.json(
-        { error: 'Failed to fetch confirmed bundles' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to fetch confirmed bundles' }, { status: 500 })
     }
 
     return NextResponse.json({
-      selectedItems: confirmedServices?.map(s => s.service_item_id) || [],
-      selectedAddons: confirmedAddons?.map(a => a.addon_id) || [],
-      selectedBundles: confirmedBundles?.map(b => b.bundle_id) || [],
+      selectedItems: confirmedServices?.map((s) => s.service_item_id) || [],
+      selectedAddons: confirmedAddons?.map((a) => a.addon_id) || [],
+      selectedBundles: confirmedBundles?.map((b) => b.bundle_id) || [],
     })
-
   } catch (error) {
     console.error('Confirmed selections API error:', error)
-    return NextResponse.json(
-      { error: 'Failed to process request' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 })
   }
 }

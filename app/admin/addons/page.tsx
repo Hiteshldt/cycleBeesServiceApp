@@ -17,7 +17,7 @@ export default function AddonManagement() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    price: ''
+    price: '',
   })
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function AddonManagement() {
       const payload = {
         name: formData.name,
         description: formData.description,
-        price_paise: rupeesToPaise(parseInt(formData.price) || 0)
+        price_paise: rupeesToPaise(parseInt(formData.price) || 0),
       }
 
       if (editingAddon) {
@@ -51,9 +51,9 @@ export default function AddonManagement() {
         const response = await fetch(`/api/admin/addons/${editingAddon.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         })
-        
+
         if (response.ok) {
           fetchAddons()
           setEditingAddon(null)
@@ -64,9 +64,9 @@ export default function AddonManagement() {
         const response = await fetch('/api/admin/addons', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         })
-        
+
         if (response.ok) {
           fetchAddons()
           setShowAddForm(false)
@@ -82,9 +82,9 @@ export default function AddonManagement() {
     if (confirm('Are you sure you want to delete this add-on?')) {
       try {
         const response = await fetch(`/api/admin/addons/${id}`, {
-          method: 'DELETE'
+          method: 'DELETE',
         })
-        
+
         if (response.ok) {
           fetchAddons()
         }
@@ -99,9 +99,9 @@ export default function AddonManagement() {
       const response = await fetch(`/api/admin/addons/${addon.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_active: !addon.is_active })
+        body: JSON.stringify({ is_active: !addon.is_active }),
       })
-      
+
       if (response.ok) {
         fetchAddons()
       }
@@ -115,7 +115,7 @@ export default function AddonManagement() {
     setFormData({
       name: addon.name,
       description: addon.description || '',
-      price: Math.round(addon.price_paise / 100).toString()
+      price: Math.round(addon.price_paise / 100).toString(),
     })
     setShowAddForm(false)
   }
@@ -157,7 +157,7 @@ export default function AddonManagement() {
           <h3 className="text-lg font-semibold mb-4">
             {editingAddon ? 'Edit Add-on Service' : 'Add New Add-on Service'}
           </h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
               <Label htmlFor="name">Service Name</Label>
@@ -168,7 +168,7 @@ export default function AddonManagement() {
                 placeholder="e.g., Premium Wash & Polish"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="price">Price (₹)</Label>
               <Input
@@ -179,7 +179,7 @@ export default function AddonManagement() {
                 placeholder="200"
               />
             </div>
-            
+
             <div className="md:col-span-1">
               <Label htmlFor="description">Description</Label>
               <Input
@@ -190,12 +190,9 @@ export default function AddonManagement() {
               />
             </div>
           </div>
-          
+
           <div className="flex gap-2">
-            <Button 
-              onClick={handleSaveAddon}
-              disabled={!formData.name || !formData.price}
-            >
+            <Button onClick={handleSaveAddon} disabled={!formData.name || !formData.price}>
               <Save className="h-4 w-4 mr-2" />
               {editingAddon ? 'Update' : 'Save'} Add-on
             </Button>
@@ -242,14 +239,10 @@ export default function AddonManagement() {
                 {addons.map((addon) => (
                   <tr key={addon.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        {addon.name}
-                      </div>
+                      <div className="text-sm font-medium text-gray-900">{addon.name}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">
-                        {addon.description || '-'}
-                      </div>
+                      <div className="text-sm text-gray-500">{addon.description || '-'}</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-900">
@@ -257,10 +250,11 @@ export default function AddonManagement() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <Badge 
-                        className={addon.is_active 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
+                      <Badge
+                        className={
+                          addon.is_active
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
                         }
                       >
                         {addon.is_active ? 'Active' : 'Inactive'}
@@ -276,7 +270,7 @@ export default function AddonManagement() {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        
+
                         <Button
                           size="sm"
                           variant="outline"
@@ -284,7 +278,7 @@ export default function AddonManagement() {
                         >
                           {addon.is_active ? 'Deactivate' : 'Activate'}
                         </Button>
-                        
+
                         <Button
                           size="sm"
                           variant="destructive"

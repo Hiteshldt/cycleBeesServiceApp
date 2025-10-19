@@ -18,18 +18,15 @@ export async function PUT(
       .single()
 
     if (fetchError || !existingRequest) {
-      return NextResponse.json(
-        { error: 'Request not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Request not found' }, { status: 404 })
     }
 
     // Prevent editing if request has been sent to customer
     if (existingRequest.status !== 'sent') {
       return NextResponse.json(
-        { 
+        {
           error: `Cannot modify items for request ${existingRequest.order_id}. Request has already been sent and cannot be modified. Current status: ${existingRequest.status}`,
-          code: 'REQUEST_LOCKED'
+          code: 'REQUEST_LOCKED',
         },
         { status: 403 }
       )
@@ -39,7 +36,7 @@ export async function PUT(
     const { section, label, price_paise, is_suggested } = body
 
     const updateData: any = {}
-    
+
     if (section !== undefined) {
       if (!['repair', 'replacement'].includes(section)) {
         return NextResponse.json(
@@ -52,20 +49,14 @@ export async function PUT(
 
     if (label !== undefined) {
       if (!label || typeof label !== 'string' || label.trim().length === 0) {
-        return NextResponse.json(
-          { error: 'Label is required' },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: 'Label is required' }, { status: 400 })
       }
       updateData.label = label.trim()
     }
 
     if (price_paise !== undefined) {
       if (typeof price_paise !== 'number' || price_paise <= 0) {
-        return NextResponse.json(
-          { error: 'Valid price is required' },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: 'Valid price is required' }, { status: 400 })
       }
       updateData.price_paise = price_paise
     }
@@ -75,10 +66,7 @@ export async function PUT(
     }
 
     if (Object.keys(updateData).length === 0) {
-      return NextResponse.json(
-        { error: 'No valid fields to update' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
     }
 
     // Update the item
@@ -92,26 +80,17 @@ export async function PUT(
 
     if (updateError) {
       console.error('Database error:', updateError)
-      return NextResponse.json(
-        { error: 'Failed to update item' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to update item' }, { status: 500 })
     }
 
     if (!updatedItem) {
-      return NextResponse.json(
-        { error: 'Item not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Item not found' }, { status: 404 })
     }
 
     return NextResponse.json(updatedItem)
   } catch (error) {
     console.error('API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -131,18 +110,15 @@ export async function DELETE(
       .single()
 
     if (fetchError || !existingRequest) {
-      return NextResponse.json(
-        { error: 'Request not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Request not found' }, { status: 404 })
     }
 
     // Prevent editing if request has been sent to customer
     if (existingRequest.status !== 'sent') {
       return NextResponse.json(
-        { 
+        {
           error: `Cannot modify items for request ${existingRequest.order_id}. Request has already been sent and cannot be modified. Current status: ${existingRequest.status}`,
-          code: 'REQUEST_LOCKED'
+          code: 'REQUEST_LOCKED',
         },
         { status: 403 }
       )
@@ -157,18 +133,12 @@ export async function DELETE(
 
     if (deleteError) {
       console.error('Database error:', deleteError)
-      return NextResponse.json(
-        { error: 'Failed to delete item' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to delete item' }, { status: 500 })
     }
 
     return NextResponse.json({ message: 'Item deleted successfully' })
   } catch (error) {
     console.error('API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

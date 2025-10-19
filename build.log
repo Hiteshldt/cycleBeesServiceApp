@@ -1,0 +1,134 @@
+
+> cyclebees-whatsapp-service@0.1.0 build
+> next build --turbopack
+
+ ⚠ turbopack.root should be absolute, using: E:\CycleBees\App_Test_Local\CycleBees_Services_1.0(Refactor_Cleanup)
+   ▲ Next.js 15.5.2 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Finished writing to disk in 129ms
+ ✓ Compiled successfully in 9.2s
+   Linting and checking validity of types ...
+(node:87680) ESLintIgnoreWarning: The ".eslintignore" file is no longer supported. Switch to using the "ignores" property in "eslint.config.js": https://eslint.org/docs/latest/use/configure/migration-guide#ignoring-files
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+./app/admin/analytics/page.tsx
+86:6  Warning: React Hook useEffect has a missing dependency: 'fetchAnalytics'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/login/page.tsx
+5:10  Warning: 'useRouter' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./app/admin/new/page.tsx
+17:10  Warning: 'requestId' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./app/admin/page.tsx
+4:8  Warning: 'Link' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+15:10  Warning: 'Eye' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+15:68  Warning: 'FileText' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+52:10  Warning: 'searchLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+52:25  Warning: 'setSearchLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+173:6  Warning: React Hook useEffect has a missing dependency: 'fetchRequests'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+231:6  Warning: React Hook useEffect has a missing dependency: 'startPolling'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/api/analytics/route.ts
+151:92  Warning: 'startDate' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+151:109  Warning: 'endDate' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./app/o/[slug]/addons/page.tsx
+8:10  Warning: 'formatCurrency' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+141:6  Warning: React Hook useEffect has missing dependencies: 'fetchOrderData' and 'loadSelectedItems'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+149:16  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+166:9  Warning: 'toggleBundleSelection' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+209:9  Warning: 'handleProceedToConfirm' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./app/o/[slug]/bundles/page.tsx
+8:10  Warning: 'formatCurrency' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+148:6  Warning: React Hook useEffect has missing dependencies: 'fetchOrderData' and 'loadSelections'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+156:16  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/o/[slug]/page.tsx
+8:40  Warning: 'formatDate' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+11:45  Warning: 'Download' is defined but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+50:10  Warning: 'hasViewedEstimate' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+64:6  Warning: React Hook useEffect has missing dependencies: 'fetchOrderData' and 'loadSelections'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+72:16  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+271:9  Warning: 'toggleItemSelection' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+281:9  Warning: 'toggleAddonSelection' is assigned a value but never used. Allowed unused vars must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./app/o/[slug]/services/page.tsx
+37:6  Warning: React Hook useEffect has a missing dependency: 'fetchOrderData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+45:16  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/NotesManager.tsx
+33:6  Warning: React Hook useEffect has a missing dependency: 'fetchNotes'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/ui/pagination.tsx
+23:3  Warning: 'itemsPerPage' is defined but never used. Allowed unused args must match /^_/u.  @typescript-eslint/no-unused-vars
+
+./lib/auth-edge.ts
+29:12  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/auth.ts
+53:12  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/22) ...
+   Generating static pages (5/22) 
+   Generating static pages (10/22) 
+   Generating static pages (16/22) 
+ ✓ Generating static pages (22/22)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                       Size  First Load JS
+┌ ○ /                                          9.89 kB         134 kB
+├ ○ /_not-found                                    0 B         115 kB
+├ ○ /admin                                       13 kB         148 kB
+├ ○ /admin/addons                              2.81 kB         138 kB
+├ ○ /admin/analytics                           3.63 kB         139 kB
+├ ○ /admin/login                               1.99 kB         137 kB
+├ ○ /admin/new                                   73 kB         208 kB
+├ ○ /admin/settings                            5.35 kB         140 kB
+├ ƒ /api/addons                                    0 B            0 B
+├ ƒ /api/admin/addons                              0 B            0 B
+├ ƒ /api/admin/addons/[id]                         0 B            0 B
+├ ƒ /api/admin/auth                                0 B            0 B
+├ ƒ /api/admin/bundles                             0 B            0 B
+├ ƒ /api/admin/bundles/[id]                        0 B            0 B
+├ ƒ /api/admin/lacarte                             0 B            0 B
+├ ƒ /api/admin/verify-token                        0 B            0 B
+├ ƒ /api/analytics                                 0 B            0 B
+├ ƒ /api/bundles                                   0 B            0 B
+├ ƒ /api/public/lookup                             0 B            0 B
+├ ƒ /api/public/orders/[slug]                      0 B            0 B
+├ ƒ /api/public/orders/[slug]/view                 0 B            0 B
+├ ƒ /api/requests                                  0 B            0 B
+├ ƒ /api/requests/[id]                             0 B            0 B
+├ ƒ /api/requests/[id]/confirmed                   0 B            0 B
+├ ƒ /api/requests/[id]/items                       0 B            0 B
+├ ƒ /api/requests/[id]/items/[itemId]              0 B            0 B
+├ ƒ /api/requests/[id]/notes                       0 B            0 B
+├ ƒ /api/requests/[id]/notes/[noteId]              0 B            0 B
+├ ƒ /api/requests/[id]/pdf                         0 B            0 B
+├ ƒ /api/requests/[id]/update-whatsapp-status      0 B            0 B
+├ ƒ /api/webhooks/send-whatsapp                    0 B            0 B
+├ ○ /lookup                                    8.74 kB         133 kB
+├ ƒ /o/[slug]                                  19.8 kB         144 kB
+├ ƒ /o/[slug]/addons                           3.03 kB         138 kB
+├ ƒ /o/[slug]/bundles                          2.98 kB         138 kB
+└ ƒ /o/[slug]/services                         3.43 kB         139 kB
++ First Load JS shared by all                   131 kB
+  ├ chunks/2008ffcf9e5b170c.js                   13 kB
+  ├ chunks/63d7abdc8f2020d3.js                 17.2 kB
+  └ chunks/c19da6693934fea1.js                 59.2 kB
+  ├ chunks/263f597a9500a002.css                15.9 kB
+  └ other shared chunks (total)                26.1 kB
+
+
+ƒ Middleware                                   44.9 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

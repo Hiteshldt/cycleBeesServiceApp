@@ -21,7 +21,12 @@ export interface DownloadOptions {
   includePricing: boolean
 }
 
-export function DownloadModal({ isOpen, onClose, onDownload, isLoading = false }: DownloadModalProps) {
+export function DownloadModal({
+  isOpen,
+  onClose,
+  onDownload,
+  isLoading = false,
+}: DownloadModalProps) {
   const [startDate, setStartDate] = useState(() => {
     // Default to 30 days ago
     const date = new Date()
@@ -56,7 +61,7 @@ export function DownloadModal({ isOpen, onClose, onDownload, isLoading = false }
       startDate,
       endDate,
       includeDetails,
-      includePricing
+      includePricing,
     })
   }
 
@@ -88,7 +93,9 @@ export function DownloadModal({ isOpen, onClose, onDownload, isLoading = false }
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label htmlFor="startDate" className="text-xs text-gray-600">From Date</Label>
+                <Label htmlFor="startDate" className="text-xs text-gray-600">
+                  From Date
+                </Label>
                 <Input
                   id="startDate"
                   type="date"
@@ -98,7 +105,9 @@ export function DownloadModal({ isOpen, onClose, onDownload, isLoading = false }
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="endDate" className="text-xs text-gray-600">To Date</Label>
+                <Label htmlFor="endDate" className="text-xs text-gray-600">
+                  To Date
+                </Label>
                 <Input
                   id="endDate"
                   type="date"

@@ -11,19 +11,13 @@ export async function GET() {
 
     if (error) {
       console.error('Database error:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch add-ons' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to fetch add-ons' }, { status: 500 })
     }
 
     return NextResponse.json(addons)
   } catch (error) {
     console.error('Addons API error:', error)
-    return NextResponse.json(
-      { error: 'Failed to process request' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 })
   }
 }
 
@@ -33,10 +27,7 @@ export async function POST(request: NextRequest) {
     const { name, description, price_paise } = await request.json()
 
     if (!name || !price_paise) {
-      return NextResponse.json(
-        { error: 'Name and price are required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Name and price are required' }, { status: 400 })
     }
 
     // Get the highest display_order for new addon
@@ -50,30 +41,26 @@ export async function POST(request: NextRequest) {
 
     const { data: addon, error } = await supabase
       .from('addons')
-      .insert([{
-        name,
-        description,
-        price_paise,
-        display_order: nextOrder,
-        is_active: true
-      }])
+      .insert([
+        {
+          name,
+          description,
+          price_paise,
+          display_order: nextOrder,
+          is_active: true,
+        },
+      ])
       .select()
       .single()
 
     if (error) {
       console.error('Database error:', error)
-      return NextResponse.json(
-        { error: 'Failed to create add-on' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to create add-on' }, { status: 500 })
     }
 
     return NextResponse.json(addon, { status: 201 })
   } catch (error) {
     console.error('Create addon error:', error)
-    return NextResponse.json(
-      { error: 'Failed to process request' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 })
   }
 }

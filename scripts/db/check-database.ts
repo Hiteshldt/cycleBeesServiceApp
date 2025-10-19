@@ -34,7 +34,7 @@ async function checkDatabase() {
   if (requestsError) {
     console.error('❌ Error fetching requests:', requestsError.message)
   } else {
-    const statuses = [...new Set(requests?.map(r => r.status) || [])]
+    const statuses = [...new Set(requests?.map((r) => r.status) || [])]
     console.log(`   Found statuses: ${statuses.join(', ')}`)
 
     // Check if 'confirmed' status exists
@@ -56,7 +56,7 @@ async function checkDatabase() {
   } else {
     console.log(`   Found ${admins?.length || 0} admin account(s)`)
 
-    admins?.forEach(admin => {
+    admins?.forEach((admin) => {
       const isHashed = admin.password.startsWith('$2b$') || admin.password.startsWith('$2a$')
       console.log(`   • ${admin.username}:`)
       console.log(`     Password: ${isHashed ? '✅ HASHED (bcrypt)' : '❌ PLAIN TEXT'}`)

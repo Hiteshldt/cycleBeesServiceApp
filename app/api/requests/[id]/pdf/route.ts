@@ -3,93 +3,104 @@ import { supabase } from '@/lib/supabase'
 import { generateBillHTML } from '@/lib/bill-generator'
 import { getLaCartePrice } from '@/lib/lacarte'
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
 
     // Get request details
     const { data: requestData, error: requestError } = await supabase
       .from('requests')
-      .select(`
+      .select(
+        `
         *,
         request_items (*)
-      `)
+      `
+      )
       .eq('id', id)
       .eq('status', 'confirmed')
       .single()
 
     if (requestError) {
-      return NextResponse.json(
-        { error: 'Confirmed order not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Confirmed order not found' }, { status: 404 })
     }
 
     // Get confirmed service selections
     const { data: confirmedServices, error: servicesError } = await supabase
       .from('confirmed_order_services')
-      .select(`
+      .select(
+        `
         service_item_id,
         request_items (*)
-      `)
+      `
+      )
       .eq('request_id', id)
 
     if (servicesError) {
       console.error('Error fetching confirmed services:', servicesError)
-      return NextResponse.json(
-        { error: 'Failed to fetch confirmed services' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to fetch confirmed services' }, { status: 500 })
     }
 
     // Get confirmed addon selections
     const { data: confirmedAddons, error: addonsError } = await supabase
       .from('confirmed_order_addons')
-      .select(`
+      .select(
+        `
         addon_id,
         addons (*)
-      `)
+      `
+      )
       .eq('request_id', id)
 
     if (addonsError) {
       console.error('Error fetching confirmed addons:', addonsError)
-      return NextResponse.json(
-        { error: 'Failed to fetch confirmed addons' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to fetch confirmed addons' }, { status: 500 })
     }
 
     // Get confirmed bundle selections
     const { data: confirmedBundles, error: bundlesError } = await supabase
       .from('confirmed_order_bundles')
-      .select(`
+      .select(
+        `
         bundle_id,
         service_bundles (*)
-      `)
+      `
+      )
       .eq('request_id', id)
 
     if (bundlesError) {
       console.error('Error fetching confirmed bundles:', bundlesError)
-      return NextResponse.json(
-        { error: 'Failed to fetch confirmed bundles' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to fetch confirmed bundles' }, { status: 500 })
     }
 
     // Process the data
-    const confirmedItems = confirmedServices?.map(cs => cs.request_items).filter(Boolean).flat() || []
-    const confirmedAddonsList = confirmedAddons?.map(ca => ca.addons).filter(Boolean).flat() || []
-    const confirmedBundlesList = confirmedBundles?.map(cb => cb.service_bundles).filter(Boolean).flat() || []
+    const confirmedItems =
+      confirmedServices
+        ?.map((cs) => cs.request_items)
+        .filter(Boolean)
+        .flat() || []
+    const confirmedAddonsList =
+      confirmedAddons
+        ?.map((ca) => ca.addons)
+        .filter(Boolean)
+        .flat() || []
+    const confirmedBundlesList =
+      confirmedBundles
+        ?.map((cb) => cb.service_bundles)
+        .filter(Boolean)
+        .flat() || []
 
     // Calculate totals
     const subtotal = confirmedItems.reduce((sum, item) => sum + (item?.price_paise || 0), 0)
-    const addonsTotal = confirmedAddonsList.reduce((sum, addon) => sum + (addon?.price_paise || 0), 0)
-    const bundlesTotal = confirmedBundlesList.reduce((sum, bundle: any) => sum + (bundle?.price_paise || 0), 0)
+    const addonsTotal = confirmedAddonsList.reduce(
+      (sum, addon) => sum + (addon?.price_paise || 0),
+      0
+    )
+    const bundlesTotal = confirmedBundlesList.reduce(
+      (sum, bundle: any) => sum + (bundle?.price_paise || 0),
+      0
+    )
     // Use request-specific La Carte price if set, otherwise use global settings
-    const laCarteCharge = requestData.lacarte_paise ?? await getLaCartePrice()
+    const laCarteCharge = requestData.lacarte_paise ?? (await getLaCartePrice())
     const total = subtotal + addonsTotal + bundlesTotal + laCarteCharge
 
     // Generate PDF data
@@ -108,7 +119,7 @@ export async function GET(
       lacarte_paise: laCarteCharge,
       total_paise: total,
       status: 'confirmed',
-      isAdmin: true
+      isAdmin: true,
     }
 
     const htmlContent = generateBillHTML(billData)
@@ -121,12 +132,8 @@ export async function GET(
         'Content-Disposition': `attachment; filename="Admin_Order_${requestData.order_id}.html"`,
       },
     })
-
   } catch (error) {
     console.error('PDF API error:', error)
-    return NextResponse.json(
-      { error: 'Failed to generate PDF' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 })
   }
 }
