@@ -1,4 +1,5 @@
 import { Request } from '@/lib/supabase'
+import { calculateRequestTotals } from '@/lib/requestTotals'
 
 type RequestWithTotal = Request & {
   total_items: number
@@ -79,6 +80,9 @@ export const generateCSV = (requests: RequestWithTotal[], options: DownloadOptio
       }
     }
 
+    const totals = calculateRequestTotals(request, { items: request.request_items })
+    const totalAmountInr = Math.round(totals.total_paise / 100)
+
     const baseData = [
       escapeCSVValue(request.order_id || ''),
       escapeCSVValue(request.customer_name || ''),
@@ -89,7 +93,7 @@ export const generateCSV = (requests: RequestWithTotal[], options: DownloadOptio
       ),
       escapeCSVValue(formatDate(request.created_at)),
       escapeCSVValue(request.sent_at ? formatDate(request.sent_at) : ''),
-      escapeCSVValue(request.total_paise ? Math.round(request.total_paise / 100).toString() : '0'),
+      escapeCSVValue(totalAmountInr.toString()),
     ]
 
     if (options.includeDetails) {

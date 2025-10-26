@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { calculateRequestTotals } from '@/lib/requestTotals'
+import { getLaCartePrice } from '@/lib/lacarte'
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,7 +23,9 @@ export async function GET(request: NextRequest) {
 
     // 1. Get total revenue and order count
     const { data: requests, error: requestsError } = await dateFilter(
-      supabase.from('requests').select('total_paise, status, created_at')
+      supabase
+        .from('requests')
+        .select('total_paise, subtotal_paise, lacarte_paise, status, created_at')
     )
 
     if (requestsError) {
@@ -29,18 +33,44 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch requests data' }, { status: 500 })
     }
 
+    let laCarteFallback: number | undefined
+    if (requests?.some((req) => req.lacarte_paise === null || req.lacarte_paise === undefined)) {
+      try {
+        laCarteFallback = await getLaCartePrice()
+      } catch (fallbackError) {
+        console.warn(
+          'Analytics fallback La Carte price unavailable, defaulting to 0',
+          fallbackError
+        )
+      }
+    }
+
+    const normalizedRequests =
+      requests?.map((request) => {
+        const totals = calculateRequestTotals(request, {
+          fallbackLaCartePaise: laCarteFallback,
+        })
+
+        return {
+          ...request,
+          subtotal_paise: totals.subtotal_paise,
+          total_paise: totals.total_paise,
+        }
+      }) || []
+
     const totalRevenue =
-      requests?.reduce((sum: number, req: any) => sum + (req.total_paise || 0), 0) || 0
-    const totalOrders = requests?.length || 0
+      normalizedRequests.reduce((sum: number, req: any) => sum + (req.total_paise || 0), 0) || 0
+    const totalOrders = normalizedRequests.length || 0
     const averageOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0
 
     // 2. Calculate confirmation rate
-    const confirmedOrders = requests?.filter((req: any) => req.status === 'confirmed').length || 0
+    const confirmedOrders =
+      normalizedRequests.filter((req: any) => req.status === 'confirmed').length || 0
     const confirmationRate = totalOrders > 0 ? (confirmedOrders / totalOrders) * 100 : 0
 
     // 3. Get order status distribution
     const statusCounts =
-      requests?.reduce((acc: Record<string, number>, req: any) => {
+      normalizedRequests.reduce((acc: Record<string, number>, req: any) => {
         acc[req.status] = (acc[req.status] || 0) + 1
         return acc
       }, {}) || {}
@@ -104,7 +134,7 @@ export async function GET(request: NextRequest) {
     if (daysDiff > 180) periodFormat = 'monthly'
 
     const revenueByPeriod = generatePeriodData(
-      requests || [],
+      normalizedRequests,
       periodFormat,
       startDateObj,
       endDateObj
@@ -224,7 +254,7 @@ export async function GET(request: NextRequest) {
         endDateObj.getTime() - 90 * 24 * 60 * 60 * 1000 // Max 90 days
       )
     )
-    const dailyTrends = generateDailyTrends(requests || [], trendsStartDate, trendsEndDate)
+    const dailyTrends = generateDailyTrends(normalizedRequests, trendsStartDate, trendsEndDate)
 
     const analyticsData = {
       totalRevenue,

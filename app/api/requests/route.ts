@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { createRequestSchema } from '@/lib/validations'
+import { getLaCartePrice } from '@/lib/lacarte'
+import { calculateRequestTotals } from '@/lib/requestTotals'
 
 // GET /api/requests - List requests with pagination and optional status filter
 export async function GET(request: NextRequest) {
@@ -87,6 +89,30 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    let laCarteFallback: number | undefined
+    if (requests?.some((req) => req.lacarte_paise === null || req.lacarte_paise === undefined)) {
+      try {
+        laCarteFallback = await getLaCartePrice()
+      } catch (fallbackError) {
+        console.warn('Failed to load La Carte fallback price, defaulting to 0', fallbackError)
+      }
+    }
+
+    const normalizedRequests =
+      requests?.map((request) => {
+        const totals = calculateRequestTotals(request, {
+          items: request.request_items,
+          fallbackLaCartePaise: laCarteFallback,
+        })
+
+        return {
+          ...request,
+          subtotal_paise: totals.subtotal_paise,
+          total_paise: totals.total_paise,
+          total_items: request.request_items?.length || 0,
+        }
+      }) || []
+
     // Get total count for pagination info
     let countQuery = supabase.from('requests').select('*', { count: 'exact', head: true })
 
@@ -123,11 +149,6 @@ export async function GET(request: NextRequest) {
     }
 
     // Add total_items count for each request
-    const requestsWithCount = requests?.map((request) => ({
-      ...request,
-      total_items: request.request_items?.length || 0,
-    }))
-
     // Calculate pagination metadata
     const totalRequests = count || 0
     const totalPages = Math.ceil(totalRequests / validLimit)
@@ -135,7 +156,7 @@ export async function GET(request: NextRequest) {
     const hasPrevPage = validPage > 1
 
     return NextResponse.json({
-      requests: requestsWithCount || [],
+      requests: normalizedRequests,
       pagination: {
         currentPage: validPage,
         totalPages,
